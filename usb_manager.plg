@@ -1,0 +1,351 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "usb_manager">
+<!ENTITY author    "SimonFair">
+<!ENTITY version   "2021.02.24">
+<!ENTITY launch    "usb">
+<!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
+<!ENTITY pluginURL "&gitURL;/usb_manager.plg">
+<!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
+<!ENTITY packages	"/boot/config/plugins/&name;/packages">
+<!ENTITY md5		"5f0a09cb23a75c00bc4fce5757370d8b">
+]>
+
+<PLUGIN name="&name;"
+		author="&author;"
+		launch="&launch;"
+		version="&version;"
+		pluginURL="&pluginURL;"
+		support="&supportURL;"
+		icon="fa-usb"
+		min="6.8.0">
+
+<CHANGES>
+##&name;
+###&version;
+
+- Add Support for port-based mappings 
+      Auto connecting to a VM when device is connected to a USB port. 
+      Only devices being plugged in are supported for Ports at this time. Support for port level will be added in the furture for VM Starts.
+      Precedence is for device level mappings over port. If a device is set to autoconnect no then the auto connect at the port level will be evaluated.
+
+17.02.2021
+
+- Add Dashboard update and refresh.
+
+16.02.2021
+
+- Add USB Dashboard entry. Enable within settings.
+
+14.02.2021
+
+- Add Display host name or IP address for remote USBIP Clients.
+
+13.02.2021
+
+- Add Show remote connection status. Host/IP to follow WIP.
+
+12.02.2021
+
+- Chg Fix for Bind/Unbind Button.
+
+10a.02.2021
+- Add Disconnect update function implemented.
+- Add Auto Connect on VM Start.
+- Chg Auto Connect on device added checks VM Status
+- Add Update Status when VM Stops.
+
+Note you need to manually add code to /etc/libvirt/hooks/qemu for VM start/stop process to function. See support page.
+
+Development yet to be completed.
+
+Update of qemu hook file.
+Add checks before historical info can be removed.
+Rename Plugin to USB Manager
+Change to include USBIP package install in the settings page.
+
+08.02.2021
+
+- Add: Autoconnect function. If VM defined and Autoconnect is set to Yes then when usb device is connected device will be connected to VM. If VM is not started Error is show.
+- Chg: Main USB list is no longer depetant on USBIP. Version change to support 6.8. Error will be seen during install as it trys to install USBIP package which doesnt exist pre kernel 5.10.1, but is ignored.
+
+Development yet to be completed.
+
+Autoconnect function, check VM status before connecting. 
+Autodisconnect function. Will provide log entry but no action taken at present.
+Add checks before historical info can be removed.
+Rename Plugin to USB Manager
+VM Start/Stop process.
+Change to include USBIP package install in the settings page.
+
+07.02.2021
+
+- Add: VM Mapping functions
+- Add: Display USBIP function messages if not used. Enable/Disable for USBIP added to settings. Defaults to disable, change to enable if you are upgrading.
+- Add: Historical Devices added, list includes current devices also which can be removed whilst inuse.
+- Add: Failure Message for virsh errors.
+
+Note,
+
+Existing Libvirt plugin cannot be used to connect devices.
+
+
+Development yet to be completed.
+
+Autoconnect function. udev Rules exist and process works, but there are timing issues to be resolved.
+Add checks before historical info can be removed.
+Rename Plugin to USB Manager
+VM Start/Stop process.
+Changes to USB device list not to be depentant on usbip. Once change version pre-6.9.0-rc2 will be available.
+
+31.01.2021
+
+- Add: Revised Load process and addition of loading usbip package from ich777.
+  USBIP package includes all commands and modules required for USBIP
+
+28.01.2021
+
+- Initial beta release.
+</CHANGES>
+
+<!--
+The 'pre-install' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+# Remove emhttp files so we can re-install.
+rm -rf /usr/local/emhttp/plugins/&name;/* 2>/dev/null
+</INLINE>
+</FILE>
+
+<!--
+Get the plugin bundle.
+-->
+<FILE Name="&packages;/&name;-&version;.txz" Run="upgradepkg --install-new &packages;/&name;*%&packages;/&name;-&version;.txz">
+<URL>"&gitURL;/&name;-&version;.txz"</URL>
+<MD5>&md5;</MD5>
+</FILE>
+
+<!--
+The 'post-updgrade' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+echo "Removing previous versons now upgrade has completed."
+echo
+# Remove old 'bundle' files.
+rm -f $(ls &packages;/*.txz 2>/dev/null | grep -v '&version;')
+</INLINE>
+</FILE>
+
+<!--
+USB_Manager background start script.
+-->
+<FILE Name="/tmp/start_usb_manager" Mode="0770">
+<INLINE>
+#!/bin/bash
+# Copy configuration files to tmp file system.
+/usr/local/emhttp/plugins/&name;/scripts/copy_config.sh 2>/dev/null
+
+#Start USBIPD if required.
+
+if [ ! -z "$(pidof emhttpd)" ]; then
+	/usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
+fi
+
+# Remove the background start script.
+rm -f /tmp/start_usb_manager 2>/dev/null
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/&name;.cfg">
+<INLINE>
+<![CDATA[
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/remote_usbip.cfg">
+<INLINE>
+<![CDATA[
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/boot/config/plugins/&name;/vm_mappings.cfg">
+<INLINE>
+<![CDATA[
+]]>
+</INLINE>
+</FILE>
+
+
+
+<!--
+The 'post-install' script.
+-->
+<FILE Run="/bin/bash">
+<INLINE>
+# Define Functions
+
+download() {
+#Download usbip
+if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
+  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
+    if [ -d &packages;/${KERNEL_V%%-*}/]; then
+      rm -rf &packages;/${KERNEL_V%%-*}/;
+    fi
+    echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+    echo "--------------------------------CHECKSUM ERROR!---------------------------------"
+  fi
+  echo "-----------------Sucessfully downloaded usbip, please wait...!-----------------"
+else
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
+  echo "----------------------------Can't download usbip--------------------------------"
+fi
+}
+
+check() {
+if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  echo "+=============================================================================="
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "|"
+  echo "| Don't close this window with the red 'X' in the top right corner until the 'DONE' button is displayed!"
+  echo "|"
+  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
+  echo "+=============================================================================="
+  echo "---------------------Downloading usbip, please wait...!------------------------"
+  echo "-----------This could take some time, please don't close this window!----------"
+  download
+elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
+  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
+  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
+  echo "-----Download is empty please contact the developer of this plugin if the------"
+  echo "-------plugin has been already built against the current Kernel version--------"
+else
+  echo
+  echo "-----------------------------usbip found locally!------------------------------"
+fi
+}
+
+install() {
+#Install usbip package
+installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a > /dev/null
+}
+
+check_usbip_repo() {
+#Check if usbip is already downloaded
+
+if [ ! -z "$(modinfo usbip_host)" ]; then
+    echo "--------------------------usbip already installed...!--------------------------"
+else
+    check
+    echo "-----------------------Installing usbip, please wait...!-----------------------"
+    install 
+fi
+}
+
+#Define Variables
+
+KERNEL_V="$(uname -r)"
+PACKAGE="usbip"
+DL_URL="https://github.com/ich777/unraid-plugins-repo/releases/download/$KERNEL_V"
+
+# Install the plugin bundle.
+# Create plugin directory
+mkdir /boot/config/plugins/&name; 2>/dev/null
+mkdir /usr/local/emhttp/plugins/&name; 2>/dev/null
+mkdir -p /tmp/&name;/config 2>/dev/null
+
+if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
+  mkdir -p "&packages;/${KERNEL_V%%-*}"
+fi
+
+# Load Package from ich777 repo for usbip modules and commands.
+#check_usbip_repo
+
+# move the rules file
+cp /usr/local/emhttp/plugins/&name;/99_persistent_usb.rules /etc/udev/rules.d/
+chmod 644 -R /etc/udev/rules.d/99_persistent_usb.rules 2>/dev/null
+
+# copy the syslog  rules config file
+#cp /usr/local/emhttp/plugins/&name;/99_usb_manager_syslog.conf /etc/rsyslog.d/
+#chmod 644 -R /etc/udev/rules.d/99_persistent_usb.rules 2>/dev/null
+
+# Adjust plugin permissions.
+chmod 755 -R /usr/local/emhttp/plugins/&name; 2>/dev/null
+
+# Fix permissions of executable files
+chmod +x /usr/local/emhttp/plugins/&name;/scripts/* /usr/local/emhttp/plugins/&name;/event/*
+
+# Create a symlink to USB_Manager scripts.
+ln -sf /usr/local/emhttp/plugins/&name;/scripts/rc.usb_manager /usr/local/sbin
+
+# Copy Config to tmp and load modules.
+at -M -f /tmp/start_usb_manager now 2>/dev/null
+
+# reload udev rules
+udevadm control --reload-rules
+
+# restart rsyslogd
+/etc/rc.d/rc.rsyslogd restart
+
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been installed."
+echo " "
+echo " Copyright 2016-2020, &author;"
+echo " Version: &version;"
+echo ""
+echo "-----------------------------------------------------------"
+echo 
+</INLINE>
+</FILE>
+
+<!--
+The 'remove' script.
+-->
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+
+#Define Variables
+
+KERNEL_V="$(uname -r)"
+PACKAGE="usbip"
+
+# Remove installed packages
+find "&packages;/" -type f -iname "*.txz" -delete
+
+rm -f /tmp/plugins/&name;.plg 
+rm -r /tmp/&name;
+rm  -f /etc/udev/rules.d/99_persistent_usb_manager.rules
+rm  -f /etc/rsyslog.d/99_usb_manager_syslog.conf
+
+modprobe -r usbip_host
+modprobe -r vhci_hcd
+killall usbipd
+
+# reload udev rules
+udevadm control --reload-rules
+
+# restart rsyslogd
+/etc/rc.d/rc.rsyslogd restart
+
+# Remove all plugin files from emhttp.
+removepkg &packages;/&name;-&version;.txz 
+removepkg "&packages;/&name;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+depmod -a > /dev/null
+
+echo 
+echo "-----------------------------------------------------------"
+echo " &name; has been uninstalled."
+echo "-----------------------------------------------------------"
+echo 
+
+</INLINE>
+</FILE>
+
+</PLUGIN>

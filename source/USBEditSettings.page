@@ -1,0 +1,145 @@
+Title="Edit Settings"
+---
+<?php
+/* Copyright 2015, Guilherme Jardim
+ * Copyright 2016-2020, Dan Landon
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+
+$plugin = "usb_manager";
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$translations = file_exists("$docroot/webGui/include/Translations.php");
+require_once "$docroot/plugins/$plugin/include/Legacy.php";
+?>
+<?if (! $translations):?>
+<?eval('?>'.parse_file("$docroot/plugins/$plugin/USBEditSettings.page"))?>
+<?else:?>
+<?
+require_once("plugins/{$plugin}/include/lib_usb_manager.php");
+require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
+
+function safe_filename($string) {
+	$string = preg_replace('~[^0-9a-z -_]~i', '', $string);
+	/* Remove special characters from file name */
+	$string = str_replace( array("(", ")", "$"), "", $string);
+	return preg_replace('~[ ]~i', '_', $string);
+}
+#href='/USB/EditSettings?s=".urlencode($serial)."&b=".urlencode($device)."&l=".urlencode(basename($partition['mountpoint']))."&p=".urlencode($partition['part'])."&m=".urlencode(json_encode($partition))."&t=".$total."'
+
+$_SESSION['availablevms'] = $lv->get_domains();
+
+$disabled = "";
+
+if (isset($_GET['s'])) {
+	$serial = $_GET['s'];
+	$vm = $_GET['v'];
+	$isflash = $_GET['f'];
+	$width = "50%";
+	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
+	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
+}
+?>
+
+<script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
+<script type="text/javascript" src="<?autov('/webGui/javascript/jquery.filetree.js')?>"></script>
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.filetree.css')?>" >
+
+<script type="text/javascript" src="<?autov('/plugins/'.$plugin.'/assets/arrive.min.js')?>"></script>
+
+<style type="text/css">
+	.fileTree {
+		border: solid 1px #BBB;
+		background: #FFF;
+		overflow: scroll;
+		padding: 5px;
+		position:absolute;
+		z-index:100;
+		display:none;
+		color:initial;
+	}
+</style>
+
+<form markdown="1"   method="POST" action="/update.php" target="progressFrame">
+<strong>_(USB Serial)_: </strong><?=$serial;?> 
+
+<?if (! $isflash):?>
+<table style='width: <?=$width;?>;' class='usb_disks'><thead><tr><td></td><td></td><td></td><td></td></tr></thead>
+<tr>
+&nbsp;
+
+<td title='_(Turn on to Auto Connect to VM if USB Device is Added)_.'><input type='checkbox' class='autoconnect-switch'></td>
+<td title='_(Turn on to Auto Connect to VM if VM is started)_.'><input type='checkbox' class='autoconnectstart-switch'></td>
+</tr>
+</table>
+<?php
+#var_dump($vm) ; var_dump($_SESSION['availablevms']);
+?>
+<td><b>Virtual Machine</b></td>
+  <select id="vmselection" name="vmselection" >
+    <option value=""</option>
+      <?php
+	 	$output = $_SESSION['availablevms'];
+	    
+      foreach($output as $item){
+		  
+      if ($item === $vm) {
+      echo "<option selected=\"selected\" value=\"$item\">$item</option>";
+	  } else {
+		 echo "<option  value=\"$item\">$item</option>"; 
+	  }
+}
+?>
+</select> 
+
+<?endif;?>
+
+<button type="button" onclick="done()">_(Done)_</button>
+
+
+</form>
+
+<script>
+	var UDURL		= '/plugins/<?=$plugin;?>/usb_manager_Devices.php';
+
+
+
+
+	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect');?>", off_label: "<?=_('Auto Connect');?>", checked:"<?=$autoconnect;?>" });
+	$('.autoconnect-switch').change(function()
+	{
+		$.post(UDURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		{
+			$(this).prop("checked",data.result);
+		},"json");
+	});
+
+	$('.autoconnectstart-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect to VM at VM Start');?>", off_label: "<?=_('Auto Connect to VM at VM Start');?>", checked:"<?=$autoconnectstart;?>" });
+	$('.autoconnectstart-switch').change(function()
+	{
+		$.post(UDURL,{action:"autoconnectstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		{
+			$(this).prop("checked",data.result);
+		},"json");
+	});
+
+	
+	$('#vmselection').change(function()
+	{
+		$.post(UDURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		{
+				
+		},"json");
+	});
+
+
+
+</script>
+<?endif;?>

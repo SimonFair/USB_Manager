@@ -1,0 +1,5 @@
+Menu="/boot/config/plugins/usb_manager/usb_manager.cfg Main_usb_manager=Tasks:1"
+Type="xmenu"
+Title="Main_usb_manager"
+Code="f1fe"
+Tabs="true"

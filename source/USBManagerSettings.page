@@ -1,0 +1,223 @@
+Menu="OtherSettings"
+Title="USB Settings"
+Icon="fa-usb"
+---
+<?php
+/* 
+ * Copyright 2021 Simon Fairweather
+ * Based on Source from Guilherme Jardim & Dan Landon
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+
+$plugin = "usb_manager";
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$translations = file_exists("$docroot/webGui/include/Translations.php");
+require_once "$docroot/plugins/$plugin/include/Legacy.php";
+?>
+<?if (! $translations):?>
+<?eval('?>'.parse_file("$docroot/plugins/$plugin/usb_manager_settings.page"))?>
+<?else:?>
+<?
+require_once "plugins/$plugin/include/lib_usb_manager.php";
+
+$config_file = "/tmp/$plugin/config/$plugin.cfg";
+$cfg = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
+$version = parse_ini_file("/etc/unraid-version");
+$usbip_enabled=$cfg["Config"]["USBIP"] ;
+check_usbip_modules() ;
+
+
+if ($usbip_enabled == "enabled") {
+if (!$usbip_cmds_exist || !$loaded_usbip_host || !$loaded_vhci_hcd) {
+	$notice="Following are missing or not loaded:" ;
+	if (!$usbip_cmds_exist) $notice.=" USBIP Commands" ;
+	if (!$loaded_usbip_host || !$exists_usbip_host) $notice.=" usbip_host module" ;
+	if (!$loaded_vhci_hcd || !$exists_vhci_hcd) $notice.=" vhci_hcd module" ;
+    echo "<p class='notice 	'>"._($notice).".</p>";
+   }
+}
+
+
+if (count($_POST)) {
+	if ($_POST['#apply'] == "_(Apply)_") {
+		usb_manager_log("Updating usb settings...");
+		array_map(function($k, $v) use (&$cfg) { if($k[0] != "#") $cfg["Config"][$k] = $v; }, array_keys($_POST), $_POST );
+		save_ini_file($config_file, $cfg);
+		exec("plugins/{$plugin}/scripts/rc.usb_manager check_config &>/dev/null", $out, $return);  
+		usb_manager_log("usb settings updated.");
+		check_usbip_modules() ;
+	}	
+}
+
+$usbipd = file_exists("/usr/sbin/usbipd");
+$usbipd2 = file_exists("/usr/local/sbin/usbipd");
+
+
+?>
+
+<script type="text/javascript" src="<?autov('/webGui/javascript/jquery.filetree.js')?>"></script>
+<link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.filetree.css')?>" >
+
+<style type="text/css">
+	.fileTree {
+		border: solid 1px #BBB;
+		background: #FFF;
+		overflow: scroll;
+		padding: 5px;
+		position:absolute;
+		z-index:100;
+		display:none;
+		color:initial;
+	}
+</style>
+
+<script type="text/javascript">
+
+
+	
+
+	showStatus('pid','usbipd');
+</script>
+
+
+<div id="title" class="nocontrol">_(Common Settings)_</div>
+
+<form markdown="1" name="usb_manager_settings" method="POST">
+
+
+_(Enable USB on Dashboard)_:
+: <select name="DASH" size="1" >
+  <?=mk_option($cfg["Config"]["DASH"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["DASH"], "enabled", "_(Enabled)_");?>
+  </select>
+
+:usb_manager_settings_destructive_plug:
+> If enabled, this will start usbip daemon.
+> Disable will stop if running and not start at boot.
+:end
+
+_(Enable USBIP)_:
+: <select name="USBIP" size="1" >
+  <?=mk_option($cfg["Config"]["USBIP"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["USBIP"], "enabled", "_(Enabled)_");?>
+  </select>
+
+:usb_manager_settings_destructive_plug:
+> If enabled, this will start usbip daemon.
+> Disable will stop if running and not start at boot.
+:end
+
+
+_(Default USBIP Package)_ (_(optional)_):
+: <select id="winvirtio_select">
+  <?$iso_dir = $domain_cfg['MEDIADIR'];
+    if (empty($iso_dir) || !is_dir($iso_dir)) {
+      $iso_dir = '/mnt/user/isos/';
+    } else {
+      $iso_dir = str_replace('//', '/', $iso_dir.'/');
+    }
+    $strMatch = '';
+    if (!empty($domain_cfg['MEDIADIR']) && !empty($domain_cfg['VIRTIOISO']) && dirname($domain_cfg['VIRTIOISO']) != '.' && is_file($domain_cfg['VIRTIOISO'])) {
+      $strMatch = 'manual';
+    }
+    foreach ($virtio_isos as $key => $value) {
+      if (($domain_cfg['VIRTIOISO'] == $iso_dir.$value['name']) && is_file($iso_dir.$value['name'])) {
+        $strMatch = $value['name'];
+      }
+        echo mk_option($strMatch, $value['name'], $value['name']);
+    }
+    echo mk_option($strMatch, 'manual', _('Manual'));
+  ?>
+  </select><input type="text" id="winvirtio" name="VIRTIOISO" data-pickfilter="iso" data-pickcloseonfile="true" data-pickroot="<?=is_dir('/mnt/user')?'/mnt/user':'/mnt'?>" value="<?=htmlspecialchars($domain_cfg['VIRTIOISO'])?>"
+  <?if ($var['fsState'] == "Started"):?>placeholder="_(Click to Select)_" pattern="^[^\\]*\.(iso|ISO)$"><i class="fa fa-trash" id="remove_button" title="_(Remove Windows VirtIO driver ISO)_"><span>_(Remove)_</span></i><i class="fa fa-download" id="download_button" title="_(Download Windows VirtIO driver ISO)_"> <span>_(Download)_</span></i><span id="download_status"></span<?endif;?>>
+
+_(Pre-stage Kernel Package)_ (_(optional)_):
+: <select id="winvirtio_select">
+  <?$iso_dir = $domain_cfg['MEDIADIR'];
+    if (empty($iso_dir) || !is_dir($iso_dir)) {
+      $iso_dir = '/mnt/user/isos/';
+    } else {
+      $iso_dir = str_replace('//', '/', $iso_dir.'/');
+    }
+    $strMatch = '';
+    if (!empty($domain_cfg['MEDIADIR']) && !empty($domain_cfg['VIRTIOISO']) && dirname($domain_cfg['VIRTIOISO']) != '.' && is_file($domain_cfg['VIRTIOISO'])) {
+      $strMatch = 'manual';
+    }
+    foreach ($virtio_isos as $key => $value) {
+      if (($domain_cfg['VIRTIOISO'] == $iso_dir.$value['name']) && is_file($iso_dir.$value['name'])) {
+        $strMatch = $value['name'];
+      }
+        echo mk_option($strMatch, $value['name'], $value['name']);
+    }
+    echo mk_option($strMatch, 'manual', _('Manual'));
+  ?>
+  </select><input type="text" id="winvirtio" name="VIRTIOISO" data-pickfilter="iso" data-pickcloseonfile="true" data-pickroot="<?=is_dir('/mnt/user')?'/mnt/user':'/mnt'?>" value="<?=htmlspecialchars($domain_cfg['VIRTIOISO'])?>"
+  <?if ($var['fsState'] == "Started"):?>placeholder="_(Click to Select)_" pattern="^[^\\]*\.(iso|ISO)$"><i class="fa fa-trash" id="remove_button" title="_(Remove Windows VirtIO driver ISO)_"><span>_(Remove)_</span></i><i class="fa fa-download" id="download_button" title="_(Download Windows VirtIO driver ISO)_"> <span>_(Download)_</span></i><span id="download_status"></span<?endif;?>>
+
+
+
+&nbsp;
+: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+</form>
+
+<?if ($usbip_enabled == "enabled"):?>
+
+<div id="title" class="nocontrol">_(USBIP Settings)_</div>
+<form markdown="1" name="usb_manager_settings" method="POST">
+
+
+_(Run USBIPD Daemon)_:
+: <select name="USBIPD" size="1" <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
+  <?=mk_option($cfg["Config"]["USBIPD"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["USBIPD"], "enabled", "_(Enabled)_");?>
+  </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
+
+:usb_manager_settings_destructive_plug:
+> If enabled, this will start usbip daemon.
+> Disable will stop if running and not start at boot.
+:end
+
+
+
+&nbsp;
+: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+</form>
+
+<div id="title" class="nocontrol">_(Load Kernel Modules)_</div>
+<form markdown="1" name="usbip_host" method="POST">
+_(Load usbip_host)_?
+: <select name="usbip_host" size="1" <?if (! $exists_usbip_host):?>disabled<?endif;?>>
+  <?=mk_option($cfg['Config']["usbip_host"], "no", "_(No)_");?>
+  <?=mk_option($cfg['Config']["usbip_host"], "yes", "_(Yes)_");?>
+
+  </select><?if (! $exists_usbip_host):?>&nbsp;_(The usbip_host module does not exist.)_.<?endif;?>
+
+:ud_settings_symlinks_plug:
+> Set to **Yes** load usbip_host module. **No** will not unload the module. But will not load on start or reboot.
+:end
+
+_(Load vhci_hcd)_?
+: <select name="vhci_hcd" size="1" <?if (! $exists_vhci_hcd):?>disabled<?endif;?>>
+  <?=mk_option($cfg['Config']["vhci_hcd"], "no", "_(No)_");?>
+  <?=mk_option($cfg['Config']["vhci_hcd"], "yes", "_(Yes)_");?>
+  </select><?if (! $exists_vhci_hcd):?>&nbsp;_(The vhci_hcd module does not exist.)_.<?endif;?>
+
+:ud_settings_symlinks_plug:
+> Set to **Yes** load vhci_hcd module. **No** will not unload module. But will not load on start or reboot.
+:end
+
+
+
+
+&nbsp;
+: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+</form>
+<?endif;?>
+
+<?endif;?>

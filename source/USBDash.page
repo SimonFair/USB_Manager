@@ -1,0 +1,62 @@
+Menu="Dashboard"
+Cond="parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['DASH'] == 'enabled'"
+---
+
+<script>
+
+var usbtimer = 20000 ;
+$(function(){
+    
+    $('#db-box3')
+    .append('<tbody id="tblUSBDash" class="sortable ui-sortable-handle"><tr><td></td><td colspan="4" class="next"><div class="section">USB Devices<br><span id=ipmi-temp"> ' + 
+    '</span><br><br></div><i class="fa fa-fw chevron fa-chevron-up" id="usb_view" onclick="toggleChevron(&quot;usb_view&quot;,0)"></i>' +
+    '<a href="/Settings/USBManagerSettings/" title="Go to USB settings"><i class="fa fa-fw fa-cog chevron"></i></a></td><td></td></tr> ' +
+    '<tr class="usb_view" style="display: none;"><td></td><td>Physical Port</td><td>Name</td><td>State</td><td>VM/Remote Host</td></tr></tbody>');
+
+    USBArray(false);
+    setTimeout(USBRefresh, usbtimer);
+
+});
+
+/* sensor refresh */
+function USBRefresh() {
+     USBArray(true);
+     setTimeout(USBRefresh, usbtimer);
+    
+};
+
+
+function USBArray(Refresh){
+ //$('#tblUSBDash').empty () ;
+    $.post('/plugins/usb_manager/USBDevices.php', {action:'usbdash'}, function(data) {
+
+        if(Refresh) {
+           $('#tblUSBDash').html('<tr><td></td><td colspan="4" class="next"><div class="section">USB<br><span id=ipmi-temp"></span><br><br></div><i class="fa fa-fw chevron fa-chevron-up" id="usb_view" onclick="toggleChevron(&quot;usb_view&quot;,0)"></i>' +
+               '<a href="/Settings/USBManagerSettings/" title="Go to USB settings"><i class="fa fa-fw fa-cog chevron"></i></a></td><td></td></tr> ' +
+               '<tr class="usb_view" style="display: none;"><td></td><td>Physical Port</td><td>Name</td><td>State</td><td>VM/Remote Host</td></tr></tbody>') ;
+        }
+      
+        $.each(data.usb_devices, function (i, device) {
+           
+            var Color   = 'green';
+            var Units   = '';
+            var orbcolour   = device.orb_colour ;
+            var allocated = device.allocated;
+            var status = device.status ;
+            var model = device.ID_MODEL.substr(0,20) ;
+
+            $('#tblUSBDash')
+        
+            .append('<tr class="usb_view_heading" style="display: none;"><td></td><td>USB</td><td>Name</td><td>State</td><td>VM/Remote Host</td></tr></tbody>' +
+            "<tr class='usb_view' style='display: none;' id='"+i+"'><td></td>"+
+            '<td  title="'+i+'"><i class="fa fa-usb icon"></i> '+i+'</td>'+ //USB physicalPort name
+            '<td><i class="fa fa-circle orb '+orbcolour+'-orb middle"></i>'+ device.ID_MODEL.substr(0,25) +'</td><td>'+ status +'</td>'+ //Status
+            ' <td>'+ allocated +'</td>'+ //Status
+            '</tr>');
+    
+        });
+        toggleView('usb_view',true);
+    } ,'json');
+}  ;
+
+</script>

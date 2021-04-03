@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+DOCROOT=`grep -Po '^chdir = \K.*' /etc/php-fpm.d/www.conf 2>/dev/null`
+if [ -z ${DOCROOT} ];then
+	DOCROOT="/usr/local/emhttp"
+fi
+
+# Copy config files to ram file system.
+${DOCROOT}/plugins/usb_manager/scripts/copy_config.sh

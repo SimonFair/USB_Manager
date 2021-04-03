@@ -1,0 +1,345 @@
+#!/usr/bin/php
+<?php
+/* Copyright 2021, Simon Fairweather
+ *
+ * based on original code from Guilherme Jardim and Dan Landon
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+
+$plugin = "usb_manager";
+$docroot = $docroot ?: @$_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+require_once("$docroot/plugins/{$plugin}/include/lib_usb_manager.php");
+require_once("webGui/include/Helpers.php");
+require_once "$docroot/plugins/dynamix.vm.manager/include/libvirt_helpers.php";
+
+$COMMAND = $argv[1];
+
+if ($COMMAND != 'spindown') {
+	$DEVNAME = (isset($_ENV['DEVNAME'])) ? $_ENV['DEVNAME'] : ( isset($argv[2]) ? $argv[2] : NULL );
+	$DEVNAME = (file_exists($DEVNAME)) ? realpath($DEVNAME) : $DEVNAME;
+} else {
+	$DEVNAME = $argv[2];
+}
+$remove  = [];
+#if (! $DEVNAME) die("Fail: device not defined.\n");
+
+function usbip_modules_load() {
+	global $plugin, $config;
+	# Get Config file if load module is *YES process.
+
+	$config_file = "/tmp/$plugin/config/$plugin.cfg";
+	$cfg = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
+	$config = $cfg["Config"];
+
+	
+	if ($config["usbip_host"] == "yes") {
+		usb_manager_log("info: Loading kernel module usbip_host");
+		exec("modprobe usbip-host") ;
+	}
+	if ($config["vhci_hcd"] == "yes") {
+		usb_manager_log("info: Loading kernel module vhci_hcd");
+		exec("modprobe vhci_hcd") ;
+	}
+
+}
+
+function usbipd_start() {
+	$pid=shell_exec("pgrep usbipd") ;
+	if ($pid!="") return ;
+	usb_manager_log("Start usbipd");
+	exec("usbipd -D --pid") ;	
+}
+
+function usbipd_stop() {
+	$pid=shell_exec("pgrep usbipd") ;
+	if ($pid==NULL) return ;
+	usb_manager_log("Shutdown usbipd");	
+	exec("killall usbipd") ;
+}
+
+function usbip_reload() {
+	if (isset($_ENV['DEVLINKS'])) {
+		foreach (explode(" ", $_ENV['DEVLINKS']) as $link) {
+			get_udev_info($link, $_ENV, true);
+		}
+	}
+}
+
+function usbip_check_config() {
+	global $config ;
+	usbip_modules_load() ;
+	$pid=shell_exec("pgrep -c  usbipd") ;
+	if ($config["USBIPD"]=="enabled") {
+		usbipd_start() ;
+	} else {
+		usbipd_stop() ;
+	}		
+}
+
+function usb_device_add_action($serial)
+{
+
+	    $vm_maps = load_vm_mappings() ;
+		$vm = $vm_maps[$serial]["VM"];
+
+		$state = get_vm_state($vm) ;
+
+		$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'] ;	
+
+		USBMgrCreateStatusEntry($_ENV['ID_SERIAL'], $_ENV['BUSNUM'], $_ENV['DEVNUM']) ;
+
+		if (is_autoconnect($serial) == false ) {
+		
+			return ;
+		}
+
+		if ($state != "shutoff") {
+			usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
+			vm_map_action($vm, "attach") ;
+		}
+		else { 
+			usb_manager_log("Info: rc.usb_manager Autoconnect ignored VM not running state:{$state} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}"); 
+		}	
+     
+}
+
+function usb_device_add_actionv2($serial)
+{
+
+	    $vm_maps = load_vm_mappings() ;
+		$vm = $vm_maps[$serial]["VM"];
+
+		$state = get_vm_state($vm) ;
+
+		$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
+
+		USBMgrCreateStatusEntry($_ENV['ID_SERIAL'], $_ENV['BUSNUM'], $_ENV['DEVNUM']) ;
+
+		if ($vm_maps[$serial]["autoconnect"] == "yes" ) {
+    		if ($state != "shutoff") {
+	    		usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
+		    	vm_map_action($vm, "attach") ;
+				return ;
+		    }
+		    else { 
+				usb_manager_log("Info: rc.usb_manager Autoconnect ignored VM not running state:{$state} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}"); 
+			}	
+		}
+
+        #udevadm info -a   --name=/dev/bus/usb/003/002 | grep KERNEL==
+
+		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$_ENV['BUSNUM']."/".$_ENV['DEVNUM']." | grep KERNEL==" ;
+		exec( $udevcmd , $udev);
+		$physical_busid = trim(substr($udev[0], 13) , '"') ;
+        $port_map="Port:".$physical_busid ;
+		
+		if (isset($vm_maps[$port_map])) {
+
+
+			var_dump($port_map) ; var_dump($vm_maps[$port_map]) ;
+
+			$vm = $vm_maps[$port_map]["VM"];
+		
+			if ($vm_maps[$port_map]["autoconnect"] == "yes" ) {
+				$state = get_vm_state($vm) ;
+				$vm .=  ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Port"; ;
+				if ($state != "shutoff") {
+					usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}");
+					vm_map_action($vm, "attach") ;
+					return ;
+				}
+				else { 
+					usb_manager_log("Info: rc.usb_manager Autoconnect ignored VM not running state:{$state} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}"); 
+				}	
+			}
+		}
+		usb_manager_log("Info: rc.usb_manager Autoconnect No Mapping found {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}"); 
+}
+
+
+function usb_device_remove_action($bus, $dev)
+{
+	global $usb_state;
+	load_usbstate(); 
+
+    foreach ($usb_state as $key => $usbdevice) {
+
+	 if ($usbdevice["bus"] == $bus && $usbdevice["dev"] == $dev) {
+	   $vm = $usbdevice["VM"] ;
+	   $serial = $key ;
+	}
+}
+#var_dump($serial) ; var_dump($vm) ;
+
+   if (isset($serial)) {
+
+		$state = get_vm_state($vm) ;
+		
+		remove_usbstate($serial) ;
+		usb_manager_log("Info: rc.usb_manager Removed {$serial} vm: {$vm}  {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
+   
+   }
+}
+
+function process_vm_usb_devices($vm, $action) {
+		 global $usb_state;
+		 load_usbstate(); 
+	
+	$vm_mappings=load_vm_mappings(); 
+    #var_dump($vm_mappings) ;
+    foreach ($vm_mappings as $key => $vm_map) {
+	  if ($vm == $vm_map["VM"]) {
+
+	    if (isset($usb_state[$key])	)
+        {
+
+	     $bus = $usb_state[$key]["bus"];
+	     $dev = $usb_state[$key]["dev"];
+
+	     #var_dump($key) ;
+	     #var_dump($bus) ;
+	     #var_dump($dev) ;
+	     #var_dump($vm) ;
+
+	
+		$vmname = $vm.";".$bus.";".$dev.";".$key.";Auto;Device;" ;	 ;
+	    
+	    if ($action == "stopped") {
+		  # Update usb.ini. Remove VM and Connected.
+
+		  save_usbstate($key, "virsherror" , false) ;
+		  save_usbstate($key, "connected" , false) ;
+		  save_usbstate($key, "VM" , "") ;
+		  usb_manager_log("Info: rc.usb_manager VM Shutdown {$key} vm: {$vm} ");
+		}
+	 
+	    if ($action == "prepare") {
+			if ($usb_state[$key]["connected"]==1) {
+				usb_manager_log("Info: rc.usb_manager Autoconnect Start {$key} vm: {$vm} Device in Use action ignored. ");
+				continue ;	}
+		   if ($vm_map["autoconnectstart"] == "yes") {
+			   vm_map_action($vmname, "attach") ;
+			   usb_manager_log("Info: rc.usb_manager Autoconnect Start {$key} vm: {$vm} ");
+		    }
+	     }
+		 
+		 if ($action == "disconnect") {
+			#	if ($vm_map["autoconnectstart"] == "yes") {
+					vm_map_action($vmname, "detach") ;
+					usbip_log("Info: rc.unraid.usbip-gui Disconnect {$key} vm: {$vm} ");
+			#	 }
+			  } 
+	    }
+	}
+}
+}
+
+function usb_manager_syslog_processing($sl_busid) {
+
+   
+	exec("tail -n 20 /var/log/syslog", $syslog ) ;
+	
+
+	$syslog=array_reverse($syslog) ;
+	$config_file = $GLOBALS["paths"]["usb_rmt_connect"];
+	$config = @parse_ini_file($config_file, true);
+	$p2 = preg_match('/(.*) (?P<busid>\S+)/', $sl_busid, $arrMatchsl );
+	$busid= $arrMatchsl["busid"] ;
+	
+	foreach ($syslog as $syslog_entry) {
+
+	#	Feb 13 15:59:19 Tower usbipd: usbipd: info: connection from 192.168.1.29:46248
+	#	Feb 13 15:59:19 Tower usbipd: usbipd: info: received request: 0x8003(6)
+	#	Feb 13 15:59:19 Tower usbipd: usbipd: info: found requested device: 3-2.2
+	#	Feb 13 15:59:19 Tower usbipd: usbip: info: connect: 3-2.2
+	#	Feb 13 15:59:19 Tower kernel: usbip-host 3-2.2: stub up
+	#	Feb 13 15:59:19 Tower usbipd: usbipd: info: request 0x8003(6): complete
+	#	Feb 13 15:59:19 Tower USBIP: debug: usbip syslog filter triggered
+
+
+
+	
+	$arrMatch =array() ;	
+	$p = preg_match('/(.*) connection from (?P<IP>\S+):(?P<port>\S+)/', $syslog_entry, $arrMatch );
+  
+	var_dump($arrMatch) ;
+		if ($p ) {
+;
+			
+			$config[$busid]["port"] = $arrMatch["port"] ;
+			$config[$busid]["IP"] = $arrMatch["IP"] ;
+			$config[$busid]["hostname"] = gethostbyaddr($arrMatch["IP"]) ;
+	}
+	}
+
+
+	save_ini_file($config_file, $config);
+
+}
+
+switch ($COMMAND) {
+	case 'modules_load':
+		usbip_modules_load();
+		break;
+
+	case 'start_daemon':
+		usbipd_start();
+		break;
+
+	case 'stop_daemon':
+		usbipd_stop();
+		break;
+
+	case 'reload':
+		usbip_reload();
+		break;
+
+	case 'refresh':
+		break;
+
+	case 'usb_add':
+		usb_manager_log("Info: rc.usb_manager {$argv[1]} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
+		usb_device_add_actionv2($_ENV['ID_SERIAL']) ;
+		break;
+
+	case 'usb_remove':
+		usb_manager_log("Info: rc.usb_manager {$argv[1]} {$physical_busid} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} ");
+		usb_device_remove_action($_ENV['BUSNUM'] ,$_ENV['DEVNUM'] ) ;
+		break;
+
+	case 'vm_action':
+		usb_manager_log("Info: rc.usb_manager  {$argv[1]} {$argv[2]} {$argv[3]} {$argv[4]} {$argv[5]}");
+		process_vm_usb_devices($argv[2],$argv[3] ) ;
+		break;	
+
+	case 'check_config':
+		usbip_check_config() ;
+		break;	
+
+	case 'usb_syslog':
+		usbmanager_syslog_processing($argv[2]) ;
+		break;	
+
+	case 'USBMgrBuildConnectedStatus':
+		usb_manager_log("Info: rc.usb_manager Building Connected Status") ;
+		USBMgrBuildConnectedStatus() ;
+		break;	
+
+	case 'USBMgrResetConnectedStatus':
+		usb_manager_log("Info: rc.usb_manager Reset Connected Status") ;
+		USBMgrResetConnectedStatus() ;
+		break;	
+
+	default:
+		usb_manager_log("Error: rc.usb_manager {$argv[1]} {$argv[2]} {$argv[3]} {$argv[4]} not understood");
+		usb_manager_log("rc.usb_manager usage: 'modules_load','start_daemon','stop_daemon', 'reload', 'refresh', 'check_config");
+		exit(0);
+		break;
+}
+?>
