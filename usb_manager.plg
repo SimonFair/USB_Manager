@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.02.24">
+<!ENTITY version   "2021.04.04">
 <!ENTITY launch    "usb">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
@@ -24,87 +24,6 @@
 <CHANGES>
 ##&name;
 ###&version;
-
-- Add Support for port-based mappings 
-      Auto connecting to a VM when device is connected to a USB port. 
-      Only devices being plugged in are supported for Ports at this time. Support for port level will be added in the furture for VM Starts.
-      Precedence is for device level mappings over port. If a device is set to autoconnect no then the auto connect at the port level will be evaluated.
-
-17.02.2021
-
-- Add Dashboard update and refresh.
-
-16.02.2021
-
-- Add USB Dashboard entry. Enable within settings.
-
-14.02.2021
-
-- Add Display host name or IP address for remote USBIP Clients.
-
-13.02.2021
-
-- Add Show remote connection status. Host/IP to follow WIP.
-
-12.02.2021
-
-- Chg Fix for Bind/Unbind Button.
-
-10a.02.2021
-- Add Disconnect update function implemented.
-- Add Auto Connect on VM Start.
-- Chg Auto Connect on device added checks VM Status
-- Add Update Status when VM Stops.
-
-Note you need to manually add code to /etc/libvirt/hooks/qemu for VM start/stop process to function. See support page.
-
-Development yet to be completed.
-
-Update of qemu hook file.
-Add checks before historical info can be removed.
-Rename Plugin to USB Manager
-Change to include USBIP package install in the settings page.
-
-08.02.2021
-
-- Add: Autoconnect function. If VM defined and Autoconnect is set to Yes then when usb device is connected device will be connected to VM. If VM is not started Error is show.
-- Chg: Main USB list is no longer depetant on USBIP. Version change to support 6.8. Error will be seen during install as it trys to install USBIP package which doesnt exist pre kernel 5.10.1, but is ignored.
-
-Development yet to be completed.
-
-Autoconnect function, check VM status before connecting. 
-Autodisconnect function. Will provide log entry but no action taken at present.
-Add checks before historical info can be removed.
-Rename Plugin to USB Manager
-VM Start/Stop process.
-Change to include USBIP package install in the settings page.
-
-07.02.2021
-
-- Add: VM Mapping functions
-- Add: Display USBIP function messages if not used. Enable/Disable for USBIP added to settings. Defaults to disable, change to enable if you are upgrading.
-- Add: Historical Devices added, list includes current devices also which can be removed whilst inuse.
-- Add: Failure Message for virsh errors.
-
-Note,
-
-Existing Libvirt plugin cannot be used to connect devices.
-
-
-Development yet to be completed.
-
-Autoconnect function. udev Rules exist and process works, but there are timing issues to be resolved.
-Add checks before historical info can be removed.
-Rename Plugin to USB Manager
-VM Start/Stop process.
-Changes to USB device list not to be depentant on usbip. Once change version pre-6.9.0-rc2 will be available.
-
-31.01.2021
-
-- Add: Revised Load process and addition of loading usbip package from ich777.
-  USBIP package includes all commands and modules required for USBIP
-
-28.01.2021
 
 - Initial beta release.
 </CHANGES>
