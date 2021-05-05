@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.04.04">
+<!ENTITY version   "2021.05.05">
 <!ENTITY launch    "usb">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"12177e34ee6d8c29033783fc609a00c3">
+<!ENTITY md5		"7cd25464e121f6c049d667ba6d59f3ff">
 ]>
 
 <PLUGIN name="&name;"
@@ -183,7 +183,7 @@ if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
 fi
 
 # Load Package from ich777 repo for usbip modules and commands.
-#check_usbip_repo
+check_usbip_repo
 
 # move the rules file
 cp /usr/local/emhttp/plugins/&name;/99_persistent_usb.rules /etc/udev/rules.d/
