@@ -31,12 +31,7 @@
 <!--
 The 'pre-install' script.
 -->
-<FILE Run="/bin/bash">
-<INLINE>
-# Remove emhttp files so we can re-install.
-rm -rf /usr/local/emhttp/plugins/&name;/* 2>/dev/null
-</INLINE>
-</FILE>
+#
 
 <!--
 Get the plugin bundle.
@@ -178,12 +173,12 @@ mkdir /boot/config/plugins/&name; 2>/dev/null
 mkdir /usr/local/emhttp/plugins/&name; 2>/dev/null
 mkdir -p /tmp/&name;/config 2>/dev/null
 
-if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
-  mkdir -p "&packages;/${KERNEL_V%%-*}"
-fi
+#if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
+#  mkdir -p "&packages;/${KERNEL_V%%-*}"
+#fi
 
 # Load Package from ich777 repo for usbip modules and commands.
-check_usbip_repo
+#check_usbip_repo
 
 # move the rules file
 cp /usr/local/emhttp/plugins/&name;/99_persistent_usb.rules /etc/udev/rules.d/
@@ -243,9 +238,9 @@ rm -r /tmp/&name;
 rm  -f /etc/udev/rules.d/99_persistent_usb_manager.rules
 rm  -f /etc/rsyslog.d/99_usb_manager_syslog.conf
 
-modprobe -r usbip_host
-modprobe -r vhci_hcd
-killall usbipd
+#modprobe -r usbip_host
+#modprobe -r vhci_hcd
+#killall usbipd
 
 # reload udev rules
 udevadm control --reload-rules
@@ -255,8 +250,8 @@ udevadm control --reload-rules
 
 # Remove all plugin files from emhttp.
 removepkg &packages;/&name;-&version;.txz 
-removepkg "&packages;/&name;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
-depmod -a > /dev/null
+#removepkg "&packages;/&name;/packages/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
+#depmod -a > /dev/null
 
 echo 
 echo "-----------------------------------------------------------"
