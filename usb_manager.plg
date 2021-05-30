@@ -181,8 +181,8 @@ mkdir -p /tmp/&name;/config 2>/dev/null
 #check_usbip_repo
 
 # move the rules file
-cp /usr/local/emhttp/plugins/&name;/99_persistent_usb.rules /etc/udev/rules.d/
-chmod 644 -R /etc/udev/rules.d/99_persistent_usb.rules 2>/dev/null
+cp /usr/local/emhttp/plugins/&name;/99_persistent_usb_manager.rules /etc/udev/rules.d/
+chmod 644 -R /etc/udev/rules.d/99_persistent_usb_manager.rules 2>/dev/null
 
 # copy the syslog  rules config file
 #cp /usr/local/emhttp/plugins/&name;/99_usb_manager_syslog.conf /etc/rsyslog.d/
