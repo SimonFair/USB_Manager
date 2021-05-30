@@ -107,7 +107,7 @@ if (isset($_GET['s'])) {
 </form>
 
 <script>
-	var UDURL		= '/plugins/<?=$plugin;?>/usb_manager_Devices.php';
+	var UDURL		= '/plugins/<?=$plugin;?>/USBDevices.php';
 
 
 

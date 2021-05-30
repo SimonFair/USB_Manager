@@ -195,25 +195,58 @@ switch ($_POST['action']) {
 		/* Check for a recent hot plug event. */
 		$tc = $paths['hotplug_status'];
 		$hotplug = is_file($tc) ? json_decode(file_get_contents($tc),TRUE) : "no";
-		if ($hotplug == "yes") {
-			exec("/usr/local/sbin/emcmd 'cmdHotplug=apply'");
-			file_put_contents($tc, json_encode('no'));
-		}
 
 		/* Disk devices */
 		$usbip = get_all_usb_info();
+
+		$optionempty = $_POST["empty"] ;
+		if ($optionempty =="false") {
+		foreach ($usbip as $busid => $detail) {
+			#var_dump($busid) ;
+			if ($detail["ishub"] == "interface") continue ;
+			#if ($detail["ishub"] == "hub") continue ;
+			if ($detail["ishub"] == "roothub" || $detail["ishub"] == "hub") {
+		#	if ( $detail["ishub"] == "hub") {
+				
+			$level=0 ;
+			$children = $detail["maxchildren"] ;
+			$bus = explode("-", $busid) ;
+			
+			for ($x=1; $x <= $children; $x++) {
+			if ($detail["ishub"] == "roothub") $newbusid = $bus[0]."-".$x ;
+			 if ($detail["ishub"] == "hub") $newbusid = $busid.".".$x ;
+			 # var_dump( $newbusid );
+			  if (!isset($usbip[$newbusid])) {
+				  $usbip[$newbusid]["ishub"] = "emptyport" ;
+				  $usbip[$newbusid]["level"] = $level ;
+				  if ($detail["ishub"] == "roothub")	  $usbip[$newbusid]["class"] = "roothub" ;
+				  if ($detail["ishub"] == "hub")	  $usbip[$newbusid]["class"] = "hub" ;
+				  #add
+			  }
+			}
+			}
+		}
+        ksort($usbip,SORT_NATURAL  ) ;
+	}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		#echo "<table class='disk_status wide disk_mounts'><thead><tr><td>"._('BusID')."</td><td>"._('Action')."</td><td>"._('Subsystem/Driver')."</td><td>"._('Vendor:Product').".</td><td>"._('Reads')."</td><td>"._('Writes')."</td><td>"._('Settings')."</td><td>"._('FS')."</td><td>"._('Size')."</td><td>"._('Used')."</td><td>"._('Free')."</td><td>"._('Log')." idden</td></tr></thead>";
-		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Subsystem/Driver')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		echo "<td>"._('')."</td></tr></thead>";
+$optionroot = false ;		
+$optionhub = false ;
 
 		
 		echo "<tbody><tr>";
 	
 		if ( count($usbip) ) {
 			foreach ($usbip as $disk => $detail) {
+				if ($detail["ishub"] == "emptyport" && $optionempty == "true") continue ;
+				if ($detail["ishub"] == "hub" && $optionhub == true) continue ;
+				if ($detail["ishub"] == "roothub" && $optionroot == true) continue ;
+
+
 
 				$srlnbr=$detail["ID_SERIAL"] ;
 				if (isset($detail["ID_SERIAL_SHORT"])) $srlnbr_short=$detail["ID_SERIAL_SHORT"] ; else $srlnbr_short="" ;
@@ -244,33 +277,34 @@ switch ($_POST['action']) {
 				$dev_title .= (is_autoconnectstart($srlnbr) == 'yes') ? "On" : "Off";
 				$dev_title .=  "   ";
 
-				$bus_id =  "<a title='$port_title'  href='/USB/USBEditSettings?s=".urlencode($vm_port)."&v=".urlencode($vm_port_name)."&f=".urlencode($detail["isflash"])."'><i class='fa fa-usb'></i></a>&nbsp;"; 	
+				$bus_id = "" ;
+				$bus_id .= "<a title='$port_title'  href='/USB/USBEditSettings?s=".urlencode($vm_port)."&v=".urlencode($vm_port_name)."&f=".urlencode($detail["isflash"])."'><i class='fa fa-usb' aria-hidden=true></i></a>&nbsp;"; 	
 				$bus_id .= "<a title='$dev_title' href='/USB/USBEditSettings?s=".urlencode($srlnbr)."&v=".urlencode($vm_name)."&f=".urlencode($detail["isflash"])."'><i class='fa fa-desktop'></i></a>&nbsp;";
 			}
 				$bus_id.= "<a href=\"#\" title='"._("Device Log Information")."' onclick=\"openBox('/webGui/scripts/disk_log&amp;arg1={$disk}','Device Log Information',600,900,false);return false\"><i class='fa fa-file icon'></i></a>";
 				$bus_id .="<span title='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk}'></span>";
 				
-
+				if ($detail["ishub"] == "interface" || $detail["ishub"] == "emptyport") {
+					$indent = "&nbsp&nbsp&nbsp&nbsp\__ ";
+				} else $indent = "" ;
 				$detail["BUSID"] = $disk ;
 				$mbutton = make_mount_button($detail);		
 				/* Device serial number */
-			    echo "<td>{$bus_id}</td><td>{$disk}</td>";
+			    echo "<td>{$bus_id}</td><td>{$indent}{$disk}</td>";
 
 				/* Device Driver */
-				echo "<td>".$detail["SUBSYSTEM"]."/".$detail["DRIVER"]."</td>";
+				echo "<td>".ucfirst($detail["ishub"])."</td>";
 				/* Device Vendor & Model */
 				if (isset($detail["ID_VENDOR_FROM_DATABASE"])) {
 					$vendor=$detail["ID_VENDOR_FROM_DATABASE"] ;
 				} else {
 					$vendor=$detail["ID_VENDOR"] ;
 				}
-				echo "<td>".$vendor.":".$detail["ID_MODEL"]."</td>" ;
+				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td>".$vendor.":".$detail["ID_MODEL"]."</td>" ; 
 			   
 			
 				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
-					             
-
-
+				
 				$connected="" ;
 				if ($vm_name != "" ) {
 			#	$res = $lv->get_domain_by_name($vm_name);
@@ -316,7 +350,9 @@ switch ($_POST['action']) {
 				if ($vm_name != "" ) {
 					$type="Device Mapping:" ;
 					echo "<td>".$type."</td>" ;
-				echo "<td>".$vm_name."</td>";
+					echo "<td>" ;
+					echo "<a href=\"#\" title='"._("VM Connected USB Device")."' onclick=\"openBox('virsh qemu-monitor-command {$vm_name} --hmp /'info usb/'','Vm Connected USB Devices',600,900,false);return false\"><i class='fa fa-link icon'></i></a>";
+					echo $vm_name."</td>";
 				#echo "<td>".$port_map_vm."</td>";
 				#echo "</select></td> " ;
 				$vmbutton = make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device");
@@ -532,6 +568,10 @@ switch ($_POST['action']) {
 		 if (strlen($ct)) {
 			 echo "<div class='show-disks'><div class='show-historical' id='hist_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
 			 echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td></td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
+		 } else {
+			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
+			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td></td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>" ;
+			echo "<tr><td colspan='13' style='text-align:center;'>"._('No Historic Mappings configured').".</td></tr>";
 		 }
 		 unassigned_log("Total get_content render time: ".($time + microtime(true))."s", "DEBUG");
 
@@ -679,6 +719,7 @@ switch ($_POST['action']) {
 			$allocated = "" ;
 			$dash_array=array() ;
 			$usb_devices =	get_all_usb_info() ;
+			ksort($usb_devices,SORT_NATURAL  ) ;
 			$usb_connects = load_usb_connects() ;
 			foreach ($usb_devices as $key => $device) {
 
@@ -716,6 +757,7 @@ switch ($_POST['action']) {
 			$allocated = "BOOT DEVICE" ;
 			$orb_colour ='grey' ;
 		}
+		if ($device["ID_MODEL"] == "") $device["ID_MODEL"] = ucfirst($device["ishub"]) ;
 					$dash_array[$key] = array(
 					"ID_MODEL" => $device["ID_MODEL"],
 					"allocated" => $allocated,

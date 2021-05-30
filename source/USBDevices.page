@@ -52,7 +52,7 @@ check_usbip_modules() ;
 	table.local_usb tr>td+td{text-align:left;}
 	table.local_usb tr>td+td+td{text-align:left;}
 	table.local_usb tr>td+td+td+td{text-align:left;}
-	table.local_usb tr>td+td+td+td+td+td+td{text-align:center;}
+	table.local_usb tr>td+td+td+td+td+td+td{text-align:lwft;}
 	table.local_usb tr>td+td+td+td+td+td+td+td{text-align:centre;}
 	table.local_usb tr>td+td+td+td+td+td+td+td+td{text-align:left;}
 	table.local_usb tr>td+td+td+td+td+td+td+td+td+td+td+td{text-align:center;}
@@ -270,7 +270,8 @@ check_usbip_modules() ;
 			});
 		}
 
-		$.post(UDURL,{action:"get_content",display:display},function(data)
+		var empty = document.getElementById("empty-swt")
+		$.post(UDURL,{action:"get_content",display:display, empty:empty.checked},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -803,6 +804,9 @@ check_usbip_modules() ;
 								 "<?=_('USB Devices');?>");
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch On to Show Devices");?>"><input type="checkbox" class="disks-switch"></a>',
 								 "<?=_('USB Devices');?>");
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch On to Hide Empty Ports");?>"><input type="checkbox" class="empty-switch" id="empty-swt"></a>',
+								 "<?=_('USB Devices');?>");
+	
 
 		/* Add switchButton to Tab/Title bar */
 		$('.disks-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Local');?>", off_label: "<?=_('Local');?>", checked: $.cookie('USB-disks-view') != 'false'});
@@ -818,7 +822,14 @@ check_usbip_modules() ;
 			$('.show-history').slideToggle('slow');
 			$.cookie('USB-historic-view', $('.historical-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
 		});
-
+	
+		$('.empty-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Empty Ports');?>", off_label: "<?=_('Empty Ports');?>", checked: $.cookie('USB-empty-view') != 'false'});
+		$('.empty-switch').change(function()
+		{
+			$('.empty-disks').slideToggle('slow');
+			$.cookie('USB-empty-view', $('.empty-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			usb_disks(tab_usbdisks);
+		});
 
 		$('.rmtip-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Remote');?>", off_label: "<?=_('Remote');?>", checked: $.cookie('USB-shares-view') != 'false'});
 		$('.rmtip-switch').change(function()

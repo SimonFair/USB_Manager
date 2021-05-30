@@ -430,10 +430,11 @@ function get_Valid_USB_Devices() {
 			#	continue;
 				
 			#}
-
+			$ishub="interface" ;
 			if (in_array(strtoupper($arrMatch['id']), $arrAllUSBHubs)) {
 				// Device class is a Hub, skip device
-				continue;
+				#continue;
+				$ishub='hub' ;
 			}
 
 
@@ -459,6 +460,11 @@ function get_Valid_USB_Devices() {
 			exec( $udevcmd , $udev);
 		
 			$physical_busid = trim(substr($udev[0], 13) , '"') ;
+			if (substr($physical_busid,0,3) =='usb') {
+				#		$physical_busid = substr($physical_busid,3).'-0' ;
+						$ishub='roothub' ;
+		
+					}
 
 			if (in_array($physical_busid, $usbip_local )) {
 				$islocal = true ;
@@ -472,7 +478,8 @@ function get_Valid_USB_Devices() {
 				'devid' =>$arrMatch['dev'],
 				'id' => $arrMatch['id'],
 				'name' => $arrMatch['name'],
-				'islocal' => $islocal 
+				'islocal' => $islocal ,
+				'ishub' => $ishub 
 			];
 		}
 	}
@@ -508,20 +515,22 @@ function get_usbip_devs() {
 	$usbiplocal = get_Valid_USB_Devices() ;
 	#var_dump($usbiplocal) ;
 	/* Build USB Device Array */
-	foreach ($usbiplocal as $busid => $detail) {
+	foreach ($usbiplocal as $realbusid => $detail) {
 	#	$usbipdetail=explode('#', $usbip) ;
 	#	$busid=substr($usbipdetail[0] , 6) ;
-		
+	$busid = $realbusid ;	
+
+	if ($detail["ishub"] == "roothub") $busid = substr($realbusid,3).'-0' ;
 
 	if (file_exists("/sys/bus/usb/devices/".$busid."/usbip_status")) { 
-		$usbip_status=file_get_contents("/sys/bus/usb/devices/".$busid."/usbip_status") ;
+		$usbip_status=file_get_contents("/sys/bus/usb/devices/".$realbusid."/usbip_status") ;
 
 		$tj[$busid]["usbip_status"] = $usbip_status ;
 }
 		/* Build array from udevadm */
 		/* udevadm info --query=property -x --path=/sys/bus/usb/devices/ + busid */
         $udev=array();
-		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$busid, $udev) ;
+		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$realbusid, $udev) ;
 		
 		foreach ($udev as $udevi)
 		{
@@ -530,6 +539,7 @@ function get_usbip_devs() {
 		}
 
 		$tj[$busid]["islocal"] = $detail["islocal"] ;
+		$tj[$busid]["ishub"] = $detail["ishub"] ;
 		
 		$flash_check= $tj[$busid];
 		if ($flash_check["ID_SERIAL_SHORT"] == $flash_udev["ID_SERIAL_SHORT"]) {
@@ -538,7 +548,32 @@ function get_usbip_devs() {
 		else { 
 			$tj[$busid]["isflash"] = false ;
 		}
+
+		if ($detail["ishub"] == "roothub" || $detail["ishub"] == "hub" ) {
+			$hubmaxchild = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/maxchild' ) ;
+			$hubspeed = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' ) ;
+			$hubbmaxpower = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bMaxPower' ) ;
+
+			$tj[$busid]["ID_VENDOR_FROM_DATABASE"] = "Ports=".$hubmaxchild." Speed=".$hubspeed." Power=".$hubbmaxpower ;
+			$tj[$busid]["ID_MODEL"] = "" ;
+			$tj[$busid]["maxchildren"] = $hubmaxchild ;
+			if ($detail["ishub"] == "roothub" )	$tj[$busid]["level"] = 0 ;
+			
+		/*
+        devclass=`cat bDeviceClass`
+        devsubclass=`cat bDeviceSubClass`
+        devprotocol=`cat bDeviceProtocol`
+        maxps0=`cat bMaxPacketSize0`
+        numconfigs=`cat bNumConfigurations`
+		maxpower=`cat bMaxPower`
+        classname=`class_decode $devclass`
+        printf "D:  Ver=%5s Cls=%s(%s) Sub=%s Prot=%s MxPS=%2i #Cfgs=%3i\n" \
+                $ver $devclass "$classname" $devsubclass $devprotocol \
+                $maxps0 $numconfigs */
+		}
+
 	}
+	ksort($tj) ;
 	return $tj ;
 }
 
@@ -799,8 +834,10 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev)
 	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'.xml';
 	file_put_contents($filename,$usbstr);
 	
-
-return shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
+	$cmdreturn=shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
+	unlink($filename) ;
+return $cmdreturn ;
+#return shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
 
 
 #echo "Running virsh ${COMMAND} ${DOMAIN} for USB bus=${BUSNUM} device=${DEVNUM}:" >&2
