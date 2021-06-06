@@ -33,12 +33,11 @@ USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then
 
 USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
 
-Add the following lines to /etc/libvirt/hooks/qemu after the PHP line, These will be automatically added in the a future release.
+Add the following lines, see support page for complete code as cannot be insert here to /etc/libvirt/hooks/qemu after the PHP line, These will be automatically added in the a future release.
 
 
 if ($argv[2] == 'prepare' || $argv[2] == 'stopped'){
-    shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]}  >/dev/null 2>&1 & disown") ;
-}
+    shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]} ................
 
 </CHANGES>
 
