@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.05.30">
+<!ENTITY version   "2021.06.06">
 <!ENTITY launch    "usb">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"de2e7a98e2aa8306ed9b7fa7693e4938">
+<!ENTITY md5		"a11c8d1e8703c13859d51487f01e4477">
 ]>
 
 <PLUGIN name="&name;"
@@ -26,6 +26,20 @@
 ###&version;
 
 - Initial beta release.
+
+If you are using USBIP-GUI continue to do so at this time. This plugin will suppercede USBIP-GUI in the future and will migrate configurations.
+
+USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files we remane on the flash drive you can copy them to usb_manager directory.
+
+USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
+
+Add the following lines to /etc/libvirt/hooks/qemu after the PHP line, These will be automatically added in the a future release.
+
+
+if ($argv[2] == 'prepare' || $argv[2] == 'stopped'){
+    shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]}  >/dev/null 2>&1 & disown") ;
+}
+
 </CHANGES>
 
 <!--

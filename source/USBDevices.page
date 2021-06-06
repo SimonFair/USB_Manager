@@ -271,7 +271,8 @@ check_usbip_modules() ;
 		}
 
 		var empty = document.getElementById("empty-swt")
-		$.post(UDURL,{action:"get_content",display:display, empty:empty.checked},function(data)
+		var topo = document.getElementById("topo-swt")
+		$.post(UDURL,{action:"get_content",display:display, empty:empty.checked, topo:topo.checked},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -806,6 +807,8 @@ check_usbip_modules() ;
 								 "<?=_('USB Devices');?>");
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch On to Hide Empty Ports");?>"><input type="checkbox" class="empty-switch" id="empty-swt"></a>',
 								 "<?=_('USB Devices');?>");
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Topology");?>"><input type="checkbox" class="topo-switch" id="topo-swt"></a>',
+								 "<?=_('USB Devices');?>");
 	
 
 		/* Add switchButton to Tab/Title bar */
@@ -826,8 +829,16 @@ check_usbip_modules() ;
 		$('.empty-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Empty Ports');?>", off_label: "<?=_('Empty Ports');?>", checked: $.cookie('USB-empty-view') != 'false'});
 		$('.empty-switch').change(function()
 		{
-			$('.empty-disks').slideToggle('slow');
+			$('.empty-swt').slideToggle('slow');
 			$.cookie('USB-empty-view', $('.empty-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			usb_disks(tab_usbdisks);
+		});
+
+		$('.topo-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Topology ');?>", off_label: "<?=_('Topology');?>", checked: $.cookie('USB-topo-view') != 'false'});
+		$('.topo-switch').change(function()
+		{
+			$('.topo-swt').slideToggle('slow');
+			$.cookie('USB-topo-view', $('.topo-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
 			usb_disks(tab_usbdisks);
 		});
 

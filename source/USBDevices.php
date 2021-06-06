@@ -198,14 +198,15 @@ switch ($_POST['action']) {
 
 		/* Disk devices */
 		$usbip = get_all_usb_info();
-
+		ksort($usbip,SORT_NATURAL  ) ;
 		$optionempty = $_POST["empty"] ;
+		$topology = $_POST["topo"] ;
 		if ($optionempty =="false") {
 		foreach ($usbip as $busid => $detail) {
 			#var_dump($busid) ;
 			if ($detail["ishub"] == "interface") continue ;
 			#if ($detail["ishub"] == "hub") continue ;
-			if ($detail["ishub"] == "roothub" || $detail["ishub"] == "hub") {
+		  if ($detail["ishub"] == "roothub" || $detail["ishub"] == "hub") {
 		#	if ( $detail["ishub"] == "hub") {
 				
 			$level=0 ;
@@ -213,21 +214,36 @@ switch ($_POST['action']) {
 			$bus = explode("-", $busid) ;
 			
 			for ($x=1; $x <= $children; $x++) {
-			if ($detail["ishub"] == "roothub") $newbusid = $bus[0]."-".$x ;
-			 if ($detail["ishub"] == "hub") $newbusid = $busid.".".$x ;
+			  if ($detail["ishub"] == "roothub") { $newbusid = $bus[0]."-".$x ; $level=0 ; }
+			  if ($detail["ishub"] == "hub") { $newbusid = $busid.".".$x ; $level=1 ;}
 			 # var_dump( $newbusid );
 			  if (!isset($usbip[$newbusid])) {
 				  $usbip[$newbusid]["ishub"] = "emptyport" ;
-				  $usbip[$newbusid]["level"] = $level ;
+				  $usbip[$newbusid]["level"] = 0 ;
 				  if ($detail["ishub"] == "roothub")	  $usbip[$newbusid]["class"] = "roothub" ;
 				  if ($detail["ishub"] == "hub")	  $usbip[$newbusid]["class"] = "hub" ;
 				  #add
-			  }
-			}
-			}
+			    }
+			 }
+		  }
 		}
+
+		#Build levels.
+
+
+
         ksort($usbip,SORT_NATURAL  ) ;
+		#ksort($usbip,SORT_STRING  ) ;
+		
 	}
+	
+	if ($topology == "true") {
+	foreach ($usbip as $busid => $detail) {
+		$usbip[$busid]['level'] = substr_count($busid, '-') ;
+		$usbip[$busid]['level'] += substr_count($busid, '.') ;
+		if ($detail["ishub"] == "roothub") {$usbip[$busid]['level'] = 0 ;} 
+
+	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
 		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
@@ -239,7 +255,7 @@ $optionhub = false ;
 
 		
 		echo "<tbody><tr>";
-	
+		#var_dump( $usbip);
 		if ( count($usbip) ) {
 			foreach ($usbip as $disk => $detail) {
 				if ($detail["ishub"] == "emptyport" && $optionempty == "true") continue ;
@@ -284,8 +300,11 @@ $optionhub = false ;
 				$bus_id.= "<a href=\"#\" title='"._("Device Log Information")."' onclick=\"openBox('/webGui/scripts/disk_log&amp;arg1={$disk}','Device Log Information',600,900,false);return false\"><i class='fa fa-file icon'></i></a>";
 				$bus_id .="<span title='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk}'></span>";
 				
-				if ($detail["ishub"] == "interface" || $detail["ishub"] == "emptyport") {
-					$indent = "&nbsp&nbsp&nbsp&nbsp\__ ";
+				# if ($detail["ishub"] == "interface" || $detail["ishub"] == "emptyport") {
+				if ($detail['level'] != 0) {
+					$indent = "" ;
+					for ($x=0; $x <= ($detail['level'] *2) ; $x++) { $indent .= "&nbsp&nbsp"; }
+					$indent .= "|__ ";
 				} else $indent = "" ;
 				$detail["BUSID"] = $disk ;
 				$mbutton = make_mount_button($detail);		
@@ -351,7 +370,7 @@ $optionhub = false ;
 					$type="Device Mapping:" ;
 					echo "<td>".$type."</td>" ;
 					echo "<td>" ;
-					echo "<a href=\"#\" title='"._("VM Connected USB Device")."' onclick=\"openBox('virsh qemu-monitor-command {$vm_name} --hmp /'info usb/'','Vm Connected USB Devices',600,900,false);return false\"><i class='fa fa-link icon'></i></a>";
+					#echo "<a href=\"#\" title='"._("Show QEMU Connected Devices")."' onclick=\"openBox('virsh qemu-monitor-command {$vm_name} --hmp /'info usb/'','Vm Connected USB Devices',600,900,false);return false\"><i class='fa fa-link icon'></i></a>";
 					echo $vm_name."</td>";
 				#echo "<td>".$port_map_vm."</td>";
 				#echo "</select></td> " ;

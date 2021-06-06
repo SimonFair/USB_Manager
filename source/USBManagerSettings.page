@@ -133,6 +133,27 @@ _(Enable USBIP)_:
 > Disable will stop if running and not start at boot.
 :end
 
+_(Show HUBs)_:
+: <select name="HUBS" size="1" >
+  <?=mk_option($cfg["Config"]["HUBS"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["HUBS"], "enabled", "_(Enabled)_");?>
+  </select>
+
+:usb_manager_settings_destructive_plug:
+> If enabled, this will start usbip daemon.
+> Disable will stop if running and not start at boot.
+:end
+_(Use Indent)_:
+: <select name="INDENT" size="1" >
+  <?=mk_option($cfg["Config"]["INDENT"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["INDENT"], "enabled", "_(Enabled)_");?>
+  </select>
+
+:usb_manager_settings_destructive_plug:
+> If enabled, this will start usbip daemon.
+> Disable will stop if running and not start at boot.
+:end
+
 
 
 &nbsp;
