@@ -169,11 +169,12 @@ function usb_device_remove_action($bus, $dev)
 	load_usbstate(); 
 
     foreach ($usb_state as $key => $usbdevice) {
-
+     #var_dump($bus, $usbdevice["bus"] , $dev, $usbdevice["dev"]) ;
 	 if ($usbdevice["bus"] == $bus && $usbdevice["dev"] == $dev) {
 	   $vm = $usbdevice["VM"] ;
 	   $serial = $key ;
-	   usbip_log("Info: rc.unraid.usbip-gui Device Match {$serial} vm: {$vm} {$state} {$bus} {$dev} ");	 
+	  # var_dump($bus, $usbdevice["bus"] , $dev, $usbdevice["dev"]) ;
+	   usb_manager_log("Info: rc.usb_manager Device Match {$serial} vm: {$vm} {$state} {$bus} {$dev} ");	 
 	   break ;
 	}
 }
@@ -185,7 +186,7 @@ function usb_device_remove_action($bus, $dev)
 		if ($state != "shutoff") {
 			$vmname = $vm.";".$bus.";".$dev.";".$key.";Auto;Device;" ;	 
 			vm_map_action($vmname, "detach") ;
-			usbip_log("Info: rc.unraid.usbip-gui Disconnect  {$serial} vm: {$vm} {$state} {$bus} {$dev} ");
+			usb_manager_log("Info: rc.usb_manager Disconnect  {$serial} vm: {$vm} {$state} {$bus} {$dev} ");
 		}
 		remove_usbstate($serial) ;
 		usb_manager_log("Info: rc.usb_manager Removed {$serial} vm: {$vm} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
@@ -238,7 +239,7 @@ function process_vm_usb_devices($vm, $action) {
 		 if ($action == "disconnect") {
 			#	if ($vm_map["autoconnectstart"] == "yes") {
 					vm_map_action($vmname, "detach") ;
-					usbip_log("Info: rc.unraid.usbip-gui Disconnect {$key} vm: {$vm} ");
+					usb_manager_log("Info: rc.usb_manager Disconnect {$key} vm: {$vm} ");
 			#	 }
 			  } 
 	    }

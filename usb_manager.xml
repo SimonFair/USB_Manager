@@ -10,15 +10,29 @@
 <DonateLink>https://paypal.me/SimonNFairweather?locale.x=en_GB</DonateLink>
 <DonateImage>https://www.paypalobjects.com/webstatic/en_US/btn/btn_donate_74x21.png</DonateImage>
 <Description>
-Provides GUI for USB over IP. USBIP commands are not included within this plugin at present so you need to install usbip plugin in addition
-to this plugin.
+Provides GUI for USB Devices.
 
-The usbip-host kernel module is not currently available as part of unraid and not included within this plugin.
+Additional support via addon plugin for USB over IP. Addon plugin install button available via the settings page following enabling USBIP.
+
+
 </Description>
 <Support>https://forums.unraid.net/topic/100511-plugin-usbip-commands/</Support>
-<Date>2021-01-28</Date>
+<Date>2021-06-06</Date>
 <Changes>
-Initial Beta Release.
+- Initial beta release.
+
+If you are using USBIP-GUI continue to do so at this time. This plugin will suppercede USBIP-GUI in the future and will migrate configurations.
+
+USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files we remane on the flash drive you can copy them to usb_manager directory.
+
+USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
+
+Add the following lines, see support page for complete code as cannot be insert here to /etc/libvirt/hooks/qemu after the PHP line, These will be automatically added in the a future release.
+
+
+if ($argv[2] == 'prepare' || $argv[2] == 'stopped'){
+    shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]} ................
+
 </Changes>
 <IconFA>fa-usb</IconFA>
 </Containers>
