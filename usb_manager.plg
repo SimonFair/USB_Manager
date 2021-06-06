@@ -4,7 +4,7 @@
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
 <!ENTITY version   "2021.06.06">
-<!ENTITY launch    "usb">
+<!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
