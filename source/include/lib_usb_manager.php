@@ -356,7 +356,7 @@ function remove_config_remote_host($source) {
 function check_usbip_modules() {
 	global $loaded_usbip_host, $loaded_vhci_hcd, $usbip_cmds_exist, $exists_vhci_hcd, $exists_usbip_host, $usbip_enabled, $plugin ;
 
-	exec("ls /usr/local/sbin/. | grep -c usbip*", $usbip_cmds_exist_array) ;
+	exec("ls /usr/sbin/. | grep -c usbip*", $usbip_cmds_exist_array) ;
 	$usbip_cmds_exist = $usbip_cmds_exist_array[0] ;
 	
 	exec("cat /proc/modules | grep -c vhci_hcd", $loaded_vhci_hcd_array) ;
