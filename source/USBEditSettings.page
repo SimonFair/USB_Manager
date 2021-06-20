@@ -44,6 +44,7 @@ if (isset($_GET['s'])) {
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
 }
+if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; else $edittype="Edit Settings for USB Device"
 ?>
 
 <script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
@@ -68,6 +69,7 @@ if (isset($_GET['s'])) {
 </style>
 
 <form markdown="1"   method="POST" action="/update.php" target="progressFrame">
+#<strong>_(<?=$edittype;?>)_ </strong> 
 <strong>_(USB Serial)_: </strong><?=$serial;?> 
 
 <?if (! $isflash):?>
@@ -112,7 +114,7 @@ if (isset($_GET['s'])) {
 
 
 
-	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect');?>", off_label: "<?=_('Auto Connect');?>", checked:"<?=$autoconnect;?>" });
+	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect at USB Device Plugin');?>", off_label: "<?=_('Auto Connect at USB Device Plugin');?>", checked:"<?=$autoconnect;?>" });
 	$('.autoconnect-switch').change(function()
 	{
 		$.post(UDURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)

@@ -207,7 +207,18 @@ function get_vm_config($sn, $var) {
 function load_vm_mappings() {
 	$config_file = $GLOBALS["paths"]["vm_mappings"];
 	$config = @parse_ini_file($config_file, true);
-	return (isset($config)) ? $config : array();
+
+	$maps = $config ;
+
+	foreach ($maps as $key => $map) {
+		if (substr($key,0,5) == "Port:") unset($maps[$key]) ;
+	}
+	foreach ($config as $key => $map) {
+		if (substr($key,0,5) == "Port:") $maps[$key] = $config[$key] ;
+	}
+
+
+	return (isset($maps)) ? $maps : array();
 }
 
 function load_usb_connects() {
@@ -784,6 +795,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$config[$serial]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
 	$config[$serial]["ID_MODEL"] = $device["ID_MODEL"] ;
 	$config[$serial]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
+	$config[$serial]["USBPort"] = $physical_busid ;
 
 	save_ini_file($config_file, $config);
 	}
@@ -808,6 +820,7 @@ function USBMgrBuildConnectedStatus()
 		$config[$device["ID_SERIAL"]]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
 		$config[$device["ID_SERIAL"]]["ID_MODEL"] = $device["ID_MODEL"] ;
 		$config[$device["ID_SERIAL"]]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
+		$config[$device["ID_SERIAL"]]["USBPort"] = $key ;
 	}
 
 	save_ini_file($config_file, $config);
