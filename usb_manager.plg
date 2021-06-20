@@ -26,7 +26,7 @@
 ###&version;
 
 - Enhancement enable port processing for mappinng ports to VM at start.
-- Update ext on edit settings page to describe entry being changed.
+- Update text on edit settings page to describe entry being changed.
 
 2021.06.19
 
