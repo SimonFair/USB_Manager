@@ -237,6 +237,25 @@ switch ($_POST['action']) {
 		
 	}
 	
+	# Get Block devices
+	$lstblkout=array() ;
+	exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn) ;
+	#var_dump($lsblkout,$lsblkrtn) ;
+	$lsblk=json_decode(implode("", $lsblkout), true);;
+	
+    $volumes=array() ; 
+	foreach ($lsblk["blockdevices"] as $key => $blk) {
+		
+	  if ($blk["tran"] != "usb") continue ;
+	  #var_dump(isset($blk["children"])) ;
+	  if (isset($blk["children"])) {
+		#var_dump($blk["children"][0]) ;
+		  $volumes[$blk["serial"]] = $blk["children"][0]["label"] ;
+
+	  }
+	}
+	 
+
 	if ($topology == "true") {
 	foreach ($usbip as $busid => $detail) {
 		$usbip[$busid]['level'] = substr_count($busid, '-') ;
@@ -246,7 +265,7 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		echo "<td>"._('')."</td></tr></thead>";
@@ -323,6 +342,11 @@ $optionhub = false ;
 			   
 			
 				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
+
+				$volume="";
+				$volume=$volumes["$srlnbr_short"] ;
+				#var_dump($srlnbr, $volumes) ;
+				echo "<td>".$volume."</td>" ;
 				
 				$connected="" ;
 				if ($vm_name != "" ) {

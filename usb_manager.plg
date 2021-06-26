@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.06.20">
+<!ENTITY version   "2021.06.26">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"5247614f7f840d46aa6f3a13fc2e0fed">
+<!ENTITY md5		"6c586b5fa7b83ac85aee02b68caf3830">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+ 
+  - Enhancement Show Volume for USB Storage Devices.
+
+2021.06.20
 
 - Enhancement enable port processing for mappinng ports to VM at start.
 - Update text on edit settings page to describe entry being changed.
