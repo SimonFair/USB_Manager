@@ -35,8 +35,8 @@ cat << EOF > $QEMUDFILE
 <?php
 
 #begin USB_MANAGER
-if ($argv[2] == 'prepare' || $argv[2] == 'stopped'){
-      shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]}  >/dev/null 2>&1 & disown") ;
+if (\$argv[2] == 'prepare' || \$argv[2] == 'stopped'){
+      shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{\$argv[1]}' {\$argv[2]} {\$argv[3]} {\$argv[4]}  >/dev/null 2>&1 & disown") ;
 }
 #end USB_MANAGER
 ?>
