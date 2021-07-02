@@ -265,7 +265,7 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		echo "<td>"._('')."</td></tr></thead>";
@@ -404,6 +404,7 @@ $optionhub = false ;
 
 				} else {
 					if ($port_map_vm != "" ) {
+						
 						$type="Port Mapping:" ;
 						echo "<td>".$type."</td>" ;
 						echo "<td>".$port_map_vm."</td>";
@@ -442,7 +443,7 @@ $optionhub = false ;
 
 				if ($port_map_vm !="" && $vm_name != "" && 	!$detail["isflash"]) {
 				$type="Port Mapping:" ;
-				echo "<tr><td></td><td></td><td></td><td></td><td></td><td>".$type."</td>" ;
+				echo "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>".$type."</td>" ;
 				echo "<td>".$port_map_vm."</td>";
 				echo "<td>".$port_vmstate."</td>" ;
 				$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port");

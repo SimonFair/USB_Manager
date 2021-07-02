@@ -848,6 +848,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev)
 	file_put_contents($filename,$usbstr);
 	
 	$cmdreturn=shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
+	usb_manager_log("usb_manager virsh called ".$vmname." ".$usbbus." ".$usbdev." ".$cmdreturn);
 	unlink($filename) ;
 return $cmdreturn ;
 #return shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
