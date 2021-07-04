@@ -80,6 +80,10 @@ function usbip_check_config() {
 	} else {
 		usbipd_stop() ;
 	}		
+	# Check if USB.INI exists if not initialise.
+	if (!file_exists("/usr/local/emhttp/state/usb.ini")) {
+		USBMgrBuildConnectedStatus() ;
+	}
 }
 
 function usb_device_add_action($serial)
