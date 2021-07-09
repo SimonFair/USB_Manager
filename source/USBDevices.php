@@ -164,6 +164,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 	if ($usb_state[$srlnbr]["connected"] == '1' ) {
 		$buttontext= 'VM Detach';
 		if ($map!=$connected_map) 	$disabled = "disabled  " ; 
+		if ($map=="Device" && $connected_map="VMHotplug") $disabled = "enabled " ;
 		$button = sprintf($button, $context, 'vm_disconnect', $disabled, 'fa fa-import', _($buttontext));
 	} else {
 		
@@ -370,6 +371,10 @@ $optionhub = false ;
 					$connected_map = $usb_state[$srlnbr]["connectmap"] ;
 					if ($connected_map =="") $connected_map="Device" ;
 					if ($connected == true) {$connected ="Connected(".$connected_map.")" ;} else {$connected="Disconnected";}
+					if ($connected == true && $connected_map == "VMHotplug") {
+						$vm_name = $usb_state[$srlnbr]["VM"] ;
+						if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ; else $state = "Disabled." ;
+					}
   
 				  } else $connected = "Disconnected" ;
   

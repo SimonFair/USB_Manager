@@ -3,7 +3,7 @@
 <Plugin>True</Plugin>
 <PluginURL>https://raw.githubusercontent.com/SimonFair/usb_manager/master/usb_manager.plg</PluginURL>
 <PluginAuthor>SimonFair</PluginAuthor>
-<Beta>True</Beta>
+<Beta>False</Beta>
 <Category>Other: Drivers:</Category>
 <Name>USB Manager</Name>
 <DonateText>If you wanna buy me a coffee.</DonateText>

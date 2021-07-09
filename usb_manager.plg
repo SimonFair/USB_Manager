@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.07.09">
+<!ENTITY version   "2021.07.09a">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"e141daf7e0317b288a2345a458b3a168">
+<!ENTITY md5		"3af4dd3a24ed6be7179ba5845e064788">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Add display of Hotplug Devices on main USB page and allow detach.
+
+2021.07.09
 
   - Fix Virsh error if both port and device mapping exist for a device a connection time.
   - Add USB Manager Hotplug page on VM page, to enable change options in settings. Base code from DLandons Hot plug plugin. Addition support to show on USB page if mapping doesn't exist in next release.

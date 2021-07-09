@@ -718,7 +718,9 @@ function vm_map_action($vm, $action)
 					save_usbstate($srlnbr, "connected" , true) ;
 				} else {
 					save_usbstate($srlnbr, "connected" , false) ;
-					$vmname =""  ;
+					$vmname = ""  ;
+					$method = "" ;
+					$map = "" ;
 				}
 				save_usbstate($srlnbr, "VM" , $vmname) ;	
 	#		}	else {  USBMgrCreateStatusEntry($srlnbr, $bus, $dev) ;}
