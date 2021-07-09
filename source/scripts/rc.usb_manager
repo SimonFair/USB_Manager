@@ -147,7 +147,7 @@ function usb_device_add_actionv2($serial)
 		if (isset($vm_maps[$port_map])) {
 
 
-			var_dump($port_map) ; var_dump($vm_maps[$port_map]) ;
+			#var_dump($port_map) ; #var_dump($vm_maps[$port_map]) ;
 
 			$vm = $vm_maps[$port_map]["VM"];
 		
@@ -220,7 +220,7 @@ function process_vm_usb_devices($vm, $action) {
 		} else {	 
 	
 		$vm_mappings=load_vm_mappings(); 
-        var_dump($vm_mappings) ;
+        #var_dump($vm_mappings) ;
     	foreach ($vm_mappings as $key => $vm_map) {
 	  		if ($vm == $vm_map["VM"]) {
 				$usbkey = "" ;
@@ -230,7 +230,7 @@ function process_vm_usb_devices($vm, $action) {
 					{
 						
 						if ($state["USBPort"] == substr($key, 5,strlen($key))) {
-	
+					
 							$usbkey = $serial ;
 							$type = "Port" ;
 							usb_manager_log("Info: rc.usb_manager Autoconnect Port Map {$key} {$serial} vm: {$vm} ");
@@ -250,12 +250,14 @@ function process_vm_usb_devices($vm, $action) {
 					$vmname = $vm.";".$bus.";".$dev.";".$usbkey.";Auto;".$type.";" ;	 
 	     
 	   				if ($action == "prepare") {
-						if ($usb_state[$usbkey]["connected"]==1) {
+						 
+						if ($usb_state[$usbkey]["connected"]== "1") {
 							usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use action ignored. ");
 							continue ;	}
 					   if ($vm_map["autoconnectstart"] == "yes") {
 						   vm_map_action($vmname, "attach") ;
-						   usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} ");
+						   usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} ") ;
+						   load_usbstate();
 					    }
 	  				}
 		 
@@ -299,7 +301,7 @@ function usb_manager_syslog_processing($sl_busid) {
 	$arrMatch =array() ;	
 	$p = preg_match('/(.*) connection from (?P<IP>\S+):(?P<port>\S+)/', $syslog_entry, $arrMatch );
   
-	var_dump($arrMatch) ;
+	#var_dump($arrMatch) ;
 		if ($p ) {
 ;
 			
