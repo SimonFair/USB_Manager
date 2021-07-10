@@ -521,6 +521,20 @@ function get_usbip_devs() {
 		$flash_udev[$udevisplit[0]] = $udevisplit[1] ;
 	}
 	
+		# Get Block devices
+		$lstblkout=array() ;
+		exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn) ;
+		$lsblk=json_decode(implode("", $lsblkout), true);;
+		
+		$volumes=array() ; 
+		foreach ($lsblk["blockdevices"] as $key => $blk) {
+			
+		  if ($blk["tran"] != "usb") continue ;
+		  if (isset($blk["children"])) {
+			  $volumes[$blk["serial"]] = $blk["children"][0]["label"] ;
+	
+		  }
+		}
 	
 	#exec('usbip list -pl | sort'  ,$usbiplocal) ;
 	$usbiplocal = get_Valid_USB_Devices() ;
@@ -551,6 +565,8 @@ function get_usbip_devs() {
 
 		$tj[$busid]["islocal"] = $detail["islocal"] ;
 		$tj[$busid]["ishub"] = $detail["ishub"] ;
+		
+		$tj[$busid]["volume"]=$volumes[$tj[$busid]["ID_SERIAL_SHORT"]] ;
 		
 		$flash_check= $tj[$busid];
 		if ($flash_check["ID_SERIAL_SHORT"] == $flash_udev["ID_SERIAL_SHORT"]) {

@@ -237,7 +237,7 @@ switch ($_POST['action']) {
 		#ksort($usbip,SORT_STRING  ) ;
 		
 	}
-	
+/*	
 	# Get Block devices
 	$lstblkout=array() ;
 	exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn) ;
@@ -256,7 +256,7 @@ switch ($_POST['action']) {
 	  }
 	}
 	 
-
+*/
 	if ($topology == "true") {
 	foreach ($usbip as $busid => $detail) {
 		$usbip[$busid]['level'] = substr_count($busid, '-') ;
@@ -344,11 +344,12 @@ $optionhub = false ;
 			
 				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
 
-				$volume="";
-				$volume=$volumes["$srlnbr_short"] ;
+				#$volume="";
+				#$volume=$volumes["$srlnbr_short"] ;
 				#var_dump($srlnbr, $volumes) ;
-				echo "<td>".$volume."</td>" ;
-				
+				#echo "<td>".$volume."</td>" ;
+				echo "<td>".$detail["volume"]."</td>" ;
+
 				$connected="" ;
 				if ($vm_name != "" ) {
 			#	$res = $lv->get_domain_by_name($vm_name);

@@ -1,4 +1,4 @@
-### USBIP Gui plugin for Unraid
+### USB Manager plugin for Unraid
 
 Copyright (C) 2021 Simon Fairweather
 

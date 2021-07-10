@@ -131,7 +131,7 @@ function usbm_operateUSB(action)
 </script>
 
 
-<div style="width: 55%; float:left" id="USB">
+<div style="width: 100%; float:left" id="USB">
 <form markdown="1" id="USBF" method="POST" action="/update.php" target="progressFrame">
 <dl>
 <?=_('Running VMs')?>:
@@ -142,10 +142,12 @@ function usbm_operateUSB(action)
 	</select>
 
 <?=_('USB Devices')?>:
-	<select name="usbm_devs" size="1">
+	<select name="usbm_devs" size="1" 
+	   style="width:auto;"
+  >
 	<?foreach (usbm_list_usbs() as $busid => $usb):?>
     <?$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
-	<?=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL'] )?>
+	<?=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
 	<?endforeach;?>
 	</select>
 </dl>
