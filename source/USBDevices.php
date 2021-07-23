@@ -75,7 +75,11 @@ function make_mount_button($device) {
 
 		if ($device["isflash"] == true ) {
 		 $disabled = "disabled"	;
+		 if ($device["ishub"] == "interface" ) {
 		 $button = sprintf($button, $context, 'urflash', $disabled, 'fa fa-erase', _('UnRaid Flash'));
+		 } else {
+			$button = sprintf($button, $context, 'urflash', $disabled, 'fa fa-erase', _('Inuse Unraid'));
+		 }
 		} 
 
 			if ($loaded_usbip_host == "0" || !$device["islocal"] )
@@ -133,7 +137,7 @@ function make_detach_button($port) {
 	return $button;
 }
 
-function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_status,$map) {
+function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_status,$map,$class) {
 	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist, $usb_state;
 
 	$connected_method=	$usb_state[$srlnbr]["connectmethod"] ;
@@ -144,7 +148,11 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 
 	if ($isflash == true ) {
 		$disabled = "disabled"	;
+		if ($class == "interface") {
 		$button = sprintf($button, $context, 'urflash', $disabled, 'fa fa-erase', _('UnRaid Flash'));
+		} else {
+			$button = sprintf($button, $context, 'urflash', $disabled, 'fa fa-erase', _('Inuse Unraid'));
+		}
 		return $button;
 	   } 
 
@@ -152,7 +160,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 
 
 	$buttontext= 'VM Attach' ;
-	if ($vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled."  )
+	if ($vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled." || $class == "roothub" || $class == "hub" )
 		{
 			$disabled = "disabled  " ;
 		} else {
@@ -200,6 +208,7 @@ switch ($_POST['action']) {
 		/* Disk devices */
 		$usbip = get_all_usb_info();
 		ksort($usbip,SORT_NATURAL  ) ;
+		#var_dump($usbip) ;
 		$optionempty = $_POST["empty"] ;
 		$topology = $_POST["topo"] ;
 		if ($optionempty =="false") {
@@ -404,7 +413,7 @@ $optionhub = false ;
 					echo $vm_name."</td>";
 				#echo "<td>".$port_map_vm."</td>";
 				#echo "</select></td> " ;
-				$vmbutton = make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device");
+				$vmbutton = make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device",$detail["ishub"]);
 				echo "<td>".$state."</td>" ;
 				echo "<td class='mount'>{$vmbutton}</td>";
 
@@ -415,7 +424,7 @@ $optionhub = false ;
 						echo "<td>".$type."</td>" ;
 						echo "<td>".$port_map_vm."</td>";
 						echo "<td>".$port_vmstate."</td>" ;
-						$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port");
+						$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"]);
 						echo "<td class='mount'>{$vmbutton}</td>";
 						}
 	
@@ -423,7 +432,7 @@ $optionhub = false ;
 
 				if ($vm_name == ""  && $port_map_vm == "" ) {
 					$type="No Mappings" ;
-					$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port");
+					$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"]);
 					echo "<td>".$type."</td><td></td><td></td><td class='mount'>{$vmbutton}" ;
 				}
 				
@@ -452,7 +461,7 @@ $optionhub = false ;
 				echo "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>".$type."</td>" ;
 				echo "<td>".$port_map_vm."</td>";
 				echo "<td>".$port_vmstate."</td>" ;
-				$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port");
+				$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"]);
 				echo "<td class='mount'>{$vmbutton}</td></tr>";
 			    }
 		

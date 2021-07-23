@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.07.10">
+<!ENTITY version   "2021.07.23">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"87d79eb3fffbcf984ac3032525874b63">
+<!ENTITY md5		"7256e17eee5b84ccb639d7f97e353a65">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Fix Disable roothub and hubs used for Unraid Flash device.
+
+2021.07.10
 
   - Add volume to device list in USBHotplug page.
 

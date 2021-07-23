@@ -571,6 +571,7 @@ function get_usbip_devs() {
 		$flash_check= $tj[$busid];
 		if ($flash_check["ID_SERIAL_SHORT"] == $flash_udev["ID_SERIAL_SHORT"]) {
 			$tj[$busid]["isflash"] = true ;
+		
 		}
 		else { 
 			$tj[$busid]["isflash"] = false ;
@@ -601,6 +602,25 @@ function get_usbip_devs() {
 
 	}
 	ksort($tj) ;
+    foreach ($tj as $busid=>$usb) {
+		if ($usb["isflash"] == true && $usb["ishub"] == "interface") {
+			$flashpaths = NULL ;
+			exec('udevadm info -a --path=/sys/bus/usb/devices/'.$busid." | grep KERNELS", $flashpaths) ;
+			#echo "<tr><td>"; var_dump($flashpaths) ;echo "</td></tr>" ;
+			foreach ($flashpaths as $flashpath)
+			{
+				$fpsplit=explode('=="',$flashpath) ;
+				$flashport = substr($fpsplit[1], 0 ,strlen($fpsplit[1]) -1 ) ;
+				
+				#echo "<tr><td>".$fpslit."</td></tr>" ;
+				if (substr($flashport,0,3) =='usb') {
+					$tj[substr($flashport,3).'-0']["isflash"] = true ;
+					break ;
+				}
+				$tj[$flashport]["isflash"] = true ; 
+			}
+		}
+	}
 	return $tj ;
 }
 
