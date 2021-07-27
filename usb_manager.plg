@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.07.23">
+<!ENTITY version   "2021.07.27">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"7256e17eee5b84ccb639d7f97e353a65">
+<!ENTITY md5		"371f8e8e1999ce6d470e6d5f0ed5dca0">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,11 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Fix Change Unraid Flash to Unraid inuse on the hub lines on dashboard page.
+  - Chg Use Port as standard rather than Physical BUSI/Port.
+  
+2021.07.23
 
   - Fix Disable roothub and hubs used for Unraid Flash device.
 

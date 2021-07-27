@@ -275,7 +275,7 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Physical BusID')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		echo "<td>"._('')."</td></tr></thead>";
@@ -812,9 +812,15 @@ $optionhub = false ;
 		}
 
 		if ($device["isflash"]) {
-			$state = "UNRAID FLASH" ;
-			$allocated = "BOOT DEVICE" ;
-			$orb_colour ='grey' ;
+			if ($device["ishub"] == "interface") {
+				$state = "UNRAID FLASH" ;
+				$allocated = "BOOT DEVICE" ;
+				$orb_colour ='grey' ;
+			} else {
+				$state = "INUSE UNRAID" ;
+				$allocated = "BOOT HUB" ;
+				$orb_colour ='grey' ;
+			}
 		}
 		if ($device["ID_MODEL"] == "") $device["ID_MODEL"] = ucfirst($device["ishub"]) ;
 					$dash_array[$key] = array(
