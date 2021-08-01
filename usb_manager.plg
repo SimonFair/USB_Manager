@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.07.27">
+<!ENTITY version   "2021.08.01">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"371f8e8e1999ce6d470e6d5f0ed5dca0">
+<!ENTITY md5		"3b68f50350ce67f8a7630e8a3459bead">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,9 +25,15 @@
 ##USB_Manager
 ###&version;
 
+  - Code clean up
+  - Change to udev rules for 6.10+ support.
+  - Enable zebra strips on tables.
+  
+2021.07.27
+
   - Fix Change Unraid Flash to Unraid inuse on the hub lines on dashboard page.
   - Chg Use Port as standard rather than Physical BUSI/Port.
-  
+
 2021.07.23
 
   - Fix Disable roothub and hubs used for Unraid Flash device.
@@ -77,11 +83,6 @@ USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then
 
 USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
 
-Add the following lines, see support page for complete code as cannot be insert here to /etc/libvirt/hooks/qemu after the PHP line, These will be automatically added in the a future release.
-
-
-if ($argv[2] == 'prepare' || $argv[2] == 'stopped'){
-    shell_exec("/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager vm_action '{$argv[1]}' {$argv[2]} {$argv[3]} {$argv[4]} ................
 
 </CHANGES>
 
@@ -160,63 +161,6 @@ The 'post-install' script.
 <INLINE>
 # Define Functions
 
-download() {
-#Download usbip
-if wget -q -nc --show-progress --progress=bar:force:noscroll -O "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" "${DL_URL}/${PACKAGE}-1.txz" ; then
-  if [ "$(md5sum "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" | cut -d ' ' -f1)" != "$(wget -qO- "${DL_URL}/${PACKAGE}-1.txz.md5" | cut -d ' ' -f1)" ]; then
-    if [ -d &packages;/${KERNEL_V%%-*}/]; then
-      rm -rf &packages;/${KERNEL_V%%-*}/;
-    fi
-    echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
-    echo "--------------------------------CHECKSUM ERROR!---------------------------------"
-  fi
-  echo "-----------------Sucessfully downloaded usbip, please wait...!-----------------"
-else
-  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR------"
-  echo "----------------------------Can't download usbip--------------------------------"
-fi
-}
-
-check() {
-if [ ! -f "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  echo "+=============================================================================="
-  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
-  echo "|"
-  echo "| Don't close this window with the red 'X' in the top right corner until the 'DONE' button is displayed!"
-  echo "|"
-  echo "| WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING - WARNING"
-  echo "+=============================================================================="
-  echo "---------------------Downloading usbip, please wait...!------------------------"
-  echo "-----------This could take some time, please don't close this window!----------"
-  download
-elif [ ! -s "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz" ]; then
-  rm -rf &packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz
-  echo "-----ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR - ERROR-----"
-  echo "-----Download is empty please contact the developer of this plugin if the------"
-  echo "-------plugin has been already built against the current Kernel version--------"
-else
-  echo
-  echo "-----------------------------usbip found locally!------------------------------"
-fi
-}
-
-install() {
-#Install usbip package
-installpkg "&packages;/${KERNEL_V%%-*}/${PACKAGE}-1.txz"
-depmod -a > /dev/null
-}
-
-check_usbip_repo() {
-#Check if usbip is already downloaded
-
-if [ ! -z "$(modinfo usbip_host)" ]; then
-    echo "--------------------------usbip already installed...!--------------------------"
-else
-    check
-    echo "-----------------------Installing usbip, please wait...!-----------------------"
-    install 
-fi
-}
 
 #Define Variables
 
@@ -234,12 +178,9 @@ mkdir -p /tmp/&name;/config 2>/dev/null
 #  mkdir -p "&packages;/${KERNEL_V%%-*}"
 #fi
 
-# Load Package from ich777 repo for usbip modules and commands.
-#check_usbip_repo
-
 # move the rules file
-cp /usr/local/emhttp/plugins/&name;/99_persistent_usb_manager.rules /etc/udev/rules.d/
-chmod 644 -R /etc/udev/rules.d/99_persistent_usb_manager.rules 2>/dev/null
+#cp /usr/local/emhttp/plugins/&name;/99_persistent_usb_manager.rules /etc/udev/rules.d/
+#chmod 644 -R /etc/udev/rules.d/99_persistent_usb_manager.rules 2>/dev/null
 
 # copy the syslog  rules config file
 #cp /usr/local/emhttp/plugins/&name;/99_usb_manager_syslog.conf /etc/rsyslog.d/
@@ -257,16 +198,14 @@ ln -sf /usr/local/emhttp/plugins/&name;/scripts/rc.usb_manager /usr/local/sbin
 # Copy Config to tmp and load modules.
 at -M -f /tmp/start_usb_manager now 2>/dev/null
 
+# Update QEMU Hooks file and udev rules.
+/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
+
 # reload udev rules
 udevadm control --reload-rules
 
 # restart rsyslogd
 /etc/rc.d/rc.rsyslogd restart
-
-# Update QEMU Hooks file.
-
-/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
-
 
 echo 
 echo "-----------------------------------------------------------"

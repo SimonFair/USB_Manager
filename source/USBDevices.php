@@ -246,26 +246,7 @@ switch ($_POST['action']) {
 		#ksort($usbip,SORT_STRING  ) ;
 		
 	}
-/*	
-	# Get Block devices
-	$lstblkout=array() ;
-	exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn) ;
-	#var_dump($lsblkout,$lsblkrtn) ;
-	$lsblk=json_decode(implode("", $lsblkout), true);;
-	
-    $volumes=array() ; 
-	foreach ($lsblk["blockdevices"] as $key => $blk) {
-		
-	  if ($blk["tran"] != "usb") continue ;
-	  #var_dump(isset($blk["children"])) ;
-	  if (isset($blk["children"])) {
-		#var_dump($blk["children"][0]) ;
-		  $volumes[$blk["serial"]] = $blk["children"][0]["label"] ;
 
-	  }
-	}
-	 
-*/
 	if ($topology == "true") {
 	foreach ($usbip as $busid => $detail) {
 		$usbip[$busid]['level'] = substr_count($busid, '-') ;
@@ -275,12 +256,12 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		echo "<table class='usb_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		echo "<td>"._('')."</td></tr></thead>";
-$optionroot = false ;		
-$optionhub = false ;
+		$optionroot = false ;		
+		$optionhub = false ;
 
 		
 		echo "<tbody><tr>";
@@ -353,17 +334,12 @@ $optionhub = false ;
 			
 				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
 
-				#$volume="";
-				#$volume=$volumes["$srlnbr_short"] ;
-				#var_dump($srlnbr, $volumes) ;
-				#echo "<td>".$volume."</td>" ;
+
 				echo "<td>".$detail["volume"]."</td>" ;
 
 				$connected="" ;
 				if ($vm_name != "" ) {
-			#	$res = $lv->get_domain_by_name($vm_name);
-			#	$dom = $lv->domain_get_info($res);
-			#	$state = $lv->domain_state_translate($dom['state']);
+
 
 			#put check for  VM subsystem running.
 				if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ; else $state = "Disabled." ;
@@ -401,10 +377,7 @@ $optionhub = false ;
 					$type="N/A" ;
 				}	
 
-				#if ($connected_method == "Device")
-				#    $port_vmstate = "Disabled." ;
-			#		else $state = "Disabled." ;
-#if ( !$detail["isflash"]) {
+
 				if ($vm_name != "" ) {
 					$type="Device Mapping:" ;
 					echo "<td>".$type."</td>" ;
@@ -482,7 +455,7 @@ $optionhub = false ;
 		
 		echo "<div class='show-rmtip' id='rmtip_tab'><div id='title'><span class='left'><img src='/plugins/$plugin/icons/nfs.png' class='icon'>"._('Remote USBIP Hosts')." &nbsp;</span></div>";
 		#echo "<table class='disk_status wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('Settings')."</td><td></td><td></td><td>"._('Size')."</td><td>"._('Used')."</td><td>"._('Free')."</td><td>"._('Log')."</td></tr></thead>";
-		echo "<table class='remote_hosts wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('')."</td><td></td><td></td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td></tr></thead>";
+		echo "<table class='disk_status wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('')."</td><td></td><td></td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td></tr></thead>";
 		echo "<tbody>";
 		$ds1 = time();
 		$remote_usbip = get_remote_usbip();
@@ -553,7 +526,7 @@ $optionhub = false ;
 		$port=parse_usbip_port() ;
 	
 		echo "<div class='show-ports' id='ports_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Attached Ports')."</span></div>";
-		echo "<table class='usb_attach wide usb_attached'><thead><tr><td>"._('Device')."</td><td>"._('HUB Port=>Remote host')."</td><td>"._('Action')."</td><td></td><td></td><td></td><td></td><td></td><td>"._('')."</td><td>"._('')."</td></tr></thead>" ;
+		echo "<table class='disk_status wide usb_attached'><thead><tr><td>"._('Device')."</td><td>"._('HUB Port=>Remote host')."</td><td>"._('Action')."</td><td></td><td></td><td></td><td></td><td></td><td>"._('')."</td><td>"._('')."</td></tr></thead>" ;
 
 		foreach ($port as $portkey => $portline) {
 			$dbutton = make_detach_button($portkey);

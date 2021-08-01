@@ -44,6 +44,10 @@ EOF
 
 chmod +x $QEMUDFILE
 
+# Copy the rules file
+cp /usr/local/emhttp/plugins/usb_manager/99_persistent_usb_manager6.10.rules /etc/udev/rules.d/99_persistent_usb_manager.rules
+chmod 644 -R /etc/udev/rules.d/99_persistent_usb_manager.rules 2>/dev/null
+
 else
 
 # Process OS Version < 6.9.9
@@ -60,5 +64,8 @@ END_HEREDOC
 sed -i "/${FINDLINE}/a ${NEWLINE}" "${QEMU}"
 
 fi
+# Copy the rules file
+cp /usr/local/emhttp/plugins/usb_manager/99_persistent_usb_manager.rules /etc/udev/rules.d/99_persistent_usb_manager.rules
+chmod 644 -R /etc/udev/rules.d/99_persistent_usb_manager.rules 2>/dev/null
 fi
 

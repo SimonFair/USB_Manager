@@ -49,6 +49,7 @@ check_usbip_modules() ;
 <style>
 	table.local_usb {padding: 0px 0px 0px 0px;border-collapse:collapse;white-space:nowrap;}
 	table.local_usb thead tr>td{text-align:left;width:8%;}
+	table.local_usb tr>td{text-align:left;width:pre;}
 	table.local_usb tr>td+td{text-align:left;}
 	table.local_usb tr>td+td+td{text-align:left;}
 	table.local_usb tr>td+td+td+td{text-align:left;}
