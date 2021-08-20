@@ -717,6 +717,20 @@ switch ($_POST['action']) {
 		echo json_encode(remove_vm_mapping($serial));
 		break;
 
+	case 'set_command':
+		$serial = urldecode(($_POST['serial']));
+		$cmd = urldecode(($_POST['command']));
+		set_vm_mapping($serial, "user_command", urldecode($_POST['user_command']));
+		echo json_encode(array( 'result' => set_vm_mapping($serial, "command", $cmd)));
+		break ;
+
+	case 'background':
+		$serial = urldecode(($_POST['serial']));
+		$status = urldecode(($_POST['status']));
+		echo json_encode(array( 'result' => set_vm_mapping($serial, "command_bg", $status)));
+		break;
+	
+
 	case 'test':
 		$vm = urldecode($_POST['vm']);
 		#$op = urldecode($_POST['op']);

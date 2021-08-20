@@ -25,6 +25,7 @@ $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"vm_mappings"		=> "/tmp/{$plugin}/config/vm_mappings.cfg",
 			"usb_rmt_connect"	=> "/tmp/{$plugin}/config/usb_rmt_connect.cfg",
 			"usb_state"			=> "/usr/local/emhttp/state/usb.ini",
+			"scripts"			=> "/tmp/{$plugin}/scripts/",
 			"state"				=> "/var/state/{$plugin}/{$plugin}.state",
 		];
 
@@ -204,6 +205,14 @@ function get_vm_config($sn, $var) {
 	return (isset($config[$sn][$var])) ? html_entity_decode($config[$sn][$var]) : FALSE;
 }
 
+function set_vm_mapping($sn, $var, $val) {
+	$config_file = $GLOBALS["paths"]["vm_mappings"];
+	$config = @parse_ini_file($config_file, true);
+	$config[$sn][$var] = htmlentities($val, ENT_COMPAT);
+	save_ini_file($config_file, $config);
+	return (isset($config[$sn][$var])) ? $config[$sn][$var] : FALSE;
+}
+
 function load_vm_mappings() {
 	$config_file = $GLOBALS["paths"]["vm_mappings"];
 	$config = @parse_ini_file($config_file, true);
@@ -355,7 +364,58 @@ function remove_config_remote_host($source) {
 }
 
 
+/* Execute the device script. */
+function execute_script($info, $action, $testing=FALSE) { 
+	global $paths;
 
+	/* Set environment variables. */
+	putenv("ACTION={$action}");
+	foreach ($info as $key => $value) {
+		putenv(strtoupper($key)."={$value}");
+	}
+	if ($common_cmd = get_vm_config("Config", "common_cmd")) {
+		$common_script = $paths['scripts'].basename($common_cmd);
+		copy($common_cmd, $common_script);
+		@chmod($common_script, 0755);
+		usb_manager_log("Running common script: '".basename($common_script)."'");
+		exec($common_script, $out, $return);
+		if ($return) {
+			usb_manager_log("Error: common script failed: '{$return}'");
+		}
+	}
+
+	/* If there is a command, execute the script. */
+	$cmd = $info['command'];
+	$bg = ($info['command_bg'] != "false" && $action == "ADD") ? "&" : "";
+	if ($cmd) {
+		$command_script = $paths['scripts'].basename($cmd);
+		copy($cmd, $command_script);
+		@chmod($command_script, 0755);
+		usb_manager_log("Running device script: '".basename($cmd)."' with action '{$action}'.");
+
+		$script_running = is_script_running($cmd);
+		if ((! $script_running) || (($script_running) && ($action != "ADD"))) {
+			if (! $testing) {
+				if ($action == "REMOVE" || $action == "ERROR_UNMOUNT") {
+					sleep(1);
+				}
+				$cmd = isset($info['serial']) ? "$command_script > /tmp/{$info['serial']}.log 2>&1 $bg" : "$command_script > /tmp/".preg_replace('~[^\w]~i', '', $info['device']).".log 2>&1 $bg";
+
+				/* Run the script. */
+				exec($cmd, $out, $return);
+				if ($return) {
+					usb_manager_log("Error: device script failed: '{$return}'");
+				}
+			} else {
+				return $command_script;
+			}
+		} else {
+			usb_manager_log("Device script '".basename($cmd)."' aleady running!");
+		}
+	}
+
+	return FALSE;
+}
 
 #########################################################
 ############         USBIP FUNCTIONS        #############

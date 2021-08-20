@@ -1,8 +1,10 @@
 Title="Edit Settings"
 ---
 <?php
-/* Copyright 2015, Guilherme Jardim
- * Copyright 2016-2020, Dan Landon
+/* 
+ * Copyright 2020 -	Simon Fairweather
+ *
+ *  Based on original code from Guilherme Jardim and Dan Landon
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License version 2,
@@ -35,6 +37,8 @@ function safe_filename($string) {
 $_SESSION['availablevms'] = $lv->get_domains();
 
 $disabled = "";
+$background = "checked";
+$default_file = safe_filename("/boot/config/plugins/{$plugin}/".urldecode($_GET['s'])).".sh";
 
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
@@ -43,8 +47,66 @@ if (isset($_GET['s'])) {
 	$width = "50%";
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
+		if (($file) && (! file_exists($file))) {
+		set_config($serial,"command.{$partition}","");
+		$file = "";
+	}
+	$file = get_vm_config($serial,"command");
+	if (($file) && (! file_exists($file))) {
+		set_vm_mapping($serial,"command","");
+		$file = "";
+	}
+	$user_file = get_vm_config($serial,"user_command");
+	if ((($user_file) && (! file_exists($user_file))) || (($user_file) && (! $file))) {
+		set_vm_mapping($serial,"user_command","");
+		$user_file = "";
+	}
+	$background = (get_vm_config($serial,"command_bg") != "false" ) ? "checked" : "";
+	$background_action = "background";
 }
-if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; else $edittype="Edit Settings for USB Device"
+if (substr($serial,0 , 5) == "Port:") {
+	$edittype="Edit Settings for USB Port" ;
+	$filename = "Port_".substr($serial,5) ;
+ } else {
+	 $edittype="Edit Settings for USB Device" ;
+	 $filename=$serial ;
+ }
+
+if ((! file_exists($file)) || (! is_dir("/boot/config/plugins/user.scripts/scripts/"))) {
+	$disabled = "disabled";
+}
+
+$default_file = safe_filename("/boot/config/plugins/{$plugin}/".urldecode($filename)).".sh";
+
+$text = @file_get_contents($file);
+$default_text = <<<EOT
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+###############################################
+# Script Processing not implemented at present.
+# Due in a future update.
+###############################################
+## Available variables:
+# OWNER      : "udev" if executed by UDEV, otherwise "user"
+# PROG_NAME  : program name of this script
+# LOGFILE    : log file for this script
+
+case \$ACTION in
+  'ADD' )
+    # do your stuff here
+
+	/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "USB Manager" -d "Device Add" -i "normal"
+  ;;
+
+  'REMOVE' )
+    # do your stuff here
+
+	/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "USB Manager" -d "Device Remove" -i "normal"
+  ;;
+
+
+esac
+EOT;
 ?>
 
 <script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
@@ -68,8 +130,8 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 	}
 </style>
 
-<form markdown="1"   method="POST" action="/update.php" target="progressFrame">
-#<strong>_(<?=$edittype;?>)_ </strong> 
+<form markdown="1" name="edit_settings" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="#include" value="/webGui/include/update.file.php"> 
 <strong>_(USB Serial)_: </strong><?=$serial;?> 
 
 <?if (! $isflash):?>
@@ -81,9 +143,6 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 <td title='_(Turn on to Auto Connect to VM if VM is started)_.'><input type='checkbox' class='autoconnectstart-switch'></td>
 </tr>
 </table>
-<?php
-#var_dump($vm) ; var_dump($_SESSION['availablevms']);
-?>
 <td><b>Virtual Machine</b></td>
   <select id="vmselection" name="vmselection" >
     <option value=""</option>
@@ -103,13 +162,60 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 
 <?endif;?>
 
-<button type="button" onclick="done()">_(Done)_</button>
-
 
 </form>
 
+<form markdown="1" name="edit_script" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="#include" value="/webGui/include/update.file.php"> 
+
+<strong>_(Script File)_:</strong>
+<input type="text" title='_(Enter Script File Name)_.' name="#file" style="width:40%;" onclick="openFileBrowser(this,'/boot/config/plugins/<?=$plugin;?>/','sh',false,true);" autocomplete="off" value="<?=$file;?>" placeholder="_(Click the 'Default Script' button to select the default Script File)_">
+
+:usbm_edit_script_choose_name_plug:
+> This is the Script File that runs when the device is mounted. Choose your Script File name from the file selection dropdown, or enter your desired script name.
+:end
+
+<span title='_(Run Script File in the background)_.'><input type="checkbox" class="background-switch"></span>
+
+:usbm_edit_script_run_background_plug:
+> Turn on the **Run in Background** to have the script run as a background task.  This can keep the Unassigned Devices UI from hanging when the script is run from the UI.
+:end
+
+<? if (! $_GET['i']):?>
+<strong>_(User Script)_:</strong>
+<input type="text" title='_(Enter User Script File Name)_.' name="#user_file" style="width:40%;" onclick="openFileBrowser(this,'/boot/config/plugins/user.scripts/scripts/','',false,true);" autocomplete="off" placeholder="_(Enter the User Script that will be using this device)_" value="<?=$user_file;?>" <?=$disabled;?>>
+
+:usbm_edit_user_script_choose_name_plug:
+> If you have the User Scripts plugin installed, you can have USB Manager show the running status of the User Script that will be using this device.  This field will only be enabled when a Script File exists.
+:end
+<?endif;?>
+
+<br />
+<strong>_(Script content)_:</strong>
+<br />
+
+<textarea spellcheck="false" cols="80" rows="22" name="text" title='_(Enter and Edit the Script that runs when a udev or operator event occurs)_.' style="font-family:bitstream;width:80%"><?=$text;?></textarea>
+
+:usbm_edit_script_buttons_plug:
+> Click the **Save** button to commit the current edits.  Click **Reset** to undo any changes you make (before Saving). Click **Done** to exit this page.
+>
+> Click the **Default Script** button to initialize the edit box with a default script.
+> You still need to click **Save** in order to commit the change.
+>
+> Click **Delete** to delete the script file.
+:end
+
+<button type="button" title='_(Load the default script)_.' onclick="setDefault(this.form)">_(Default Script)_</button>
+<?if (is_file($file)):?>
+<button type="button" title='_(Delete Script File)_.' onclick='rmfile("<?=$file;?>");'>_(Delete)_</button>
+<?endif;?>
+<input type="reset" title='_(Undo your changes since last Save)_.' value='_(Reset)_'/>
+<input type="submit" title='_(Save your Script File changes)_.' value='_(Save)_'/>
+<button type="button" onclick="done()">_(Done)_</button>
+</form>
+
 <script>
-	var UDURL		= '/plugins/<?=$plugin;?>/USBDevices.php';
+	var USBMURL		= '/plugins/<?=$plugin;?>/USBDevices.php';
 
 
 
@@ -117,7 +223,7 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect at USB Device Plugin');?>", off_label: "<?=_('Auto Connect at USB Device Plugin');?>", checked:"<?=$autoconnect;?>" });
 	$('.autoconnect-switch').change(function()
 	{
-		$.post(UDURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -126,7 +232,7 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 	$('.autoconnectstart-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect to VM at VM Start');?>", off_label: "<?=_('Auto Connect to VM at VM Start');?>", checked:"<?=$autoconnectstart;?>" });
 	$('.autoconnectstart-switch').change(function()
 	{
-		$.post(UDURL,{action:"autoconnectstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"autoconnectstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -135,13 +241,76 @@ if (substr($serial,0 , 5) == "Port:") $edittype="Edit Settings for USB Port" ; e
 	
 	$('#vmselection').change(function()
 	{
-		$.post(UDURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		$.post(USBMURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
 		{
 				
 		},"json");
 	});
 
+	$('.background-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Run in Background');?>", off_label: "<?=_('Run in Backround');?>", checked:"<?=$background;?>" });
+	$('.background-switch').change(function()
+	{
+		$.post(USBMURL,{action:"<?=$background_action;?>",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		{
+			$(this).prop("checked",data.result);
+		},"json");
+	});
 
+	<?if (isset($_GET['s'])):?>
+		$( "form" ).submit(function( event ) {
+			$.post(USBMURL,{action:"set_command",serial:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
+		});
+	<?endif;?>
+
+	function setDefault(form) {
+		/* Set the default values. */
+		form.elements['text'].value = <?=json_encode($default_text);?>;
+		form.elements['#file'].value = <?=json_encode($default_file);?>;
+
+		/* Create a new 'change' event. */
+		var event = new Event('change');
+
+		/* Trigger a change event. */
+		form.dispatchEvent(event);
+	}
+
+	function openFileBrowser(el, root, filter, on_folders, on_files) {
+		if (on_folders === undefined) on_folders = true;
+		if (on_files   === undefined) on_files = true;
+		if (! filter && ! on_files)   filter = 'HIDE_FILES_FILTER';
+		p = $(el);
+
+		/* Skip if fileTree is already open. */
+		if ( p.next().hasClass('fileTree') ){return null;}
+
+		/* create a random id. */
+		var r = Math.floor((Math.random()*1000)+1);
+
+		/* Add a new span and load fileTree. */
+		p.after("<span id='fileTree"+r+"' class='textarea fileTree'></span>");
+		var ft = $('#fileTree'+r);
+		ft.fileTree({
+			root: root,
+			filter: filter,
+			allowBrowsing : true
+			},
+			function(file){if(on_files){p.val(file);$(ft).slideUp('fast',function (){$(ft).remove();});}},
+			function(folder){if(on_folders){p.val(folder);$(ft).slideUp('fast',function (){$(ft).remove();});}}
+		);
+
+		/* Format fileTree according to parent position, height and width. */
+		ft.css({'left':p.position().left,'top':( p.position().top + p.outerHeight() ),'width':(p.width()+2) });
+
+		/* Close if click elsewhere. */
+		$(document).mouseup(function(e){if (! ft.is(e.target) && ft.has(e.target).length === 0){$(ft).slideUp('fast',function (){$(ft).remove();});}});
+
+		/* Open fileTree. */
+		ft.slideDown('fast');
+	}
+
+	function rmfile(file) {
+		$.post("/update.php",{"#command":"/plugins/unassigned.devices/scripts/rm","#arg[1]":file}).done(function(){location.reload();});
+	}
 
 </script>
 <?endif;?>

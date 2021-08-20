@@ -103,6 +103,7 @@ function removePlugin(name) {
 
 
 	showStatus('pid','usbipd');
+  
 </script>
 
 
@@ -197,6 +198,19 @@ _(Run USBIPD Daemon)_:
 > Disable will stop if running and not start at boot.
 :end
 
+
+
+_(Run USBIP Remote Checker)_:
+: <select name="USBIPRC" size="1" disabled <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
+  <?=mk_option($cfg["Config"]["USBIPRC"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["USBIPRC"], "enabled", "_(Enabled)_");?>
+  </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
+
+
+
+
+_(USBIP Remote Checker Poll Time)_:
+: <input type="text" disabled name="USBIPRCT" maxlength="10" value="<?=$cfg["Config"]["USBIPRCT"]?>" class="narrow"><?=_("")?>
 
 
 &nbsp;
