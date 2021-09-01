@@ -19,5 +19,5 @@ done
 if [ $timer -eq 0 ]; then
 	logger "Cannot Start USBIP if required" -t "usb_manager"
 else
-	${DOCROOT}/plugins/usb_manageri/scripts/rc.usb_manager check_config &
+	${DOCROOT}/plugins/usb_manager/scripts/rc.usb_manager check_config &
 fi
