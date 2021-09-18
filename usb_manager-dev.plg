@@ -99,7 +99,7 @@ The 'pre-install' script.
 if [ ! -d "/boot/config/plugins/&name;" ]
 then
  #Check to see if USBIP GUI exists
- if  [  -d "/boot/config/pugins/unraid.usbip-gui" ]
+ if  [  -d "/boot/config/plugins/unraid.usbip-gui" ]
  then
     cp /boot/config/pugins/unraid.usbip-gui/*.cfg /boot/config/plugins/&name;
     mv /boot/config/plugins/&name;/unraid.usbip-gui /boot/config/plugins/&name;/&name;.cfg
