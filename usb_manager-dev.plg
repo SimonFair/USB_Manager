@@ -105,7 +105,7 @@ then
  if  [  -d "/boot/config/plugins/unraid.usbip-gui" ]
  then
     cp /boot/config/plugins/unraid.usbip-gui/*.cfg /boot/config/plugins/&name;/
-    mv /boot/config/plugins/&name;/unraid.usbip-gui /boot/config/plugins/&name;/&name;.cfg
+    mv /boot/config/plugins/&name;/unraid.usbip-gui.cfg /boot/config/plugins/&name;/&name;.cfg
     plugin remove "usbip-gui.plg"
  fi
 fi
