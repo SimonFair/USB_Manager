@@ -619,21 +619,21 @@ switch ($_POST['action']) {
 
 	case 'bind':
 		$device = urldecode($_POST['device']);
-		$cmd_usbip_bind= "usbip bind -b ".$device ;
+		$cmd_usbip_bind= "usbip bind -b ".escapeshellarg($device) ;
 		exec($cmd_usbip_bind, $out, $return);
 		echo json_encode(["status" => $return ? false : true ]);
 		break;
 
 	case 'unbind':
 		$device = urldecode($_POST['device']);
-		$cmd_usbip_unbind= "usbip unbind -b ".$device ;
+		$cmd_usbip_unbind= "usbip unbind -b ".escapeshellarg($device) ;
 		exec($cmd_usbip_unbind, $out, $return);
 		echo json_encode(["status" => $return ? false : true ]);
 		break;
 
 	case 'detach':
 		$port = urldecode($_POST['port']);
-		$cmd_usbip_detach= "usbip detach -p ".$port ;
+		$cmd_usbip_detach= "usbip detach -p ".escapeshellarg($port) ;
 		exec($cmd_usbip_detach, $out, $return);
 		echo json_encode(["status" => $return ? false : true ]);
 		break;
@@ -643,7 +643,7 @@ switch ($_POST['action']) {
 		$explode= explode(";",$hostport) ;
 		$host = $explode[0] ;
 		$port = $explode[1] ;
-		$cmd_usbip_attach= "usbip attach -r ".$host." -b ".$port ;
+		$cmd_usbip_attach= "usbip attach -r ".escapeshellarg($host)." -b ".escapeshellarg($port) ;
 		exec($cmd_usbip_attach, $out, $return);
 		echo json_encode(["status" => $return ? false : true ]);
 		break;	
@@ -663,8 +663,8 @@ switch ($_POST['action']) {
 		$network = $_POST['network'];
 		foreach ($network as $iface)
 		{
-			$ip = $iface['ip'];
-			$netmask = $iface['netmask'];
+			$ip = escapeshellarg($iface['ip']);
+			$netmask = escapeshellarg($iface['netmask']);
 			echo shell_exec("/usr/bin/timeout -s 13 5 plugins/{$plugin}/scripts/port_ping.sh {$ip} {$netmask} 3240 2>/dev/null | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4");
 		}
 		break;
