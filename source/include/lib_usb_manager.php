@@ -861,7 +861,18 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$bus."/".$dev." | grep KERNEL==" ;
 	exec( $udevcmd , $udev);
 	$physical_busid = trim(substr($udev[0], 13) , '"') ;
- 
+
+	# Build Parents
+
+	$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$bus."/".$dev." | grep KERNELS==" ;
+	exec( $udevcmd , $parents);
+	
+	foreach($parents as $key => $parent)
+		{
+			$parents[$key] = trim(substr($parent, 13) , '"') ;
+		}
+	$parents = implode("," , $parents );
+
 	$device = $USBDevices[$physical_busid] ;
 
 	
@@ -887,6 +898,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	if (!$device["isflash"]) {
     
 	$config[$serial]["connected"] = false ;
+	$config[$serial]["parents"] =  $parents;
 	$config[$serial]["bus"] = $device["BUSNUM"] ;
 	$config[$serial]["dev"] = $device["DEVNUM"] ;
 	$config[$serial]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
@@ -894,6 +906,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$config[$serial]["ID_MODEL"] = $device["ID_MODEL"] ;
 	$config[$serial]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
 	$config[$serial]["USBPort"] = $physical_busid ;
+	$config[$serial]["ishub"] = $device["ishub"] ;
 
 	save_ini_file($config_file, $config);
 	}
@@ -911,6 +924,20 @@ function USBMgrBuildConnectedStatus()
 	foreach ($USBDevices as  $key => $device)
 	{
         if ($device["isflash"]) continue ;
+
+
+		# Build Parents
+
+		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
+		$parents = array() ;
+		exec( $udevcmd , $parents);
+	
+		foreach($parents as $key => $parent)
+			{
+			$parents[$key] = trim(substr($parent, 13) , '"') ;
+			}
+		$parents = implode("," , $parents );
+
 		$config[$device["ID_SERIAL"]]["connected"] = false ;
 		$config[$device["ID_SERIAL"]]["bus"] = $device["BUSNUM"] ;
 		$config[$device["ID_SERIAL"]]["dev"] = $device["DEVNUM"] ;
@@ -919,6 +946,8 @@ function USBMgrBuildConnectedStatus()
 		$config[$device["ID_SERIAL"]]["ID_MODEL"] = $device["ID_MODEL"] ;
 		$config[$device["ID_SERIAL"]]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
 		$config[$device["ID_SERIAL"]]["USBPort"] = $key ;
+		$config[$device["ID_SERIAL"]]["ishub"] = $device["ishub"] ;
+		$config[$device["ID_SERIAL"]]["parents"] =  $parents;
 	}
 
 	save_ini_file($config_file, $config);

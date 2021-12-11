@@ -75,7 +75,7 @@ function usbm_list_usbs()
 	}
     $out= get_all_usb_info() ;
     		foreach ($out as $busid => $detail) {
-                if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
+            if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
 			if ($detail["ishub"] == "interface") continue ;
 			if ($detail["ishub"] == "hub") unset($out[$busid]) ;
 		 	if ( $detail["ishub"] == "roothub") unset($out[$busid]) ;

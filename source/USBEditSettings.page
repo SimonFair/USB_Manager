@@ -34,7 +34,9 @@ function safe_filename($string) {
 }
 #href='/USB/EditSettings?s=".urlencode($serial)."&b=".urlencode($device)."&l=".urlencode(basename($partition['mountpoint']))."&p=".urlencode($partition['part'])."&m=".urlencode(json_encode($partition))."&t=".$total."'
 
-$_SESSION['availablevms'] = $lv->get_domains();
+#$_SESSION['availablevms'] = $lv->get_domains();
+$libvirt_up        = $libvirt_running=='yes';
+if ($libvirt_up)  $_SESSION['availablevms'] = $lv->get_domains(); else $_SESSION['availablevms'] = array() ;
 
 $disabled = "";
 $background = "checked";
