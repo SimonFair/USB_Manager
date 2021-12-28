@@ -906,7 +906,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$config[$serial]["ID_MODEL"] = $device["ID_MODEL"] ;
 	$config[$serial]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
 	$config[$serial]["USBPort"] = $physical_busid ;
-	$config[$serial]["ishub"] = $device["ishub"] ;
+	$config[$serial]["class"] = $device["ishub"] ;
 
 	save_ini_file($config_file, $config);
 	}
@@ -946,8 +946,42 @@ function USBMgrBuildConnectedStatus()
 		$config[$device["ID_SERIAL"]]["ID_MODEL"] = $device["ID_MODEL"] ;
 		$config[$device["ID_SERIAL"]]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
 		$config[$device["ID_SERIAL"]]["USBPort"] = $key ;
-		$config[$device["ID_SERIAL"]]["ishub"] = $device["ishub"] ;
+		$config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
 		$config[$device["ID_SERIAL"]]["parents"] =  $parents;
+	}
+
+	save_ini_file($config_file, $config);
+	
+}
+
+function USBMgrUpgradeConnectedStatus()
+{
+	$USBDevices = get_usbip_devs() ;
+	
+	$config_file = $GLOBALS["paths"]["usb_state"];
+	$config = @parse_ini_file($config_file, true);
+
+	foreach ($USBDevices as  $key => $device)
+	{
+        if ($device["isflash"]) continue ;
+
+
+		# Build Parents
+
+		if (!isset($config[$device["ID_SERIAL"]]["parents"])) {
+		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
+		$parents = array() ;
+		exec( $udevcmd , $parents);
+	
+		foreach($parents as $key => $parent)
+			{
+			$parents[$key] = trim(substr($parent, 13) , '"') ;
+			}
+		$parents = implode("," , $parents );
+		$config[$device["ID_SERIAL"]]["parents"] =  $parents;
+		}	
+		if (!isset($config[$device["ID_SERIAL"]]["class"])) $config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
+
 	}
 
 	save_ini_file($config_file, $config);

@@ -9,7 +9,7 @@
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"21ff667778d91b3f5fa8c1682a86c355">
+<!ENTITY md5		"90854f4bfade4f8c7100b2f96d335d1e">
 ]>
 
 <PLUGIN name="&name;"
@@ -146,6 +146,7 @@ USB_Manager background start script.
 
 if [ ! -z "$(pidof emhttpd)" ]; then
 	/usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
+  /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatus 2>/dev/null
 fi
 
 # Remove the background start script.
