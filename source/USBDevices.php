@@ -333,12 +333,18 @@ switch ($_POST['action']) {
 				/* Device Driver */
 				echo "<td>".ucfirst($detail["ishub"])."</td>";
 				/* Device Vendor & Model */
+				if (isset($detail["ID_MODEL_FROM_DATABASE"])) {
+					$model=$detail["ID_MODEL_FROM_DATABASE"] ;
+				} else {
+					$model=$detail["ID_MODEL"] ;
+				}
 				if (isset($detail["ID_VENDOR_FROM_DATABASE"])) {
 					$vendor=$detail["ID_VENDOR_FROM_DATABASE"] ;
 				} else {
 					$vendor=$detail["ID_VENDOR"] ;
 				}
-				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td>".$vendor.":".$detail["ID_MODEL"]."</td>" ; 
+				
+				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td>".$vendor.":".$model."</td>" ; 
 			   
 			
 				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
