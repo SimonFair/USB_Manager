@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2021.12.28">
+<!ENTITY version   "2021.12.30">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"90854f4bfade4f8c7100b2f96d335d1e">
+<!ENTITY md5		"a48a6007d7987acc119a9fbcd35aee1d">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,10 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Fix to parent processing.
+
+2021.12.28
 
   - Chg Disable device mapping for Root Hubs and Hubs. Disable port mapping for Root Hub.
   - Chg Detach button show next to connected port or device on the main line.

@@ -939,9 +939,9 @@ function USBMgrBuildConnectedStatus()
 		$parents = array() ;
 		exec( $udevcmd , $parents);
 	
-		foreach($parents as $key => $parent)
+		foreach($parents as $key2 => $parent)
 			{
-			$parents[$key] = trim(substr($parent, 13) , '"') ;
+			$parents[$key2] = trim(substr($parent, 13) , '"') ;
 			}
 		$parents = implode("," , $parents );
 
