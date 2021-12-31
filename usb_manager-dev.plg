@@ -25,7 +25,7 @@
 ##USB_Manager
 ###&version;
 
-  - Fix start of usbipd and load of modules on array start.
+  - Fix start of usbipd and load of modules on array start..
 
 2021.08.01
 
