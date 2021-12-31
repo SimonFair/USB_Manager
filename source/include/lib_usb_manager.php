@@ -827,6 +827,24 @@ function vm_map_action($vm, $action)
 			$usbstr = '';
 
 			if ($map=="hub") {
+				$config_file = $GLOBALS["paths"]["usb_state"];
+				$usb_state = @parse_ini_file($config_file, true);
+				$hubid = $usb_state[$srlnbr]["USBPort"] ;
+
+				foreach ($usb_state as $usb_srlnbr => $usb_device) {
+					$class=$usb_device["class"] ;
+					if ($class == "hub" || $class == "roothub") continue ;
+					$parents = explode("," , $usb_device["parents"] );
+					$parent = $parents[0] ;
+					
+					if ($parent == $hubid) {
+						if ($action == "attach" && $usb_device["connected"] == 1) {usb_manager_log("Info: usb_manager attach {$usb_srlnbr} vm: {$vm} Device in Use action ignored. "); continue ; }
+						if ($action == "detach" && $usb_device["connected"] != 1)  continue ;
+						$return=do_vm_map_action($action, "$vmname", $usb_device["bus"], $usb_device["dev"], "$usb_srlnbr", $method, "Hub") ;
+					}
+
+				} 
+
 
 			} else {
 			
