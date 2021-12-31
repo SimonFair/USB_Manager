@@ -784,6 +784,35 @@ function parse_usbip_remote($remote_host)
 ############         VM FUNCTIONS        #############
 #########################################################
 
+function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map)
+{
+			
+
+			$return=virsh_device_by_bus($action,$vmname, $bus, $dev) ;
+
+			if (substr($return,0,6) === "error:") {
+				save_usbstate($srlnbr, "virsherror" , true) ;
+			} else {
+		    	save_usbstate($srlnbr, "virsherror" , false) ;
+			}
+			
+			if ($action == "attach") {
+					save_usbstate($srlnbr, "connected" , true) ;
+				} else {
+					save_usbstate($srlnbr, "connected" , false) ;
+					$vmname = ""  ;
+					$method = "" ;
+					$map = "" ;
+				}
+			save_usbstate($srlnbr, "VM" , $vmname) ;	
+			save_usbstate($srlnbr, "virsh" , $return) ;
+			save_usbstate($srlnbr, "connectmethod" , $method) ;
+			save_usbstate($srlnbr, "connectmap" , $map) ;
+
+			
+			return $return ;
+}
+
 function vm_map_action($vm, $action)
 {
 			
@@ -797,36 +826,14 @@ function vm_map_action($vm, $action)
 			
 			$usbstr = '';
 
-			
-	#		if ($action != "none") {
-			$return=virsh_device_by_bus($action,$vmname, $bus, $dev) ;
-			#var_dump($return) ;
-			#error: Failed to attach device from
+			if ($map=="hub") {
 
-			if (substr($return,0,6) === "error:") {
-				save_usbstate($srlnbr, "virsherror" , true) ;
 			} else {
-		    	save_usbstate($srlnbr, "virsherror" , false) ;
-			}
 			
-	#		if (substr($return,0,6) != "error:") {
-			if ($action == "attach") {
-					save_usbstate($srlnbr, "connected" , true) ;
-				} else {
-					save_usbstate($srlnbr, "connected" , false) ;
-					$vmname = ""  ;
-					$method = "" ;
-					$map = "" ;
-				}
-				save_usbstate($srlnbr, "VM" , $vmname) ;	
-	#		}	else {  USBMgrCreateStatusEntry($srlnbr, $bus, $dev) ;}
-	#		}
-			save_usbstate($srlnbr, "virsh" , $return) ;
-			save_usbstate($srlnbr, "connectmethod" , $method) ;
-			save_usbstate($srlnbr, "connectmap" , $map) ;
+			$return=do_vm_map_action($action, "$vmname", $bus, $dev, "$srlnbr", $method, $map) ;
 
-	#		save_usbstate($srlnbr, "bus" , $bus) ;
-	#		save_usbstate($srlnbr, "dev" , $dev) ;
+
+			}
 			echo json_encode(["status" => $return ]);
 }
 

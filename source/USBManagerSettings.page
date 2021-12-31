@@ -124,6 +124,12 @@ _(Enable USB on Dashboard)_:
   <?=mk_option($cfg["Config"]["HOTPLUG"], "enabled", "_(Enabled)_");?>
   </select>
 
+  _(Enable HUB Processing)_:
+: <select name="HUBPROC" size="1" >
+  <?=mk_option($cfg["Config"]["HUBPROC"], "disabled", "_(Disabled)_");?>
+  <?=mk_option($cfg["Config"]["HUBPROC"], "enabled", "_(Enabled)_");?>
+  </select>
+
 
 _(Enable USBIP)_:
 : <select name="USBIP" size="1" >
