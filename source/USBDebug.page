@@ -101,7 +101,7 @@ $('#db1').load('/plugins/usb_manager/USBDevices.php',{action:'db1'});
 
 _(Debug USB)_
 
-<pre><form id="USBDebug" onsubmit="return false"><table id='db1' class='pre'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
+<pre><form id="USBDebug" onsubmit="return false"><table id='db1' class='pre'></table></form></pre><br>
 
 <input type="button" value="_(Done)_" onclick="done()">
 
