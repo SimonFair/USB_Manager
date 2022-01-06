@@ -115,8 +115,9 @@ function usb_device_add_action($serial)
 
 function usb_device_add_actionv2($serial)
 {
-#	global $usb_state;
+	global $usb_state;
 	    $vm_maps = load_vm_mappings() ;
+		$hub_processing = get_config("Config","HUBPROC") ;
 		$vm = $vm_maps[$serial]["VM"];
 
 		$state = get_vm_state($vm) ;
@@ -124,10 +125,10 @@ function usb_device_add_actionv2($serial)
 		$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
 
 		USBMgrCreateStatusEntry($_ENV['ID_SERIAL'], $_ENV['BUSNUM'], $_ENV['DEVNUM']) ;
-#		load_usbstate() ;
-#		$ishub = $usb_state[$serial]["ishub"]  ;
-		if ($vm_maps[$serial]["autoconnect"] == "yes") {
-#		if ($vm_maps[$serial]["autoconnect"] == "yes" && $ishub == "interface" ) {
+		load_usbstate() ;
+		$class = $usb_state[$serial]["class"]  ;
+	#	if ($vm_maps[$serial]["autoconnect"] == "yes") {
+		if ($vm_maps[$serial]["autoconnect"] == "yes" && $class == "interface" ) {
     		if ($state != "shutoff") {
 	    		usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
 		    	vm_map_action($vm, "attach") ;
@@ -152,8 +153,8 @@ function usb_device_add_actionv2($serial)
 			#var_dump($port_map) ; #var_dump($vm_maps[$port_map]) ;
 
 			$vm = $vm_maps[$port_map]["VM"];
-			if ($vm_maps[$port_map]["autoconnect"] == "yes" ) {		
-#			if ($vm_maps[$port_map]["autoconnect"] == "yes" && $ishub == "interface" ) {
+		#	if ($vm_maps[$port_map]["autoconnect"] == "yes" ) {		
+			if ($vm_maps[$port_map]["autoconnect"] == "yes" && $class == "interface" ) {
 				$state = get_vm_state($vm) ;
 				$vm .=  ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Port"; ;
 				if ($state != "shutoff") {
@@ -166,11 +167,13 @@ function usb_device_add_actionv2($serial)
 				}	
 			}
 		}
+		#var_dump($hub_processing) ;
+		if ($hub_processing == "enabled") {
 
-	/*	# Check to see if parent is a hub and process a hub mapping.
+		# Check to see if parent is a hub and process a hub mapping.
 		
 		
-		if ($ishub == "interface") {
+		if ($class == "interface") {
 		$parent =  explode("," , $usb_state[$serial]["parents"]) ;
 		$parent =  $parent[0] ;
 		usb_manager_log("Info: rc.usb_manager Autoconnect Parent ".$parent) ;
@@ -197,8 +200,8 @@ function usb_device_add_actionv2($serial)
 			}
 		}
 		
-		} */
-
+		} 
+		}
 		usb_manager_log("Info: rc.usb_manager Autoconnect No Mapping found {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}"); 
 }
 
@@ -237,6 +240,8 @@ function usb_device_remove_action($bus, $dev) {
 function process_vm_usb_devices($vm, $action) {
 		 global $usb_state;
 		 load_usbstate(); 
+		 $hub_processing = get_config("Config","HUBPROC") ;
+		 
 
 
 		if ($action == "stopped") {
@@ -259,6 +264,7 @@ function process_vm_usb_devices($vm, $action) {
         #var_dump($vm_mappings) ;
     	foreach ($vm_mappings as $key => $vm_map) {
 	  		if ($vm == $vm_map["VM"]) {
+				 echo  $key;
 				$usbkey = "" ;
 				$type = "Device" ;
 				if (substr($key,0,5) == "Port:") {
@@ -277,19 +283,22 @@ function process_vm_usb_devices($vm, $action) {
 					$usbkey=$key ;
 					$type = "Device" ;
 				}
-                
+               # var_dump($usbkey,$usb_state[$usbkey]) ;
 	    		if (isset($usb_state[$usbkey])	) {        		
 
 	     			$bus = $usb_state[$usbkey]["bus"];
 	     			$dev = $usb_state[$usbkey]["dev"];
 
-/*					$ishub = $usb_state[$usbkey]["ishub"] ;
+					$class = $usb_state[$usbkey]["class"] ;
 					$port = $usb_state[$usbkey]["USBPort"] ;
-					
-					if ($ishub != "interface") {
-						#usb_manager_log("Info: rc.usb_manager Autoconnect is not interface {$ishub}") ;
-						if ($ishub == "hub") {
-							#usb_manager_log("Info: rc.usb_manager Autoconnect is hub {$ishub}") ;
+					#var_dump($hub_processing) ;
+					if ($hub_processing == "enabled") {					
+					if ($class != "interface") {
+						#usb_manager_log("Info: rc.usb_manager Autoconnect is not interface {$class}") ;
+						#echo $class ;
+						if ($class == "hub") {
+							#usb_manager_log("Info: rc.usb_manager Autoconnect is hub {$class}") ;
+							#echo "Process Hub" ;
 						  	foreach($usb_state as $key2=>$parent_state) {
 							 	$parents = explode("," , $parent_state["parents"] );
 							  	$parent = $parents[0] ;
@@ -315,11 +324,12 @@ function process_vm_usb_devices($vm, $action) {
 							continue ;
 					 	}
 					}
-*/
+				}
+
 					$vmname = $vm.";".$bus.";".$dev.";".$usbkey.";Auto;".$type.";" ;	 
 	     
-	   				if ($action == "prepare" ) {
-#					if ($action == "prepare" && $ishub=="interface") {						   
+#	   				if ($action == "prepare" ) {
+					if ($action == "prepare" && $class=="interface") {						   
 						 
 						if ($usb_state[$usbkey]["connected"]== "1") {
 							usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use action ignored. ");
@@ -355,6 +365,7 @@ function usb_manager_syslog_processing($sl_busid) {
 	$p2 = preg_match('/(.*) (?P<busid>\S+)/', $sl_busid, $arrMatchsl );
 	$busid= $arrMatchsl["busid"] ;
 	
+	var_dump($syslog) ;
 	foreach ($syslog as $syslog_entry) {
 
 	#	Feb 13 15:59:19 Tower usbipd: usbipd: info: connection from 192.168.1.29:46248
@@ -371,7 +382,7 @@ function usb_manager_syslog_processing($sl_busid) {
 	$arrMatch =array() ;	
 	$p = preg_match('/(.*) connection from (?P<IP>\S+):(?P<port>\S+)/', $syslog_entry, $arrMatch );
   
-	#var_dump($arrMatch) ;
+	var_dump($arrMatch) ;
 		if ($p ) {
 ;
 			
@@ -426,7 +437,8 @@ switch ($COMMAND) {
 		break;	
 
 	case 'usb_syslog':
-		usbmanager_syslog_processing($argv[2]) ;
+		echo "Syslog" ;
+		usb_manager_syslog_processing($argv[2]) ;
 		break;	
 
 	case 'USBMgrBuildConnectedStatus':
