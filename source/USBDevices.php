@@ -779,6 +779,20 @@ switch ($_POST['action']) {
 		echo json_encode(["status" => $return ]);
 		break ;	
 
+		case 'db1':
+        
+      
+	
+			echo "<tr><td>" ;
+			  $list= get_inuse_usbdisks() ;
+
+				var_dump($list) ;
+				echo "Test" ;   
+				echo "</td></tr>" ;
+					   
+	 
+					break;
+
 		case 'vm_connect':
 			$vm = urldecode($_POST['vm']);
 			$action = "attach" ;

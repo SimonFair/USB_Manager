@@ -1,0 +1,108 @@
+Menu="USB"
+Title="Debug"
+icon="fa-file"
+---
+<?PHP
+/* Copyright 2020-2020, Simon Fairweather
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2,
+ * as published by the Free Software Foundation.
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ */
+$plugin = "usb_manager";
+$docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+$translations = file_exists("$docroot/webGui/include/Translations.php");
+require_once "$docroot/plugins/$plugin/include/Legacy.php";
+?>
+<?if (! $translations):?>
+<?eval('?>'.parse_file("$docroot/plugins/$plugin/SnapshotBTRFS.page"))?>
+<?else:?>
+<?
+/* read translations */
+parse_plugin('usb_manager');
+global $btrfs_line ;
+?>
+
+<style>
+table.pre{margin-top:0;background:transparent}
+table.pre td:first-child{width:144px}
+table tr td{padding:0 0 3px 0;margin:0}
+table tr td.thin{line-height:8px;height:8px}
+	table.local_usb {padding: 0px 0px 0px 0px;border-collapse:collapse;white-space:nowrap;}
+	table.local_usb thead tr>td{text-align:left;width:8%;}
+	table.local_usb tr>td+td{text-align:left;}
+	table.local_usb tr>td+td+td{text-align:left;}
+	table.local_usb tr>td+td+td+td{text-align:left;}
+	table.local_usb tr>td+td+td+td+td+td+td{text-align:lwft;}
+	table.local_usb tr>td+td+td+td+td+td+td+td{text-align:centre;}
+	table.local_usb tr>td+td+td+td+td+td+td+td+td{text-align:left;}
+	table.local_usb tr>td+td+td+td+td+td+td+td+td+td+td+td{text-align:center;}
+
+	table.remote_ip {padding: 0px 0px 0px 0px;border-collapse:collapse;white-space:nowrap;}
+	table.remote_ip thead tr>td{text-align:left;width:8%;}
+	table.remote_ip tr>td+td{text-align:left;}
+	table.remote_ip tr>td+td+td{text-align:left;}
+	table.remote_ip tr>td+td+td+td{text-align:left;}
+	table.remote_ip tr>td+td+td+td+td+td+td{text-align:center;}
+	table.remote_ip tr>td+td+td+td+td+td+td+td{text-align:right;}
+	table.remote_ip tr>td+td+td+td+td+td+td+td+td+td+td+td{text-align:center;}
+
+	table.usb_attached {padding: 0px 0px 0px 0px;border-collapse:collapse;white-space:nowrap;}
+	table.usb_attached thead tr>td{text-align:left;width:8%;}
+	table.usb_attached tr>td+td{text-align:left;}
+	table.usb_attached tr>td+td+td+td{text-align:center;}
+
+
+	button.mount {padding:2px 4px 3px 6px;margin:1px 0px 1px 0px;}
+	i.partition-hdd{margin:5px; 0px; 0px; 0px;}
+	i.hdd{margin:5px; 0px; 0px; 0px;}
+	i.port{margin:5px; 0px; 0px; 0px;}
+	i.share{margin:5px 5px 0px 0px;}
+	i.mount-share{margin:5px 5px 0px 0px;}
+	i.partition-script{margin-left: 10px; margin-right: 6px;}
+	.exec{cursor: pointer;}
+	i.port-script{margin-left: 10px; margin-right: 6px;}
+	.exec{cursor: pointer;}
+	i.fa-append{margin:0px;font-size: 0.8em;position: relative; left:-0.3em;top:0.7em;}
+	.underline{text-decoration: underline;}
+
+	form.inline{display:inline;margin: 0px; padding: 0px;}
+
+	.fileTree {
+		width: 305px;
+		max-height: 150px;
+		overflow: scroll;
+		position: absolute;
+		z-index: 100;
+		display: none;
+		color:initial;
+	}
+
+  .image-radio input{margin:0;padding:0;-webkit-appearance:none;-moz-appearance:none;appearance:none;}
+  .image-radio input:active +.image-radio-label{opacity: .9;}
+  .image-radio input:checked +.image-radio-label{ -webkit-filter: none;-moz-filter: none;filter: none;}
+  .image-radio-label{cursor:pointer; background-size:contain; background-repeat:no-repeat;display:inline-block; width:100px;height:70px; -webkit-transition: all 100ms ease-in;-moz-transition: all 100ms ease-in;transition: all 100ms ease-in;-webkit-filter: brightness(1.8) grayscale(1) opacity(.7);-moz-filter: brightness(1.8) grayscale(1) opacity(.7);filter: brightness(1.8) grayscale(1) opacity(.7);}
+  .image-radio-label:hover{-webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);-moz-filter: brightness(1.2) grayscale(.5) opacity(.9);filter: brightness(1.2) grayscale(.5) opacity(.9);}
+  .image-radio-linux{background-image: url(/plugins/usb_manager/icons/nfs-radio.png)}
+  .image-radio-windows{background-image: url(/plugins/usb_manager/icons/smb-radio.png)}
+</style>
+
+<script>
+$(function(){
+$('#db1').load('/plugins/usb_manager/USBDevices.php',{action:'db1'});  
+});
+
+
+</script>
+
+
+_(Debug USB)_
+
+<pre><form id="USBDebug" onsubmit="return false"><table id='db1' class='pre'><tr><td><div class="spinner"></div></td></tr></table></form></pre><br>
+
+<input type="button" value="_(Done)_" onclick="done()">
+
+<?endif;?>

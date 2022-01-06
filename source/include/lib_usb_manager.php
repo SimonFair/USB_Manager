@@ -1024,4 +1024,142 @@ return $cmdreturn ;
 #</hostdev>
 #END
 }
+
+
+function get_inuse_usbdisks() {
+	global $disks,$lv, $libvirt_running ;
+	/* Get all unraid disk devices (array disks, cache, and pool devices) */
+	foreach ($disks as $d) {
+		if ($d['device']) {
+			$unraid_disks[] = "/dev/".$d['device'];
+		}
+	}
+	$usbinuse = array() ;
+#^\S+\s+ usb:(?P<usb>\S+):\S* * (?P<dev>\S+) * (?P<id>\S+)$
+exec('lsscsi -bti | grep usb'  ,$lsscsi) ;
+
+foreach ($lsscsi as $scsi){
+	if (preg_match('/^\S+\s+ usb:(?P<usb>\S+):\S* * (?P<dev>\S+) * (?P<id>\S+)$/', $scsi, $arrMatch)) {
+		if (in_array($arrMatch["dev"], $unraid_disks)) $unraid=true ; else $unraid=false ;
+		$usbinuse[$arrMatch["usb"]] = array(
+			"device"=>$arrMatch["dev"],  
+			"unraid"=>$unraid, 
+			"name"=>$arrMatch["id"] ,
+			"zpool"=>false ,
+			"mounted"=>is_mounted($arrMatch["dev"]."1")
+		) ;
+	} 
+}
+
+# Check for the device being Mounted.
+
+# Check if part of a ZFS pool
+
+if (file_exists("/usr/sbin/zpool")) {
+exec("zpool status | grep usb | sed 's/-part.*$//' | awk '{print $1}'", $zpool_status) ;
+foreach($zpool_status as $zpool_dev) {
+	$dev = substr($zpool_dev,4, strlen($zpool_dev)) ;
+	$key=array_search($dev, array_column($usbinuse, 'name'), true) ;
+	if ($key!=false) {
+		$usbinuse[array_keys($usbinuse)[$key]]["zpool"] = true ;
+	}
+}
+}
+
+$libvirt_up        = $libvirt_running=='yes';
+
+if ($libvirt_up)  $domains = $lv->get_domains(); else $domains = array() ;
+if ($libvirt_up){
+#	var_dump($lv->get_active_domain_ids()) ;
+foreach($domains as $domain_name ) {
+
+  $res = $lv->get_domain_by_name($domain_name);
+  $dom = $lv->domain_get_info($res);
+  $state = $lv->domain_state_translate($dom['state']);
+ # var_dump($state) ;
+  if ($state != "shutoff") {
+	  $xml=NULL ;
+exec('virsh dumpxml "'.$domain_name.'"',$xml) ;
+$xml = new SimpleXMLElement(implode('',$xml));
+$VMUSB=$xml->xpath('//devices/hostdev[@type="usb"]/source') ;
+$VMPCI=$xml->xpath('//devices/hostdev[@type="pci"]/source')  ;
+#var_dump($VMUSB, $VMPCI) ;
+foreach($VMUSB as $USB) {
+$bus=$USB->address->attributes()->bus ;
+$dev=$USB->address->attributes()->device ;
+
+#$VMUSB = json_decode(json_encode($VMUSB), TRUE) ;
+
+$cmd="udevadm info -a --name=/dev/bus/usb/".str_pad($bus,3,"0",STR_PAD_LEFT)."/".str_pad($dev,3,"0",STR_PAD_LEFT)." | grep KERNEL==" ;
+#$cmd="udevadm info -a --name=/dev/bus/usb/".str_pad($VMUSB[0]["address"]['@attributes']["bus"],3,"0",STR_PAD_LEFT)."/".str_pad($VMUSB[0]["address"]['@attributes']["device"],3,"0",STR_PAD_LEFT)." | grep KERNEL==" ;
+#echo $VMUSB[0]->address ;
+$cmdres=NULL ;
+exec($cmd,$cmdres) ;
+#var_dump($cmd,trim(substr($cmdres[0], 13) , '"')) ;
+if (trim(substr($cmdres[0], 13) , '"')!="") $usbinuse[trim(substr($cmdres[0], 13) , '"')]["VM"] = $domain_name ;
+}
+foreach($VMPCI as $PCI) {
+	$pcibus=str_pad(hexdec($PCI->address->attributes()->bus),2,"0",STR_PAD_LEFT) ;
+	$pcibus.=":".str_pad(hexdec($PCI->address->attributes()->slot),2,"0",STR_PAD_LEFT) ;
+	$pcibus.=".".hexdec($PCI->address->attributes()->function) ;
+
+	$cmd="lspci -s ".$pcibus ;
+
+	$cmdres=NULL ;
+	exec($cmd,$cmdres) ;
+#	var_dump($cmd,$cmdres) ;
+	 $pciinuse[$pcibus]["VM"] = $domain_name ;
+	 $pciinuse[$pcibus]["desc"] = substr($cmdres[0],8) ;
+	}
+}
+}
+}#
+
+$inuse["usb"] = $usbinuse ;
+$inuse["pci"] = $pciinuse ;
+
+$bluetooth=array() ;
+$hci=listDir2("/sys/class/bluetooth") ;
+#var_dump($hci) ;
+foreach ($hci as $hci_name) {
+	$hci_dev = str_replace('/sys/class/bluetooth/','',$hci_name) ;
+	$usbdevs=NULL ;
+	$usbdevs=listDir2("/sys/class/bluetooth/".$hci_dev."/device/driver/") ;
+	foreach ($usbdevs as $usbdev) {
+	#var_dump($usbdevs) ;
+	$bluetooth=explode(":",str_replace("/sys/class/bluetooth/".$hci_dev."/device/driver/","",$usbdev))[0] ;
+	if ($bluetooth != "module") $inuse["bluetooth"][$bluetooth]="Bluetooth Controller" ;
+	}
+}
+
+
+return $inuse ;
+}
+
+function listDir2($root) {
+	$iter = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($root, 
+			RecursiveDirectoryIterator::SKIP_DOTS),
+			RecursiveIteratorIterator::SELF_FIRST,
+			RecursiveIteratorIterator::CATCH_GET_CHILD);
+	$paths = array();
+	foreach ($iter as $path => $fileinfo) {
+		if ( $fileinfo->isDir()) $paths[] = $path;
+	}
+	return $paths;
+}
+
+
+/* Is a device mounted? */
+function is_mounted($dev, $dir = false) {
+
+	$rc = false;
+	if ($dev) {
+		$data	= timed_exec(1, "/sbin/mount");
+		$append	= ($dir) ? " " : " on";
+		$rc		= (strpos($data, $dev.$append) != 0) ? true : false;
+	}
+
+	return $rc;
+}
 ?>
