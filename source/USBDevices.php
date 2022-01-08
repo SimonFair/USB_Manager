@@ -210,6 +210,9 @@ switch ($_POST['action']) {
 		$tc = $paths['hotplug_status'];
 		$hotplug = is_file($tc) ? json_decode(file_get_contents($tc),TRUE) : "no";
 
+		# Get inuse devices
+		$inuse_devices=get_inuse_devices() ;
+
 		/* Disk devices */
 		$usbip = get_all_usb_info();
 		ksort($usbip,SORT_NATURAL  ) ;
@@ -318,10 +321,11 @@ switch ($_POST['action']) {
 				if ($detail["ishub"] == "interface") {
 				$bus_id .= "<a title='$dev_title' href='/USB/USBEditSettings?s=".urlencode($srlnbr)."&v=".urlencode($vm_name)."&f=".urlencode($detail["isflash"])."'><i class='fa fa-desktop'></i></a>&nbsp;";
 				} else {
-				$bus_id .= "<title='"._("Not Supported for Hubs")."<i class='fa fa-desktop'></i></a>&nbsp;";
+				$bus_id .= "<title='"._("Not Supported for Hubs")."<i class='fa fa-desktop'></i>&nbsp;";
 				}
 			}
 				$bus_id.= "<a href=\"#\" title='"._("Device Log Information")."' onclick=\"openBox('/webGui/scripts/disk_log&amp;arg1={$disk}','Device Log Information',600,900,false);return false\"><i class='fa fa-file icon'></i></a>";
+				if (isset($inuse_devices["bluetooth"][$disk])) $bus_id.= "<i class='fa fa-bluetooth icon'></i></a>";
 				$bus_id .="<span title='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk}'></span>";
 				
 				# if ($detail["ishub"] == "interface" || $detail["ishub"] == "emptyport") {
@@ -398,6 +402,27 @@ switch ($_POST['action']) {
 				
 				if ($connected == "Disconnected" && $detail["ishub"] == "hub" && $port_vmstate == "running") { $connected="Available(Hub)" ;}
 
+				if ($connected == "Disconnected") {
+					if (isset($inuse_devices["usb"][$disk])) {
+						$inuse_vm_name=$inuse_devices["usb"][$disk]["VM"] ;
+					#	$connected="" ;
+						$type="Outside" ;
+
+
+						if ($inuse_vm_name!="") {
+							$connected="Connected(Outside)" ;
+							$usb_state[$srlnbr]["connected"] = '1' ;
+							$usb_state[$srlnbr]["connectmethod"] = "Auto";
+							$usb_state[$srlnbr]["connectmap"] = "Device" ;
+							$vm_name=$inuse_vm_name;
+						}
+						
+						if ($inuse_devices["usb"][$disk]["zpool"]) $connected="Inuse ZFS" ;
+						if ($inuse_devices["usb"][$disk]["mounted"]) $connected="Inuse Mounted" ;
+						if ($inuse_devices["usb"][$disk]["unraid"]) $connected="Inuse Unraid" ;
+					}
+				}
+
 
 				$device_mapping = "<td>Device Mapping</td><td>".$vm_name."</td><td>".$state."</td>" ;
 				$device_mapping .= "<td class='mount'>".make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device",$detail["ishub"])."</td>";
@@ -447,7 +472,15 @@ switch ($_POST['action']) {
 				if ($port_map_vm != "" && $usb_state[$srlnbr]["connected"] == true &&  $usb_state[$srlnbr]["connectmap"] == "Port") $connect_mapping = $port_mapping ;
 
 				echo $connect_mapping ;	
+				if ($connected=="Connected(Outside)" || $connected=="Inuse ZFS" || $connected=="Inuse Mounted"|| $connected=="Inuse Unraid") {
+				echo "<td class='red-text'>".$connected."</td>" ;
+			} else {
+				if ($usb_state[$srlnbr]["connected"]) {
+					echo "<td class='green-text'>".$connected."</td>" ;
+				} else  {
 				echo "<td>".$connected."</td>" ;
+				}
+			}
 				/* USBIP Bind button */
 				if ($usbip_enabled == "enabled") echo "<td class='mount'>{$mbutton}</td>";
 			    $usbip_status=$detail["usbip_status"] ;
@@ -793,10 +826,16 @@ switch ($_POST['action']) {
       
 	
 			echo "<tr><td>" ;
-			  $list= get_inuse_usbdisks() ;
+			  $list= is_mounted_check("/dev/sdc") ;
 
 				var_dump($list) ;
-				echo "Test" ;   
+			 
+				echo "</td></tr>" ;
+			echo "<tr><td>" ;
+			  $list= get_inuse_devices() ;
+
+				var_dump($list) ;
+				
 				echo "</td></tr>" ;
 					   
 	 
@@ -819,6 +858,7 @@ switch ($_POST['action']) {
 		case 'usbdash':
 			$allocated = "" ;
 			$dash_array=array() ;
+			$inuse_devices=get_inuse_devices() ;
 			$usb_devices =	get_all_usb_info() ;
 			ksort($usb_devices,SORT_NATURAL  ) ;
 			$usb_connects = load_usb_connects() ;
@@ -840,15 +880,32 @@ switch ($_POST['action']) {
 						}
 						else $usb_rmt_iphost = "" ;
 					} else {
+						$USBPORT=$usb_state[$srlnbr]["USBPort"] ;
+						if (isset($inuse_devices["usb"][$USBPORT]) && $usb_state[$srlnbr]["connected"] != '1' && $inuse_devices["usb"][$USBPORT]["VM"] != "") {
+							$usb_state[$srlnbr]["VM"]=$inuse_devices["usb"][$USBPORT]["VM"] ;
+							$usb_state[$srlnbr]["connected"] = '1' ;
+						}
+
+
 				        if ($usb_state[$srlnbr]["connected"] == '1')	{
 					    $state="Connected(VM)" ;
 					    $allocated = $usb_state[$srlnbr]["VM"] ;
 					    $orb_colour ='green' ;
 				        } else {
+							$orb_colour ='blue' ;
+						if	(isset($inuse_devices["usb"][$USBPORT])) {
+							if ($inuse_devices["usb"][$USBPORT]["zpool"]) {$state="Inuse ZFS" ;$orb_colour ='red' ; }
+							if ($inuse_devices["usb"][$USBPORT]["mounted"]) {$state="Inuse Mounted" ;$orb_colour ='red' ;}
+							if ($inuse_devices["usb"][$USBPORT]["unraid"]) {$state="Inuse Unraid" ;$orb_colour ='red' ;}
+							
+						} else {
+
 					    $state="Available" ;
+						$orb_colour ='blue' ;
+						}
 					
 				    	$allocated = "" ;
-					    $orb_colour ='blue' ;
+					    
 				        }
 
 		}
