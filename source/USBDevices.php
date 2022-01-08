@@ -405,7 +405,6 @@ switch ($_POST['action']) {
 				if ($connected == "Disconnected") {
 					if (isset($inuse_devices["usb"][$disk])) {
 						$inuse_vm_name=$inuse_devices["usb"][$disk]["VM"] ;
-					#	$connected="" ;
 						$type="Outside" ;
 
 
@@ -415,6 +414,7 @@ switch ($_POST['action']) {
 							$usb_state[$srlnbr]["connectmethod"] = "Auto";
 							$usb_state[$srlnbr]["connectmap"] = "Device" ;
 							$vm_name=$inuse_vm_name;
+							if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ;
 						}
 						
 						if ($inuse_devices["usb"][$disk]["zpool"]) $connected="Inuse ZFS" ;
