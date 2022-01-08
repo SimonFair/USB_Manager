@@ -1053,6 +1053,7 @@ return $cmdreturn ;
 
 function get_inuse_devices() {
 	global $disks,$lv, $libvirt_running ;
+	
 	/* Get all unraid disk devices (array disks, cache, and pool devices) */
 	foreach ($disks as $d) {
 		if ($d['device']) {
@@ -1140,7 +1141,7 @@ function get_inuse_devices() {
 	$inuse["pci"] = $pciinuse ;
 
 	# Find Bluetooth Controllers
-
+    if (is_dir("/sys/class/bluetooth")) {
 	$bluetooth=array() ;
 	$hci=listDir2("/sys/class/bluetooth") ;
 
@@ -1152,8 +1153,7 @@ function get_inuse_devices() {
 			$bluetooth=explode(":",str_replace("/sys/class/bluetooth/".$hci_dev."/device/driver/","",$usbdev))[0] ;
 			if ($bluetooth != "module") $inuse["bluetooth"][$bluetooth]="Bluetooth Controller" ;
 		}
-	}
-
+	}}
 
 	return $inuse ;
 }
