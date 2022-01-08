@@ -66,7 +66,7 @@ function netmasks($netmask, $rev = false)
 }
 */
 
-function make_mount_button($device) {
+function make_mount_button($device, $class) {
 	global $paths, $Preclear, $loaded_usbip_host,$usb_state;
 
 	$button = "<span><button device='{$device["BUSID"]}' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
@@ -88,7 +88,7 @@ function make_mount_button($device) {
 		 } 
 			else 
 			{
-				if ($connected == '1' ) $disabled="disabled" ; else $disabled = "enabled"; 
+				if ($connected == '1'  || $class == "outside") $disabled="disabled" ; else $disabled = "enabled"; 
 			}
 
 		if ($device["DRIVER"] == "usbip-host") {
@@ -335,7 +335,7 @@ switch ($_POST['action']) {
 					$indent .= "|__ ";
 				} else $indent = "" ;
 				$detail["BUSID"] = $disk ;
-				$mbutton = make_mount_button($detail);		
+			#	$mbutton = make_mount_button($detail);		
 				/* Device serial number */
 			    echo "<td>{$bus_id}</td><td>{$indent}{$disk}</td>";
 
@@ -423,7 +423,7 @@ switch ($_POST['action']) {
 					}
 				}
 
-
+				$mbutton = make_mount_button($detail, $detail["ishub"]);
 				$device_mapping = "<td>Device Mapping</td><td>".$vm_name."</td><td>".$state."</td>" ;
 				$device_mapping .= "<td class='mount'>".make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device",$detail["ishub"])."</td>";
 
