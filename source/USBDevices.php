@@ -163,7 +163,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 
 
 	$buttontext= 'VM Attach' ;
-	if ($vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled." || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
+	if ($class=="outside" || $vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled." || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
 		{
 			$disabled = "disabled  " ;
 		} else {
@@ -417,9 +417,9 @@ switch ($_POST['action']) {
 							if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ;
 						}
 						
-						if ($inuse_devices["usb"][$disk]["zpool"]) $connected="Inuse ZFS" ;
-						if ($inuse_devices["usb"][$disk]["mounted"]) $connected="Inuse Mounted" ;
-						if ($inuse_devices["usb"][$disk]["unraid"]) $connected="Inuse Unraid" ;
+						if ($inuse_devices["usb"][$disk]["zpool"]) {$connected="Inuse ZFS" ; $detail["ishub"] = "outside" ; }
+						if ($inuse_devices["usb"][$disk]["mounted"]) { $connected="Inuse Mounted" ;$detail["ishub"] = "outside" ; }
+						if ($inuse_devices["usb"][$disk]["unraid"]) {$connected="Inuse Unraid" ; $detail["ishub"] = "outside" ; }
 					}
 				}
 

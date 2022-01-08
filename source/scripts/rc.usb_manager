@@ -259,7 +259,8 @@ function process_vm_usb_devices($vm, $action) {
 				}
 			}
 		} else {	 
-	
+		$inuse_devices=get_inuse_devices() ;
+		#var_dump($inuse_devices["usb"]) ;
 		$vm_mappings=load_vm_mappings(); 
         #var_dump($vm_mappings) ;
     	foreach ($vm_mappings as $key => $vm_map) {
@@ -311,6 +312,17 @@ function process_vm_usb_devices($vm, $action) {
 										if ($usb_state[$key2]["connected"]== "1") {
 											usb_manager_log("Info: rc.usb_manager Autoconnect Start {$key2} vm: {$vm} Device in Use action ignored. ");
 										} else {
+											
+										if (isset($inuse_devices["usb"][$port])) {
+										if ($inuse_devices["usb"][$port]["unraid"] || $inuse_devices["usb"][$port]["mounted"] || $inuse_devices["usb"][$port]["zpool"]) {
+										usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use outside USB Manager action ignored. ");
+										continue ;
+										}
+										if ($inuse_devices["usb"][$port]["VM"] != "") {
+										usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use outside USB Manager for another VM action ignored. ");
+										continue ;
+							  			}
+										}
 											usb_manager_log("Info: rc.usb_manager Autoconnect for hub {$key2} {$vmname} ".$vm_map["autoconnectstart"]); 
 									   	if ($vm_map["autoconnectstart"] == "yes") {
 										   vm_map_action($vmname, "attach") ;
@@ -334,7 +346,20 @@ function process_vm_usb_devices($vm, $action) {
 						if ($usb_state[$usbkey]["connected"]== "1") {
 							usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use action ignored. ");
 							continue ;	}
-					   if ($vm_map["autoconnectstart"] == "yes") {
+
+						if (isset($inuse_devices["usb"][$port])) {
+							var_dump($inuse_devices["usb"][$port]) ;
+							if ($inuse_devices["usb"][$port]["unraid"] || $inuse_devices["usb"][$port]["mounted"] || $inuse_devices["usb"][$port]["zpool"]) {
+							usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use outside USB Manager action ignored. ");
+							continue ;
+							}
+							if ($inuse_devices["usb"][$port]["VM"] != "") {
+								usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use outside USB Manager for another VM action ignored. ");
+								continue ;
+							}	
+							
+						}
+						if ($vm_map["autoconnectstart"] == "yes") {
 						   vm_map_action($vmname, "attach") ;
 						   usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} ") ;
 						   load_usbstate();
