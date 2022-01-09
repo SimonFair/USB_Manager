@@ -163,7 +163,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 
 
 	$buttontext= 'VM Attach' ;
-	if ($class=="outside" || $vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled." || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
+	if ($class=="outside" || $vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled" || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
 		{
 			$disabled = "disabled  " ;
 		} else {
