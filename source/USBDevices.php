@@ -219,6 +219,7 @@ switch ($_POST['action']) {
 		#var_dump($usbip) ;
 		$optionempty = $_POST["empty"] ;
 		$topology = $_POST["topo"] ;
+		$hideserial = $_POST["hideserial"] ;
 		if ($optionempty =="false") {
 		foreach ($usbip as $busid => $detail) {
 			#var_dump($busid) ;
@@ -264,7 +265,9 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div id='usb_tab' class='show-disks'>";
-		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td><td>"._('Serial Numbers')."</td><td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM State')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
+		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
+		if ($hideserial =="true") echo "<td>"._('Serial Numbers')."</td>" ;
+		echo "<td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
 		#echo "<td>"._('')."</td></tr></thead>";
@@ -352,12 +355,12 @@ switch ($_POST['action']) {
 				} else {
 					$vendor=$detail["ID_VENDOR"] ;
 				}
-				
-				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td>".$vendor.":".$model."</td>" ; 
+				if ($srlnbr_short != "" ) $serial_hover=$srlnbr_short  ; else $serial_hover=$srlnbr ; 
+				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td><span title=\"".$serial_hover."\">".$vendor.":".$model."</span></td>" ; 
 			   
-			
-				if ($srlnbr_short != "") echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
-
+				if ($hideserial == "true") {
+					if ($srlnbr_short != "" ) echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
+				}
 
 				echo "<td>".$detail["volume"]."</td>" ;
 
@@ -423,11 +426,59 @@ switch ($_POST['action']) {
 					}
 				}
 
+  				switch ($state) {
+ 					case 'running':
+    					$shape = 'play';
+    					$status = 'started';
+  						$color = 'green-text';
+						break;
+					case 'paused':
+					case 'pmsuspended':
+						$shape = 'pause';
+						$status = 'paused';
+						$color = 'orange-text';
+						break;
+					case 'Not Allowed':
+						$shape = 'square';
+						$status = 'Not Allowed';
+						$color = 'grey-text';
+						break;
+					default:
+						$shape = 'square';
+						$status = 'stopped';
+						$color = 'red-text';
+						break;
+					}
+
+
 				$mbutton = make_mount_button($detail, $detail["ishub"]);
-				$device_mapping = "<td>Device Mapping</td><td>".$vm_name."</td><td>".$state."</td>" ;
+				$device_mapping = "<td>Device Mapping</td><td><i class='fa fa-$shape $status $color'></i> ".$vm_name."</td>" ;
+				#$device_mapping = "<td>Device Mapping</td><td><i class='fa fa-$shape $status $color'></i> ".$vm_name."</td><td>".$state."</td>" ;
 				$device_mapping .= "<td class='mount'>".make_vm_button($vm_name, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$state, $detail["isflash"] ,$detail["usbip_status"],"Device",$detail["ishub"])."</td>";
 
-				$port_mapping = "<td>Port Mapping</td><td>".$port_map_vm."</td><td>".$port_vmstate."</td>" ;
+				switch ($port_vmstate) {
+					case 'running':
+						$shape = 'play';
+					  	$status = 'started';
+					 	$color = 'green-text';
+					  	break;
+					case 'paused':
+					case 'pmsuspended':
+					  	$shape = 'pause';
+					  	$status = 'paused';
+					  	$color = 'orange-text';
+					  	break;
+					default:
+					  	$shape = 'square';
+					  	$status = 'stopped';
+					  	$color = 'red-text';
+					  	break;
+					}
+				  
+				  
+				
+				$port_mapping = "<td>Port Mapping</td><td><i class='fa fa-$shape $status $color'></i> ".$port_map_vm."</td>" ;
+				#$port_mapping = "<td>Port Mapping</td><td><i class='fa fa-$shape $status $color'></i> ".$port_map_vm."</td><td>".$port_vmstate."</td>" ;
 				$port_mapping .= "<td class='mount'>".make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"])."</td>";
 
 
@@ -464,7 +515,7 @@ switch ($_POST['action']) {
 				if ($vm_name == ""  && $port_map_vm == "" ) {
 					$type="No Mappings" ;
 					$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"]);
-					$connect_mapping = "<td>".$type."</td><td></td><td></td><td class='mount'>{$vmbutton}" ;
+					$connect_mapping = "<td>".$type."</td><td></td><td class='mount'>{$vmbutton}" ;
 					#if ($usbip_enabled == "enabled") $connect_mapping .= "<td></td><td></td><td></td>" ;
 				}
 				
@@ -507,7 +558,9 @@ switch ($_POST['action']) {
 				echo "<td>".$port_vmstate."</td>" ;
 				$vmbutton = make_vm_button($port_map_vm, $detail["BUSNUM"],$detail["DEVNUM"],$srlnbr,$port_vmstate, $detail["isflash"] ,$detail["usbip_status"],"Port",$detail["ishub"]);
 				echo "<td class='mount'>{$vmbutton}</td><td></td><td></td>" ;*/
-				echo "<tr><td></td><td></td><td></td><td></td><td></td><td></td>".$connect_mapping."</td><td>" ;
+				echo "<tr><td></td><td></td><td></td><td></td>";
+				if ($hideserial=="true") echo "<td></td>"; 
+				echo "<td></td>".$connect_mapping."</td><td>" ;
 				if ($usbip_enabled == "enabled") echo "<td></td><td></td><td></td>" ;
 				echo "</tr>" ;
 			    } 
@@ -822,24 +875,11 @@ switch ($_POST['action']) {
 		break ;	
 
 		case 'db1':
-        
-      
-	
 			echo "<tr><td>" ;
-			  $list= is_mounted_check("/dev/sdc") ;
-
-				var_dump($list) ;
-			 
-				echo "</td></tr>" ;
-			echo "<tr><td>" ;
-			  $list= get_inuse_devices() ;
-
-				var_dump($list) ;
-				
-				echo "</td></tr>" ;
-					   
-	 
-					break;
+			$list= get_all_usb_info() ;
+			var_dump($list) ;
+			echo "</td></tr>" ;
+			break;
 
 		case 'vm_connect':
 			$vm = urldecode($_POST['vm']);

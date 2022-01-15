@@ -225,8 +225,8 @@ function usb_device_remove_action($bus, $dev) {
    	if (isset($serial)) {
 
 		$state = get_vm_state($vm) ;
-		if ($state != "shutoff" ) {
-#		if ($state != "shutoff" && $state != "nostate") {
+		#if ($state != "shutoff" ) {
+		if ($state != "shutoff" && $state != "nostate") {
 			$vmname = $vm.";".$bus.";".$dev.";".$key.";Auto;Device;" ;	 
 			vm_map_action($vmname, "detach") ;
 			usb_manager_log("Info: rc.usb_manager Disconnect  {$serial} vm: {$vm} {$state} {$bus} {$dev} ");

@@ -278,7 +278,8 @@ check_usbip_modules() ;
 
 		var empty = document.getElementById("empty-swt")
 		var topo = document.getElementById("topo-swt")
-		$.post(UDURL,{action:"get_content",display:display, empty:empty.checked, topo:topo.checked},function(data)
+		var hideserial = document.getElementById("serial-swt")
+		$.post(UDURL,{action:"get_content",display:display, empty:empty.checked, topo:topo.checked, hideserial:hideserial.checked},function(data)
 		{
 			maxWidth = [];
 			var toggled = $("tr.toggle-parts").filter(":visible").map(function(){return $(this).attr("name");}).get();
@@ -782,6 +783,11 @@ check_usbip_modules() ;
 		$(this).css("display", $(".disks-switch").is(":checked") ? "block" : "none");
 	});
 
+	$( "#usbip_devices_list" ).arrive(".show-serial", {onceOnly:false}, function()
+	{
+		$(this).css("display", $(".serial-switch").is(":checked") ? "block" : "none");
+	});
+
 	$( "#usbip_devices_list" ).arrive(".show-ports", {onceOnly:false}, function()
 	{
 		$(this).css("display", $(".port-switch").is(":checked") ? "block" : "none");
@@ -815,6 +821,8 @@ check_usbip_modules() ;
 								 "<?=_('USB Devices');?>");
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Topology");?>"><input type="checkbox" class="topo-switch" id="topo-swt"></a>',
 								 "<?=_('USB Devices');?>");
+		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Serial");?>"><input type="checkbox" class="serial-switch" id="serial-swt"></a>',
+								 "<?=_('USB Devices');?>");
 	
 
 		/* Add switchButton to Tab/Title bar */
@@ -823,6 +831,14 @@ check_usbip_modules() ;
 		{
 			$('.show-disks').slideToggle('slow');
 			$.cookie('USB-disks-view', $('.disks-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+		});
+
+		$('.serial-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Serial');?>", off_label: "<?=_('Serial');?>", checked: $.cookie('USB-serial-view') != 'false'});
+		$('.serial-switch').change(function()
+		{
+			$('.show-serial').slideToggle('slow');
+			$.cookie('USB-serial-view', $('.serial-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			usb_disks(tab_usbdisks);
 		});
 
 		$('.historical-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Historic');?>", off_label: "<?=_('Historic');?>", checked: $.cookie('USB-historic-view') != 'false'});
