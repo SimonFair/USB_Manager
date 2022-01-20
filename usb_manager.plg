@@ -25,6 +25,10 @@
 ##USB_Manager
 ###&version;
 
+  - Revent to 2021.12.30 Version.
+
+202.01.15
+
   - Chg Combine VM Name and Status. Status is now replaced with an icon.
   - Add Slider for Serial Number to Hide Serial.
   - Add Hover over on the Vendor:Product to show serial.
