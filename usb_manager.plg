@@ -29,7 +29,7 @@
 
 2022.01.21
 
-  - Revent to 2021.12.30 Version.
+  - Revert to 2021.12.30 Version.
 
 2022.01.15
 
@@ -41,13 +41,13 @@
 
   - Add HUB processing. Enable via the configuration page. Allow you to define a port mapping on a hub. 
         When a device is connected to a hub it will be connected at plugin or VM start as defined on the port connection.
-        Casacaded hubs will need there own mapping. 
+        Cascaded hubs will need their own mapping. 
   - Add Inuse Processing. Plugin will report if a device is being used outside of USB Manager. 
         It will show Mounted devices on UD, devices in use within Unraid and devices used in a ZPool.
   - Add Bluetooth controllers Identify with an icon.
   - Chg Status is set to Green if connected and Red if used outside of USB Manager. 
   - Chg Show ProductID from Database if available.
-  - Chg Dashboard updated to show inuse devices.      
+  - Chg Dashboard updated to show in use devices.      
 
 2021.12.30
 
@@ -70,7 +70,7 @@ Revert Changes for 2021.12.12
   - Chg Disable device mapping for Root Hubs and Hubs. Disable port mapping for Root Hub.
   - Chg Detach button show next to connected port or device on the main line.
   - Fix Buttons if Hotplug mapping used.
-  - Note reboot or disconnect/reconned of Hub may be required.
+  - Note reboot or disconnect/reconnect of Hub may be required.
 
 2021.09.18
 
@@ -88,7 +88,7 @@ Revert Changes for 2021.12.12
   
 2021.07.27
 
-  - Fix Change Unraid Flash to Unraid inuse on the hub lines on dashboard page.
+  - Fix Change Unraid Flash to Unraid in use on the hub lines on dashboard page.
   - Chg Use Port as standard rather than Physical BUSI/Port.
 
 2021.07.23
@@ -110,7 +110,7 @@ Revert Changes for 2021.12.12
 
 2021.06.02a
 
-  - Fix table formating if both port and device mappings for new volume column
+  - Fix table formatting if both port and device mappings for new volume column
   - Add Log virsh calls.
 
 2021.06.26
@@ -119,7 +119,7 @@ Revert Changes for 2021.12.12
 
 2021.06.20
 
-- Enhancement enable port processing for mappinng ports to VM at start.
+- Enhancement enable port processing for mapping ports to VM at start.
 - Update text on edit settings page to describe entry being changed.
 
 2021.06.19
@@ -134,9 +134,9 @@ Revert Changes for 2021.12.12
 
 - Initial beta release.
 
-If you are using USBIP-GUI continue to do so at this time. This plugin will suppercede USBIP-GUI in the future and will migrate configurations.
+If you are using USBIP-GUI continue to do so at this time. This plugin will supercede USBIP-GUI in the future and will migrate configurations.
 
-USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files we remane on the flash drive you can copy them to usb_manager directory.
+USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files we rename on the flash drive you can copy them to usb_manager directory.
 
 USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
 
