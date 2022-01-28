@@ -136,7 +136,7 @@ Revert Changes for 2021.12.12
 
 If you are using USBIP-GUI continue to do so at this time. This plugin will supercede USBIP-GUI in the future and will migrate configurations.
 
-USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files we rename on the flash drive you can copy them to usb_manager directory.
+USBIP-GUI and USB_Manager cannot co-exist. If you want to replace USBIP-GUI then uninstall first, Config files will remain on the flash drive you can copy them to usb_manager directory.
 
 USBIP and USBIP-HOST module are not loaded by default. If you want to use them enable USBIP in the Settings and click the install button to install the additional plug.
 
