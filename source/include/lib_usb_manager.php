@@ -790,24 +790,27 @@ function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map)
 
 			$return=virsh_device_by_bus($action,$vmname, $bus, $dev) ;
 
+			#$usbstatekey=$srlnbr ; #v2
+			$usbstatekey=$bus."/".$dev ; #v2
+
 			if (substr($return,0,6) === "error:") {
-				save_usbstate($srlnbr, "virsherror" , true) ;
+				save_usbstate($usbstatekey, "virsherror" , true) ;
 			} else {
-		    	save_usbstate($srlnbr, "virsherror" , false) ;
+		    	save_usbstate($usbstatekey, "virsherror" , false) ;
 			}
 			
 			if ($action == "attach") {
-					save_usbstate($srlnbr, "connected" , true) ;
+					save_usbstate($usbstatekey, "connected" , true) ;
 				} else {
-					save_usbstate($srlnbr, "connected" , false) ;
+					save_usbstate($usbstatekey, "connected" , false) ;
 					$vmname = ""  ;
 					$method = "" ;
 					$map = "" ;
 				}
-			save_usbstate($srlnbr, "VM" , $vmname) ;	
-			save_usbstate($srlnbr, "virsh" , $return) ;
-			save_usbstate($srlnbr, "connectmethod" , $method) ;
-			save_usbstate($srlnbr, "connectmap" , $map) ;
+			save_usbstate($usbstatekey, "VM" , $vmname) ;	
+			save_usbstate($usbstatekey, "virsh" , $return) ;
+			save_usbstate($usbstatekey, "connectmethod" , $method) ;
+			save_usbstate($usbstatekey, "connectmap" , $map) ;
 
 			
 			return $return ;
@@ -825,11 +828,13 @@ function vm_map_action($vm, $action)
 			if (isset($explode[5])) $map=$explode[5] ; else $map="" ;
 			
 			$usbstr = '';
+			#$usbstatekey = $srlnbr ; #v2
+			$usbstatekey=$bus."/".$dev ; #v2
 
 			if ($map=="hub") {
 				$config_file = $GLOBALS["paths"]["usb_state"];
 				$usb_state = @parse_ini_file($config_file, true);
-				$hubid = $usb_state[$srlnbr]["USBPort"] ;
+				$hubid = $usb_state[$usbstatekey]["USBPort"] ;
 
 				foreach ($usb_state as $usb_srlnbr => $usb_device) {
 					$class=$usb_device["class"] ;
@@ -874,7 +879,8 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$USBDevices = get_usbip_devs() ;
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-
+	$usbstatekey=$serial ; #v2
+	$usbstatekey=$bus."/".$dev ; #v2
 
 	// Get a list of all usb hubs so we can blacklist them
 	exec("cat /sys/bus/usb/drivers/hub/*/modalias | grep -Po 'usb:v\K\w{9}' | tr 'p' ':'", $arrAllUSBHubs);
@@ -907,7 +913,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	#if (in_array(strtoupper($id), $arrAllUSBHubs)) {
 		if (!isset($device)) {
 		// Device class is a Hub, skip device
-		$config[$serial]["ishub"] = true ;
+		$config[$usbstatekey]["ishub"] = true ;
 		$udev=array();
 		#$device = array() ;
 		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$physical_busid, $udev) ;
@@ -918,20 +924,21 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 			$device[$udevisplit[0]] = $udevisplit[1] ;
 		}
         
-	} else {$config[$serial]["ishub"] = false ; }
+	} else {$config[$usbstatekey]["ishub"] = false ; }
 
 	if (!$device["isflash"]) {
     
-	$config[$serial]["connected"] = false ;
-	$config[$serial]["parents"] =  $parents;
-	$config[$serial]["bus"] = $device["BUSNUM"] ;
-	$config[$serial]["dev"] = $device["DEVNUM"] ;
-	$config[$serial]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
-	$config[$serial]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
-	$config[$serial]["ID_MODEL"] = $device["ID_MODEL"] ;
-	$config[$serial]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
-	$config[$serial]["USBPort"] = $physical_busid ;
-	$config[$serial]["class"] = $device["ishub"] ;
+	$config[$usbstatekey]["connected"] = false ;
+	$config[$usbstatekey]["parents"] =  $parents;
+	$config[$usbstatekey]["bus"] = $device["BUSNUM"] ;
+	$config[$usbstatekey]["dev"] = $device["DEVNUM"] ;
+	$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
+	$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
+	$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"] ;
+	$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
+	$config[$usbstatekey]["USBPort"] = $physical_busid ;
+	$config[$usbstatekey]["class"] = $device["ishub"] ;
+	$config[$usbstatekey]["ID_SERIAL"] =  $device["ID_SERIAL"];
 
 	save_ini_file($config_file, $config);
 	}
@@ -963,16 +970,21 @@ function USBMgrBuildConnectedStatus()
 			}
 		$parents = implode("," , $parents );
 
-		$config[$device["ID_SERIAL"]]["connected"] = false ;
-		$config[$device["ID_SERIAL"]]["bus"] = $device["BUSNUM"] ;
-		$config[$device["ID_SERIAL"]]["dev"] = $device["DEVNUM"] ;
-		$config[$device["ID_SERIAL"]]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
-		$config[$device["ID_SERIAL"]]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
-		$config[$device["ID_SERIAL"]]["ID_MODEL"] = $device["ID_MODEL"] ;
-		$config[$device["ID_SERIAL"]]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
-		$config[$device["ID_SERIAL"]]["USBPort"] = $key ;
-		$config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
-		$config[$device["ID_SERIAL"]]["parents"] =  $parents;
+		$usbstatekey=$serial ; #v2
+		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
+	
+
+		$config[$usbstatekey]["connected"] = false ;
+		$config[$usbstatekey]["bus"] = $device["BUSNUM"] ;
+		$config[$usbstatekey]["dev"] = $device["DEVNUM"] ;
+		$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
+		$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
+		$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"] ;
+		$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
+		$config[$usbstatekey]["USBPort"] = $key ;
+		$config[$usbstatekey]["class"] = $device["ishub"] ;
+		$config[$usbstatekey]["parents"] =  $parents;
+		$config[$usbstatekey]["ID_SERIAL"] =  $device["ID_SERIAL"];
 	}
 
 	save_ini_file($config_file, $config);
@@ -990,10 +1002,11 @@ function USBMgrUpgradeConnectedStatus()
 	{
         if ($device["isflash"]) continue ;
 
-
+		$usbstatekey=$device["ID_SERIAL"] ; #v2
+		$usbstatekey=$bus."/".$dev ; #v2
 		# Build Parents
 
-		if (!isset($config[$device["ID_SERIAL"]]["parents"])) {
+		if (!isset($config[$usbstatekey]["parents"])) {
 		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
 		$parents = array() ;
 		exec( $udevcmd , $parents);
@@ -1003,9 +1016,9 @@ function USBMgrUpgradeConnectedStatus()
 			$parents[$key] = trim(substr($parent, 13) , '"') ;
 			}
 		$parents = implode("," , $parents );
-		$config[$device["ID_SERIAL"]]["parents"] =  $parents;
+		$config[$usbstatekey]["parents"] =  $parents;
 		}	
-		if (!isset($config[$device["ID_SERIAL"]]["class"])) $config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
+		if (!isset($config[$usbstatekey]["class"])) $config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
 
 	}
 

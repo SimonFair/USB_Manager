@@ -70,7 +70,11 @@ function make_mount_button($device, $class) {
 	global $paths, $Preclear, $loaded_usbip_host,$usb_state;
 
 	$button = "<span><button device='{$device["BUSID"]}' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
-	$connected=$usb_state[$device["ID_SERIAL"]]["connected"] ;
+
+	$usbstatekey = $srlnbr ; #v2
+	$usbstatekey = $busid."/".$devid ; #v2
+
+	$connected=$usb_state[$usbstatekey]["connected"] ;
 	
 
 		if ($device["isflash"] == true ) {
@@ -140,8 +144,12 @@ function make_detach_button($port) {
 function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_status,$map,$class) {
 	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist, $usb_state;
 
-	$connected_method=	$usb_state[$srlnbr]["connectmethod"] ;
-	$connected_map=	$usb_state[$srlnbr]["connectmap"] ;
+	#$usbstatekey = $srlnbr ; #v2
+	$usbstatekey = $busid."/".$devid ; #v2
+	#$usbstatekey = ltrim($busid)."/".ltrim($devid) ; 
+
+	$connected_method=	$usb_state[$usbstatekey]["connectmethod"] ;
+	$connected_map=	$usb_state[$usbstatekey]["connectmap"] ;
 	if ($connected_map=="") $connected_map="Device" ;
 	if ($class == "hub") $map=$class ;
 	$hub_proc = get_config("Config","HUBPROC") ;
@@ -172,7 +180,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 		}
 
 	$context = "disk";
-	if ($usb_state[$srlnbr]["connected"] == '1' ) {
+	if ($usb_state[$usbstatekey]["connected"] == '1' ) {
 		$buttontext= 'VM Detach';
 		if ($map!=$connected_map) 	$disabled = "disabled  " ; 
 		if ($map=="Device" && $connected_map=="VMHotplug") $disabled = "enabled " ;
@@ -287,6 +295,9 @@ switch ($_POST['action']) {
 
 
 				$srlnbr=$detail["ID_SERIAL"] ;
+				#$usbstatekey=$srlnbr ; #v2
+				$usbstatekey=$detail["BUSNUM"]."/".$detail["DEVNUM"] ; #v2
+				
 				if (isset($detail["ID_SERIAL_SHORT"])) $srlnbr_short=$detail["ID_SERIAL_SHORT"] ; else $srlnbr_short="" ;
 				$vm_name="" ;
 				$vm_name=$vm_maps[$srlnbr]["VM"] ;
@@ -374,24 +385,24 @@ switch ($_POST['action']) {
 					if ($libvirtd_running && $port_map_vm != "" ) $port_vmstate=get_vm_state($port_map_vm) ; else $port_vmstate = "Disabled" ;
 				} else { $port_vmstate="No VM Defined" ;} 
 
-				if (isset($usb_state[$srlnbr]["connected"])) {
-					$connected = $usb_state[$srlnbr]["connected"];
-					$connected_map = $usb_state[$srlnbr]["connectmap"] ;
+				if (isset($usb_state[$usbstatekey]["connected"])) {
+					$connected = $usb_state[$usbstatekey]["connected"];
+					$connected_map = $usb_state[$usbstatekey]["connectmap"] ;
 					if ($connected_map =="") $connected_map="Device" ;
 					
 					if ($connected == true && $connected_map == "VMHotplug") {
-						$vm_name = $usb_state[$srlnbr]["VM"] ;
+						$vm_name = $usb_state[$usbstatekey]["VM"] ;
 						if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ; else $state = "Disabled" ;
 					}
 					if ($connected == true && $connected_map == "Hub") {
-						$vm_name = $usb_state[$srlnbr]["VM"] ;
+						$vm_name = $usb_state[$usbstatekey]["VM"] ;
 						if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ; else $state = "Disabled" ;
 					}
 					if ($connected == true) {$connected ="Connected(".$connected_map.")" ;} else {$connected="Disconnected";}
 				  } else $connected = "Disconnected" ;
   
-				if ($usb_state[$srlnbr]["virsherror"] == true)   {
-					$error=$usb_state[$srlnbr]["virsh"] ;
+				if ($usb_state[$usbstatekey]["virsherror"] == true)   {
+					$error=$usb_state[$usbstatekey]["virsh"] ;
 					$connected = "<a class='info'><i class='fa fa-warning fa-fw orange-text'></i><span>"._(ltrim($error, "\n"))."</span></a>Virsh Error";
 				}
 
@@ -413,9 +424,9 @@ switch ($_POST['action']) {
 
 						if ($inuse_vm_name!="") {
 							$connected="Connected(Outside)" ;
-							$usb_state[$srlnbr]["connected"] = '1' ;
-							$usb_state[$srlnbr]["connectmethod"] = "Auto";
-							$usb_state[$srlnbr]["connectmap"] = "Device" ;
+							$usb_state[$usbstatekey]["connected"] = '1' ;
+							$usb_state[$usbstatekey]["connectmethod"] = "Auto";
+							$usb_state[$usbstatekey]["connectmap"] = "Device" ;
 							$vm_name=$inuse_vm_name;
 							if ($libvirtd_running && $vm_name != "") $state=get_vm_state($vm_name) ;
 						}
@@ -520,13 +531,13 @@ switch ($_POST['action']) {
 				}
 				
 #			}
-				if ($port_map_vm != "" && $usb_state[$srlnbr]["connected"] == true &&  $usb_state[$srlnbr]["connectmap"] == "Port") $connect_mapping = $port_mapping ;
+				if ($port_map_vm != "" && $usb_state[$usbstatekey]["connected"] == true &&  $usb_state[$usbstatekey]["connectmap"] == "Port") $connect_mapping = $port_mapping ;
 
 				echo $connect_mapping ;	
 				if ($connected=="Connected(Outside)" || $connected=="Inuse ZFS" || $connected=="Inuse Mounted"|| $connected=="Inuse Unraid") {
 				echo "<td class='red-text'>".$connected."</td>" ;
 			} else {
-				if ($usb_state[$srlnbr]["connected"]) {
+				if ($usb_state[$usbstatekey]["connected"]) {
 					echo "<td class='green-text'>".$connected."</td>" ;
 				} else  {
 				echo "<td>".$connected."</td>" ;
@@ -551,7 +562,7 @@ switch ($_POST['action']) {
 				echo "</tr>" ;
 				$connect_mapping =$port_mapping ;
 				if ($port_map_vm !="" && $vm_name != "" && 	!$detail["isflash"]) {
-					if ($port_map_vm != "" && $usb_state[$srlnbr]["connected"] == true &&  $usb_state[$srlnbr]["connectmap"] == "Port") $connect_mapping = $device_mapping ;
+					if ($port_map_vm != "" && $usb_state[$usbstatekey]["connected"] == true &&  $usb_state[$usbstatekey]["connectmap"] == "Port") $connect_mapping = $device_mapping ;
 				/*$type="Port Mapping:" ;
 				echo "<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>".$type."</td>" ;
 				echo "<td>".$port_map_vm."</td>";
@@ -906,6 +917,7 @@ switch ($_POST['action']) {
 
 				$allocated = "" ;
 				$srlnbr = $device["ID_SERIAL"] ;
+				$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"] ;
 
 					if (isset($device["usbip_status"] )) {
 						
@@ -920,16 +932,16 @@ switch ($_POST['action']) {
 						}
 						else $usb_rmt_iphost = "" ;
 					} else {
-						$USBPORT=$usb_state[$srlnbr]["USBPort"] ;
-						if (isset($inuse_devices["usb"][$USBPORT]) && $usb_state[$srlnbr]["connected"] != '1' && $inuse_devices["usb"][$USBPORT]["VM"] != "") {
-							$usb_state[$srlnbr]["VM"]=$inuse_devices["usb"][$USBPORT]["VM"] ;
-							$usb_state[$srlnbr]["connected"] = '1' ;
+						$USBPORT=$usb_state[$usbstatekey]["USBPort"] ;
+						if (isset($inuse_devices["usb"][$USBPORT]) && $usb_state[$usbstatekey]["connected"] != '1' && $inuse_devices["usb"][$USBPORT]["VM"] != "") {
+							$usb_state[$usbstatekey]["VM"]=$inuse_devices["usb"][$USBPORT]["VM"] ;
+							$usb_state[$usbstatekey]["connected"] = '1' ;
 						}
 
 
-				        if ($usb_state[$srlnbr]["connected"] == '1')	{
+				        if ($usb_state[$usbstatekey]["connected"] == '1')	{
 					    $state="Connected(VM)" ;
-					    $allocated = $usb_state[$srlnbr]["VM"] ;
+					    $allocated = $usb_state[$usbstatekey]["VM"] ;
 					    $orb_colour ='green' ;
 				        } else {
 							$orb_colour ='blue' ;
