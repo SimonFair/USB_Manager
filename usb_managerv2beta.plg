@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.03.26beta2">
+<!ENTITY version   "2022.03.26beta3">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_managerv2beta.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"1909f5da2798466812794b1e03dfae75">
+<!ENTITY md5		"736eb6dbe3c1fd38c66bb2ff1100567b">
 ]>
 
 <PLUGIN name="&name;"
