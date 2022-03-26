@@ -163,7 +163,7 @@ function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_statu
 
 
 	$buttontext= 'VM Attach' ;
-	if ($class=="outside" || $vm == "" || $vmstate == "shutoff" || $vmstate == "Disabled" || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
+	if ($class=="outside" || $vm == "" || $vmstate == "shutoff" || $vmstate == "nostate" || $vmstate == "Disabled" || $class == "roothub" || ($class == "hub" && $hub_proc == "disabled") )
 		{
 			$disabled = "disabled  " ;
 		} else {
@@ -443,6 +443,11 @@ switch ($_POST['action']) {
 						$status = 'Not Allowed';
 						$color = 'grey-text';
 						break;
+					case 'nostate':
+						$shape = 'eject';
+						$status = 'nostate';
+						$color = 'red-text';
+						break;		
 					default:
 						$shape = 'square';
 						$status = 'stopped';
@@ -468,6 +473,11 @@ switch ($_POST['action']) {
 					  	$status = 'paused';
 					  	$color = 'orange-text';
 					  	break;
+					case 'nostate':
+						$shape = 'eject';
+						$status = 'nostate';
+						$color = 'red-text';
+						break;
 					default:
 					  	$shape = 'square';
 					  	$status = 'stopped';
