@@ -263,7 +263,7 @@ check_usbip_modules() ;
 	function usb_disks(tabnum)
 	{
 		/* save table widths */
-		if (! diskinfo)
+	/*	if (! diskinfo)
 		{
 			tableWidths = $("#usbip_devices_list > table > thead > tr").children("td").map(function(i,v){return $(this).getHiddenDimensions().outerWidth;});
 
@@ -274,7 +274,7 @@ check_usbip_modules() ;
 					$(this).css("width", tableWidths[i]);
 				}
 			});
-		}
+		} */
 
 		var empty = document.getElementById("empty-swt")
 		var topo = document.getElementById("topo-swt")
@@ -723,8 +723,8 @@ check_usbip_modules() ;
 	{
 		tr = $(this);
 
-		maxWidth.push(tr.find("td:nth-child(2) > span").getHiddenDimensions().width );
-		$(".usb_disks > thead > tr > td:nth-child(2)").css("min-width", Math.max.apply(Math, maxWidth) + 10 );
+	//	maxWidth.push(tr.find("td:nth-child(2) > span").getHiddenDimensions().width );
+	//	$(".usb_disks > thead > tr > td:nth-child(2)").css("min-width", Math.max.apply(Math, maxWidth) + 10 );
 
 		tr.find("span.toggle-port").click(function(e)
 		{

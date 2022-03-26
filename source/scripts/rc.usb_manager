@@ -134,7 +134,7 @@ function usb_device_add_actionv2($serial)
 		# Process Device Map based on Serial Number.
 
 		if ($vm_maps[$serial]["autoconnect"] == "yes" && $class == "interface" ) {
-    		if ($state != "shutoff") {
+    		if ($state != "shutoff" && $state != "nostate") {
 	    		usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
 		    	vm_map_action($vm, "attach") ;
 				return ;
@@ -158,7 +158,7 @@ function usb_device_add_actionv2($serial)
 			if ($vm_maps[$port_map]["autoconnect"] == "yes" && $class == "interface" ) {
 				$state = get_vm_state($vm) ;
 				$vm .=  ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Port"; ;
-				if ($state != "shutoff") {
+				if ($state != "shutoff" && $state != "nostate") {
 					usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}");
 					vm_map_action($vm, "attach") ;
 					return ;
