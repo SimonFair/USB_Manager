@@ -11,10 +11,8 @@
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  */
-
 $plugin = "usb_manager";
 /* $VERBOSE=TRUE; */
-
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"config_file"		=> "/tmp/{$plugin}/config/{$plugin}.cfg",
 			"hdd_temp"			=> "/var/state/{$plugin}/hdd_temp.json",
@@ -879,7 +877,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$USBDevices = get_usbip_devs() ;
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-	$usbstatekey=$serial ; #v2
+	#$usbstatekey=$serial ; #v2
 	$usbstatekey=$bus."/".$dev ; #v2
 
 	// Get a list of all usb hubs so we can blacklist them
@@ -970,7 +968,7 @@ function USBMgrBuildConnectedStatus()
 			}
 		$parents = implode("," , $parents );
 
-		$usbstatekey=$serial ; #v2
+		#$usbstatekey=$serial ; #v2
 		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
 	
 
@@ -998,12 +996,22 @@ function USBMgrUpgradeConnectedStatus()
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
 
+
+	foreach ($config as  $ckey => $cdevice)
+	{
+		$usbstatekey=$cdevice["bus"]."/".$cdevice["dev"]; #v2
+		$config[$usbstatekey] = $config[$ckey] ;
+		var_dump($ckey, $usbstatekey) ;
+		unset($config[$ckey]) ;
+	}
+
 	foreach ($USBDevices as  $key => $device)
 	{
         if ($device["isflash"]) continue ;
 
-		$usbstatekey=$device["ID_SERIAL"] ; #v2
-		$usbstatekey=$bus."/".$dev ; #v2
+		#$usbstatekey=$device["ID_SERIAL"] ; #v2
+		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
+
 		# Build Parents
 
 		if (!isset($config[$usbstatekey]["parents"])) {
@@ -1018,7 +1026,7 @@ function USBMgrUpgradeConnectedStatus()
 		$parents = implode("," , $parents );
 		$config[$usbstatekey]["parents"] =  $parents;
 		}	
-		if (!isset($config[$usbstatekey]["class"])) $config[$device["ID_SERIAL"]]["class"] = $device["ishub"] ;
+		if (!isset($config[$usbstatekey]["class"])) $config[$usbstatekey]["class"] = $device["ishub"] ;
 
 	}
 
@@ -1205,7 +1213,7 @@ function is_mounted_check($dev, $dir = false) {
 	if ($dev) {
 		$data	= timed_exec(1, "/sbin/mount");
 		$rc		= (strpos($data, $dev) != 0) ? true : false;
-		#var_dump(strpos($data, $dev)) ;
+		
 	}
 
 	return $rc;
