@@ -1030,7 +1030,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev)
 	</source>
 	</hostdev>";
 	}
-	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'.xml';
+	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'-'.$usbbus.'-'.$usbdev.'.xml';
 	file_put_contents($filename,$usbstr);
 	
 	$cmdreturn=shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
