@@ -1064,9 +1064,11 @@ function USBMgrUpgradeConnectedStatus()
 	foreach ($config as  $ckey => $cdevice)
 	{
 		$usbstatekey=$cdevice["bus"]."/".$cdevice["dev"]; #v2
-		$config[$usbstatekey] = $config[$ckey] ;
-		var_dump($ckey, $usbstatekey) ;
-		unset($config[$ckey]) ;
+		if ($usbstatekey != $ckey) {
+			$config[$usbstatekey] = $config[$ckey] ;
+			#var_dump($ckey, $usbstatekey) ;
+			unset($config[$ckey]) ;
+		}
 	}
 
 	foreach ($USBDevices as  $key => $device)
@@ -1075,6 +1077,7 @@ function USBMgrUpgradeConnectedStatus()
 
 		#$usbstatekey=$device["ID_SERIAL"] ; #v2
 		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
+		#if (!isset($config[$usbstatekey])) continue ;
 
 		# Build Parents
 
@@ -1158,7 +1161,7 @@ return $cmdreturn ;
 #<serial type='dev'>
 #<source path='/dev/serial/by-id/usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_DE2287360-if00'/>
 #<target type='usb-serial' port='1'>
-#  <model name='usb-serial'/>
+# <model name='usb-serial'/>
 #</target>
 #<alias name='ua-serial001026'/>
 #<address type='usb' bus='0' port='04'/>
