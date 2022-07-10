@@ -40,7 +40,7 @@ if (isset($_POST['var'])) $var = $_POST['var'];
 check_usbip_modules() ;
 
 load_usbstate() ;
-
+$version = parse_ini_file("/etc/unraid-version");
 
 
 /*
@@ -345,7 +345,16 @@ switch ($_POST['action']) {
 				$bus_id .= "<title='"._("Not Supported for Hubs")."<i class='fa fa-desktop'></i>&nbsp;";
 				}
 			}
+
+			
+				if (version_compare($version['version'],"6.9.9", ">")) {
+				/* Device log in 6.10. <span>"._("Device Log Information")."</span>*/
+				$bus_id .= "<a class='info' href=\"#\" title='"._("Device Log Information")."' onclick=\"openTerminal('disklog', '{$disk}')\"><i class='".$disk_icon." icon'></i><i class='fa fa-file icon'></i></a>";
+				} else {
+				/* Devie log in 6.9. */
+				#$hdd_serial = "<a class='info' href=\"#\" onclick=\"openBox('/webGui/scripts/disk_log&amp;arg1={$disk_device}','Disk Log Information',600,900,false);return false\"><i class='".$disk_icon." icon'></i><span>"._("Disk Log Information")."</span></a>";
 				$bus_id.= "<a href=\"#\" title='"._("Device Log Information")."' onclick=\"openBox('/webGui/scripts/disk_log&amp;arg1={$disk}','Device Log Information',600,900,false);return false\"><i class='fa fa-file icon'></i></a>";
+				}
 				if (isset($inuse_devices["bluetooth"][$disk])) $bus_id.= "<i class='fa fa-bluetooth icon'></i></a>";
 				$bus_id .="<span title='"._("Click to view/hide partitions and mount points")."' class='exec toggle-hdd' hdd='{$disk}'></span>";
 				

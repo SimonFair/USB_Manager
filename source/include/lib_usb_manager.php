@@ -1091,6 +1091,8 @@ function USBMgrUpgradeConnectedStatus()
 		$config[$usbstatekey]["parents"] =  $parents;
 		}	
 		if (!isset($config[$usbstatekey]["class"])) $config[$usbstatekey]["class"] = $device["ishub"] ;
+		if (!isset($config[$usbstatekey]["isSerial"])) $config[$usbstatekey]["isSerial"] = $device["isSerial"] ;
+		if (!isset($config[$usbstatekey]["isSerialPath"])) $config[$usbstatekey]["isSerialPath"] = $device["isSerialPath"] ;
 
 	}
 
@@ -1108,6 +1110,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial)
 	if (!empty($usbbus)) 
 	$usbbustrim=ltrim($usbbus, "0");
 	$usbdevtrim=ltrim($usbdev, "0") ;
+	#if ($connectserial == "yes" && get_usbstate($usbbus."/".$usbdev, "isSerialPath") == true) {
 	if ($connectserial == "yes") {
 	$isSerialPath = "/dev/serial/by-id/".get_usbstate($usbbus."/".$usbdev, "isSerialPath");
 	$usbstr .= "<serial type='dev'>
@@ -1126,7 +1129,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial)
 	</source>
 	</hostdev>";
 	}
-	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'.xml';
+	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'-'.$usbbus.'-'.$usbdev.'.xml';
 	file_put_contents($filename,$usbstr);
 
 	$actioncmd= $action.'-device' ;
