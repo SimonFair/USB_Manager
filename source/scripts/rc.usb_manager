@@ -113,6 +113,16 @@ function usbip_check_config() {
      
 }*/
 
+function tty_device_add_update_usb($serial)
+{
+	
+		#$usbstatekey=$_ENV['BUSNUM']."/".$_ENV['DEVNUM'] ; 
+
+		#$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
+
+		USBMgrUpdatettyStatusEntry($_ENV['ID_SERIAL'], $_ENV['DEVNAME']) ;
+}
+
 function usb_device_add_actionv2($serial)
 {
 	global $usb_state;
@@ -308,6 +318,7 @@ function process_vm_usb_devices($vm, $action) {
 
 					$class = $usb_state[$usbkey]["class"] ;
 					$port = $usb_state[$usbkey]["USBPort"] ;
+					$srlnbr = $usb_state[$usbkey]["ID_SERIAL"] ;
 					#var_dump($hub_processing) ;
 					
 					if ($hub_processing == "enabled") {					
@@ -320,7 +331,7 @@ function process_vm_usb_devices($vm, $action) {
 						  	foreach($usb_state as $key2=>$parent_state) {
 							 	$parents = explode("," , $parent_state["parents"] );
 							  	$parent = $parents[0] ;
-								$vmname = $vm.";".$parent_state["bus"].";".$parent_state["dev"].";".$key2.";Auto;Hub;" ;
+								$vmname = $vm.";".$parent_state["bus"].";".$parent_state["dev"].";".$srlnbr.";Auto;Hub;" ;
 								if ($parent == $port)
 							   	{
 									#usb_manager_log("Info: rc.usb_manager Autoconnect for hub {$key2} {$vmname}"); 
@@ -344,7 +355,7 @@ function process_vm_usb_devices($vm, $action) {
 									   	if ($vm_map["autoconnectstart"] == "yes") {
 										   vm_map_action($vmname, "attach") ;
 										   usb_manager_log("Info: rc.usb_manager Autoconnect Start {$key2} vm: {$vm} ") ;
-										   #load_usbstate();
+										   load_usbstate();
 										} 
 									}
 								}
@@ -355,7 +366,7 @@ function process_vm_usb_devices($vm, $action) {
 					}
 				}
 
-					$vmname = $vm.";".$bus.";".$dev.";".$usbkey.";Auto;".$type.";" ;	 
+					$vmname = $vm.";".$bus.";".$dev.";".$srlnbr.";Auto;".$type.";" ;	 
 	     
 #	   				if ($action == "prepare" ) {
 					if ($action == "prepare" && $class=="interface") {						   
@@ -363,7 +374,7 @@ function process_vm_usb_devices($vm, $action) {
 						if ($usb_state[$usbkey]["connected"]== "1") {
 							usb_manager_log("Info: rc.usb_manager Autoconnect Start {$usbkey} vm: {$vm} Device in Use action ignored. ");
 							continue ;	}
-
+							var_dump($inuse_devices) ;
 						if (isset($inuse_devices["usb"][$port])) {
 							#var_dump($inuse_devices["usb"][$port]) ;
 							if ($inuse_devices["usb"][$port]["unraid"] || $inuse_devices["usb"][$port]["mounted"] || $inuse_devices["usb"][$port]["zpool"]) {
@@ -460,8 +471,15 @@ switch ($COMMAND) {
 		break;
 
 	case 'usb_add':
+		#sleep(5) ;
 		usb_manager_log("Info: rc.usb_manager {$argv[1]} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
 		usb_device_add_actionv2($_ENV['ID_SERIAL']) ;
+		break;
+
+	case 'tty_add':
+		#sleep(5) ;
+		usb_manager_log("Info: rc.usb_manager {$argv[1]} {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}");
+		tty_device_add_update_usb($_ENV['ID_SERIAL']) ;
 		break;
 
 	case 'usb_remove':
