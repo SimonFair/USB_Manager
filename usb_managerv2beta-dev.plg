@@ -217,7 +217,7 @@ USB_Manager background start script.
 
 if [ ! -z "$(pidof emhttpd)" ]; then
 	/usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
-  /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatus 2>/dev/null
+#  /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatus 2>/dev/null
 fi
 
 # Remove the background start script.
