@@ -217,13 +217,15 @@ USB_Manager background start script.
 
 if [ ! -z "$(pidof emhttpd)" ]; then
 
-if [! -f /boot/config/plugins/usb_manager/v2 ] && mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
- 
+if [! -f /boot/config/plugins/usb_manager/v2 ]; then
+	mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
+ fi
+	
 /usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
 
-if [! -f /boot/config/plugins/usb_manager/v2 ]; then
+if [! -f /boot/config/plugins/&name;/v2 ]; then
   /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
- touch /boot/config/plugins/usb_manager/v2 
+ touch /boot/config/plugins/&name;/v2 
  fi
 fi
 
