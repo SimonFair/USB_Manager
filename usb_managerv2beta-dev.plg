@@ -215,18 +215,21 @@ USB_Manager background start script.
 
 #Start USBIPD if required.
 
-if [ ! -z "$(pidof emhttpd)" ]; then
+if [ ! -z "$(pidof emhttpd)" ]
+  then
 
-if [! -f /boot/config/plugins/usb_manager/v2 ]; then
-	mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
- fi
+   if [ ! -f /boot/config/plugins/usb_manager/v2 ]
+       then
+       mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
+   fi
 	
-/usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
+   /usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
 
-if [! -f /boot/config/plugins/&name;/v2 ]; then
-  /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
- touch /boot/config/plugins/&name;/v2 
- fi
+   if [ ! -f /boot/config/plugins/&name;/v2 ]
+      then
+      /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
+      touch /boot/config/plugins/&name;/v2 
+   fi
 fi
 
 # Remove the background start script.
