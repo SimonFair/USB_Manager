@@ -920,6 +920,10 @@ switch ($_POST['action']) {
 
 		case 'db1':
 			echo "<tr><td>" ;
+			$list= get_inuse_devices() ;
+			var_dump($usb_state, $list) ;
+			echo "</td></tr>" ;
+			echo "<tr><td>" ;
 			$list= get_all_usb_info() ;
 			var_dump($list) ;
 			echo "</td></tr>" ;

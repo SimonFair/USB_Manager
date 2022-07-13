@@ -23,6 +23,7 @@ $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"vm_mappings"		=> "/tmp/{$plugin}/config/vm_mappings.cfg",
 			"usb_rmt_connect"	=> "/tmp/{$plugin}/config/usb_rmt_connect.cfg",
 			"usb_state"			=> "/usr/local/emhttp/state/usb.ini",
+			"usb_state_old"		=> "/usr/local/emhttp/state/usb.old",
 			"scripts"			=> "/tmp/{$plugin}/scripts/",
 			"state"				=> "/var/state/{$plugin}/{$plugin}.state",
 		];
@@ -1103,6 +1104,36 @@ function USBMgrUpgradeConnectedStatus()
 	
 }
 
+function USBMgrUpgradeConnectedStatusv2()
+{
+	$USBDevices = get_usbip_devs() ;
+	
+	$config_file = $GLOBALS["paths"]["usb_state"];
+	$config = @parse_ini_file($config_file, true);
+
+	$config_file_old = $GLOBALS["paths"]["usb_state_old"];
+	$config_old = @parse_ini_file($config_file_old, true);
+
+
+	foreach ($config_old as  $oldkey => $olddevice)
+	{
+		$usbstatekey=$olddevice["bus"]."/".$olddevice["dev"]; #v2
+		if ($olddevice["connected"] == true) {
+			$config[$usbstatekey]["connected"]     = $config_old[$oldkey]["connected"] ;
+			$config[$usbstatekey]["virsherror"]    = $config_old[$oldkey]["virsherror"] ;
+			$config[$usbstatekey]["VM"]            = $config_old[$oldkey]["VM"] ;
+			$config[$usbstatekey]["virsh"]         = $config_old[$oldkey]["virsh"] ;
+			$config[$usbstatekey]["connectmethod"] = $config_old[$oldkey]["connectmethod"] ;
+			$config[$usbstatekey]["connectmap"]    = $config_old[$oldkey]["connectmap"] ;
+			var_dump($oldkey, $usbstatekey) ;
+			
+		}
+	}
+
+	save_ini_file($config_file, $config);
+	
+}
+
 #########################################################
 ############         VIRSH FUNCTIONS        #############
 #########################################################
@@ -1159,7 +1190,7 @@ return $cmdreturn ;
 # For Serial Devices.
 #
 #<serial type='dev'>
-#<source path='/dev/serial/by-id/usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_DE2287360-if00'/>
+#<source path='/dev/serial/by-id/usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_DE-if00'/>
 #<target type='usb-serial' port='1'>
 # <model name='usb-serial'/>
 #</target>
@@ -1226,6 +1257,8 @@ function get_inuse_devices() {
 				$xml = new SimpleXMLElement(implode('',$xml));
 				$VMUSB=$xml->xpath('//devices/hostdev[@type="usb"]/source') ;
 				$VMPCI=$xml->xpath('//devices/hostdev[@type="pci"]/source')  ;
+				$VMSER=$xml->xpath('//devices/serial[@type="dev"]/source')  ;
+				#var_dump($VMSER) ;
 				# Check active USB devices passthru to a VM.		
 				foreach($VMUSB as $USB) {
 					$bus=$USB->address->attributes()->bus ;
@@ -1236,6 +1269,18 @@ function get_inuse_devices() {
 					exec($cmd,$cmdres) ;
 
 					if (trim(substr($cmdres[0], 13) , '"')!="") $usbinuse[trim(substr($cmdres[0], 13) , '"')]["VM"] = $domain_name ;
+				}
+
+				foreach($VMSER as $SER) {
+					$device=$SER->attributes()->path ;
+					#$dev=$USB->address->attributes()->device ;
+					$cmd="udevadm info -a --name=".$device." | grep KERNELS==" ;
+					$cmdres=NULL ;
+					exec($cmd,$cmdres) ;
+					if (trim(substr($cmdres[1], 13) , '"')!="") {
+						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["VM"] = $domain_name ;
+						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["isSerial"] = true ;
+					}
 				}
 
 				# Check active USB devices passthru to a VM.

@@ -516,6 +516,11 @@ switch ($COMMAND) {
 		USBMgrUpgradeConnectedStatus() ;
 		break;	
 
+	case 'USBMgrUpgradeConnectedStatusv2':
+		usb_manager_log("Info: rc.usb_manager Upgrade Connected Status") ;
+		USBMgrUpgradeConnectedStatusv2() ;
+		break;	
+
 	default:
 		usb_manager_log("Error: rc.usb_manager {$argv[1]} {$argv[2]} {$argv[3]} {$argv[4]} not understood");
 		usb_manager_log("rc.usb_manager usage: 'modules_load','start_daemon','stop_daemon', 'reload', 'refresh', 'check_config");
