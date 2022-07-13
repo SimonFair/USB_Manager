@@ -9,7 +9,7 @@
 <!ENTITY pluginURL "&gitURL;/usb_managerv2beta-dev.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"8a73e12154fcbaf296aa639087d55232">
+<!ENTITY md5		"ff4509dd11243bda7885d1e315918a63">
 ]>
 
 <PLUGIN name="&name;"
