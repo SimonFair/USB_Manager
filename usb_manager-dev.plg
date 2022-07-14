@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.05.20">
+<!ENTITY version   "2022.07.13a">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"ed84dcedb3a8fabd407e56545c22cc52">
+<!ENTITY md5		"adea901de110cb183b6d520bd38837f9">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,19 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+	
+   - Add Serial processing
+   - Fix upgrade processing for state file.
+   - Code tidy.	
+	
+2022.05.20
+
+   - Fix Possible race condition via PR from KnF thankyou.
+	
+2022.03.26beta3	
+	
+   - Chg state to use bus/dev as key.	
 
   - Fix start of usbipd and load of modules on array start..
 
@@ -144,9 +157,21 @@ USB_Manager background start script.
 
 #Start USBIPD if required.
 
-if [ ! -z "$(pidof emhttpd)" ]; then
-	/usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
-  /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatus 2>/dev/null
+if [ ! -z "$(pidof emhttpd)" ]
+  then
+
+   if [ ! -f /boot/config/plugins/usb_manager/v2 ]
+       then
+       mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
+   fi
+	
+   /usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
+
+   if [ ! -f /boot/config/plugins/&name;/v2 ]
+      then
+      /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
+      touch /boot/config/plugins/&name;/v2 
+   fi
 fi
 
 # Remove the background start script.
