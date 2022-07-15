@@ -49,6 +49,7 @@ if (isset($_GET['s'])) {
 	$width = "50%";
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
+	$connectserial = (is_connectserial($serial)) ? "checked" : ""; 
 		if (($file) && (! file_exists($file))) {
 		set_config($serial,"command.{$partition}","");
 		$file = "";
@@ -144,6 +145,7 @@ EOT;
 
 <td title='_(Turn on to Auto Connect to VM if USB Device is Added)_.'><input type='checkbox' class='autoconnect-switch'></td>
 <td title='_(Turn on to Auto Connect to VM if VM is started)_.'><input type='checkbox' class='autoconnectstart-switch'></td>
+<td title='_(Turn on to Connect to VM as serial port)_.'><input type='checkbox' class='usbserial-switch'></td>
 </tr>
 </table>
 <td><b>Virtual Machine</b></td>
@@ -243,7 +245,15 @@ EOT;
 		},"json");
 	});
 
-	
+	$('.usbserial-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Connect as serial only');?>", off_label: "<?=_('Connect as serial only');?>", checked:"<?=$connectserial;?>" });
+	$('.usbserial-switch').change(function()
+	{
+		$.post(USBMURL,{action:"connectserial",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		{
+			$(this).prop("checked",data.result);
+		},"json");
+	});
+
 	$('#vmselection').change(function()
 	{
 		$.post(USBMURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)

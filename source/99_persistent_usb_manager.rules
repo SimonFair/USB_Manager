@@ -1,2 +1,3 @@
 ACTION=="bind",SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",RUN+="/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager usb_add >/dev/null 2>&1 & disown"
 ACTION=="remove",SUBSYSTEM=="usb",ENV{DEVTYPE}=="usb_device",RUN+="/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager usb_remove >/dev/null 2>&1 & disown"
+ACTION=="add",SUBSYSTEM=="tty",RUN+="/usr/local/emhttp/plugins/usb_manager/scripts/rc.usb_manager tty_add >/dev/null 2>&1 & disown"
