@@ -25,10 +25,10 @@
 ##USB_Manager
 ###&version;
 
-	- Chg state to use bus/dev as key(V2).
-  - Add Serial processing
+  - Chg state to use bus/dev as key(V2).
+  - Add Serial processing.
   - Fix upgrade processing for state file.
-  - Code tidy.	
+  - Code tidy.
 
 2022.05.20
 
