@@ -115,31 +115,50 @@ function usbip_check_config() {
 
 function tty_device_add_update_usb($serial)
 {
-	
+	global $usb_state ;
 		#$usbstatekey=$_ENV['BUSNUM']."/".$_ENV['DEVNUM'] ; 
 
 		#$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
 
-		USBMgrUpdatettyStatusEntry($_ENV['ID_SERIAL'], $_ENV['DEVNAME']) ;
+		$usbstatekey=USBMgrUpdatettyStatusEntry($_ENV['ID_SERIAL'], $_ENV['DEVNAME']) ;
+		load_usbstate() ;
+		$_ENV["DEVNUM"] = $usb_state[$usbstatekey]["dev"] ;
+		$_ENV["BUSNUM"] = $usb_state[$usbstatekey]["bus"] ;
+		#var_dump($usbstatekey) ;
+		usb_manager_log("Info: rc.usb_manager Processing tty attach {$_ENV['ID_SERIAL']} {$_ENV['DEVNAME']} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']}"); 
+		usb_device_add_actionv2($serial,true) ;
+		
 }
 
-function usb_device_add_actionv2($serial)
+function usb_device_add_actionv2($serial,$bypass=false) 
 {
 	global $usb_state;
 	    $vm_maps = load_vm_mappings() ;
 		$hub_processing = get_config("Config","HUBPROC") ;
 		$vm = $vm_maps[$serial]["VM"];
+		$serialconnect = $vm_maps[$serial]["connectserial"];
 
-		#$usbstatekey = $serial ; #v2
-		$usbstatekey=$_ENV['BUSNUM']."/".$_ENV['DEVNUM'] ; #v2
+		$usbstatekey=$_ENV['BUSNUM']."/".$_ENV['DEVNUM'] ; 
 
 		$state = get_vm_state($vm) ;
 
 		$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
 
+		if ($bypass == false) {
 		USBMgrCreateStatusEntry($_ENV['ID_SERIAL'], $_ENV['BUSNUM'], $_ENV['DEVNUM']) ;
+		}
 		load_usbstate() ;
+		
 		$class = $usb_state[$usbstatekey]["class"]  ;
+		$isSerial = $usb_state[$usbstatekey]["isSerial"] ;
+		if ($usb_state[$usbstatekey]["bNumInterfaces"] > 1 ) {
+			usb_manager_log("Info: rc.usb_manager Add device with more than one interface & connect serial {$serialconnect} {$bypass} {$isSerial}.");
+			if ($bypass == false && $isSerial != 'yes' && $serialconnect == "yes") 
+			{
+				usb_manager_log("Info: rc.usb_manager unable to connect device as Serial device details unknown for {$serial}.");
+				return ;
+			}
+		}
 	
 		# Process Device Map based on Serial Number.
 
@@ -164,6 +183,7 @@ function usb_device_add_actionv2($serial)
 		if (isset($vm_maps[$port_map])) {
 
 			$vm = $vm_maps[$port_map]["VM"];
+			$serialconnect = $vm_maps[$port_map]["connectserial"];
 	
 			if ($vm_maps[$port_map]["autoconnect"] == "yes" && $class == "interface" ) {
 				$state = get_vm_state($vm) ;

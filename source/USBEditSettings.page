@@ -50,6 +50,8 @@ if (isset($_GET['s'])) {
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
 	$connectserial = (is_connectserial($serial)) ? "checked" : ""; 
+	$connectserialport = get_vm_config($serial, "connectserialport") ;
+	if ($connectserialport == false)  $connectserialport = "04" ;
 		if (($file) && (! file_exists($file))) {
 		set_config($serial,"command.{$partition}","");
 		$file = "";
@@ -148,7 +150,8 @@ EOT;
 <td title='_(Turn on to Connect to VM as serial port)_.'><input type='checkbox' class='usbserial-switch'></td>
 </tr>
 </table>
-<td><b>Virtual Machine</b></td>
+<tr>
+<td><b>Virtual Machine:</b></td><td>
   <select id="vmselection" name="vmselection" >
     <option value=""</option>
       <?php
@@ -164,7 +167,18 @@ EOT;
 }
 ?>
 </select> 
+</td>
+<?if ($usbip_enabled != "enabled"):?>
+</tr><tr><td><b>
+Connect as Serial Guest Port Number:
+</b></td><td>
+<input type="text" maxlength="2" name="connectserialport" value="<?=$connectserialport?>" placeholder="Usb Dev Number" class="narrow" />
 
+:serial_busdev_help:
+
+> Specify the Port number on USB Bus.
+</tr>
+<?endif;?>
 <?endif;?>
 
 <!--
@@ -273,7 +287,9 @@ EOT;
 
 	<?if (isset($_GET['s'])):?>
 		$( "form" ).submit(function( event ) {
-			$.post(USBMURL,{action:"set_command",serial:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
+		//	$.post(USBMURL,{action:"set_command",serial:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
+		$port = $("input[name='connectserialport']").val()
+			$.post(USBMURL,{action:"updateserialport",serial:"<?=$serial;?>",serialport:$port},function(data){event.preventDefault()},"json");
 		});
 	<?endif;?>
 

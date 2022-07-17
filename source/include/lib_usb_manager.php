@@ -264,11 +264,20 @@ function updatevm($sn, $vmname) {
 	return ($config[$sn]["VM"] ) ;
 }
 
+function updateserialport($sn, $serialport) {
+	$config_file = $GLOBALS["paths"]["vm_mappings"];
+	$config = @parse_ini_file($config_file, true);
+	$config[$sn]["connectserialport"] = $serialport ;
+	save_ini_file($config_file, $config);
+	return ($config[$sn]["connectserialport"] ) ;
+}
+
+
 function remove_vm_mapping($source) {
 	$config_file = $GLOBALS["paths"]["vm_mappings"];;
 	$config = @parse_ini_file($config_file, true);
 	if ( isset($config[$source]) ) {
-		usb_manager_log("Removing configuration '$source'.");
+		usb_manager_log("Info: Removing configuration '$source'.");
 	}	
 	unset($config[$source]);
 	save_ini_file($config_file, $config);
@@ -354,7 +363,7 @@ function get_remote_usbip() {
 		$o = $remote_usbip  ;
 		
 	} else {
-		usb_manager_log("Error: unable to get the remote usbip hosts.");
+		usb_manager_log("Error: usb_manager unable to get the remote usbip hosts.");
 	}
 	return $o;
 }
@@ -372,7 +381,7 @@ function remove_config_remote_host($source) {
 	$config_file = $GLOBALS["paths"]["remote_usbip"];
 	$config = @parse_ini_file($config_file, true);
 	if ( isset($config[$source]) ) {
-		usb_manager_log("Removing configuration '$source'.");
+		usb_manager_log("Info: Removing configuration '$source'.");
 	}
 			
 	unset($config[$source]);
@@ -394,7 +403,7 @@ function execute_script($info, $action, $testing=FALSE) {
 		$common_script = $paths['scripts'].basename($common_cmd);
 		copy($common_cmd, $common_script);
 		@chmod($common_script, 0755);
-		usb_manager_log("Running common script: '".basename($common_script)."'");
+		usb_manager_log("Info: Running common script: '".basename($common_script)."'");
 		exec($common_script, $out, $return);
 		if ($return) {
 			usb_manager_log("Error: common script failed: '{$return}'");
@@ -408,7 +417,7 @@ function execute_script($info, $action, $testing=FALSE) {
 		$command_script = $paths['scripts'].basename($cmd);
 		copy($cmd, $command_script);
 		@chmod($command_script, 0755);
-		usb_manager_log("Running device script: '".basename($cmd)."' with action '{$action}'.");
+		usb_manager_log("Info: Running device script: '".basename($cmd)."' with action '{$action}'.");
 
 		$script_running = is_script_running($cmd);
 		if ((! $script_running) || (($script_running) && ($action != "ADD"))) {
@@ -427,7 +436,7 @@ function execute_script($info, $action, $testing=FALSE) {
 				return $command_script;
 			}
 		} else {
-			usb_manager_log("Device script '".basename($cmd)."' aleady running!");
+			usb_manager_log("Info: Device script '".basename($cmd)."' aleady running!");
 		}
 	}
 
@@ -690,6 +699,11 @@ function get_usbip_devs() {
                 $ver $devclass "$classname" $devsubclass $devprotocol \
                 $maxps0 $numconfigs */
 		}
+		$file = '/sys/bus/usb/devices/'.$realbusid.'/bNumInterfaces' ;
+		if (is_file($file)) {
+			$tj[$busid]["bNumInterfaces"] = trim(file_get_contents($file)) ;
+		}
+		#$tj[$busid]["bNumInterfaces"] = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bNumInterfaces' ) ;
 
 	}
 	ksort($tj) ;
@@ -717,7 +731,7 @@ function get_usbip_devs() {
 
 function get_all_usb_info($bus="all") {
 
-	usb_manager_log("Starting get_all_usb_info.", "DEBUG");
+	usb_manager_log("Info: Starting get_all_usb_info.", "DEBUG");
 	$time = -microtime(true);
 	$usb_devs = get_usbip_devs();
 	if (!is_array($usb_devs)) {
@@ -820,7 +834,7 @@ function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map)
 			
 			$connectserial=is_connectserial($srlnbr) ;
 			var_dump($connectserial, $srlnbr) ;
-			$return=virsh_device_by_bus($action,$vmname, $bus, $dev, $connectserial) ;
+			$return=virsh_device_by_bus($action,$vmname, $bus, $dev, $connectserial,$map) ;
 
 			#$usbstatekey=$srlnbr ; #v2
 			$usbstatekey=$bus."/".$dev ; #v2
@@ -875,7 +889,7 @@ function vm_map_action($vm, $action)
 					$parent = $parents[0] ;
 					
 					if ($parent == $hubid) {
-						if ($action == "attach" && $usb_device["connected"] == 1) {usb_manager_log("Info: usb_manager attach {$usb_srlnbr} vm: {$vm} Device in Use action ignored. "); continue ; }
+						if ($action == "attach" && $usb_device["connected"] == 1) {usb_manager_log("Info: attach {$usb_srlnbr} vm: {$vm} Device in Use action ignored. "); continue ; }
 						if ($action == "detach" && $usb_device["connected"] != 1)  continue ;
 						$return=do_vm_map_action($action, "$vmname", $usb_device["bus"], $usb_device["dev"], "$usb_srlnbr", $method, "Hub") ;
 					}
@@ -927,6 +941,7 @@ function USBMgrUpdatettyStatusEntry($serial, $devname)
     
 	#var_dump($config[$usbstatekey]["isSerialPath"]) ;
 	save_ini_file($config_file, $config);
+	return($usbstatekey) ;
 	}
 
 }
@@ -999,6 +1014,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
 	
 	$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
+	$config[$usbstatekey]["bNumInterfaces"] =  $device["bNumInterfaces"];
 
 	var_dump($config[$usbstatekey]["isSerialPath"]) ;
 	save_ini_file($config_file, $config);
@@ -1138,7 +1154,7 @@ function USBMgrUpgradeConnectedStatusv2()
 ############         VIRSH FUNCTIONS        #############
 #########################################################
 
-function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial)
+function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial, $map)
 {
 	$usbstr = '';
 	if (!empty($usbbus)) 
@@ -1147,13 +1163,24 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial)
 	#if ($connectserial == "yes" && get_usbstate($usbbus."/".$usbdev, "isSerialPath") == true) {
 	if ($connectserial == "yes") {
 	$isSerialPath = "/dev/serial/by-id/".get_usbstate($usbbus."/".$usbdev, "isSerialPath");
+	#$map="device" ;
+	if ($map=="Port") {
+		$USBPort="Port:".get_usbstate($usbbus."/".$usbdev, "USBPort") ;
+		$port=get_vm_config($USBPort,"connectserialport" ) ;
+	} else {
+		$port=get_vm_config(get_usbstate($usbbus."/".$usbdev, "ID_SERIAL"),"connectserialport" ) ;
+	}
+	
+	#$port="04" ;
+	if ($port == "") $port="04" ;
+	usb_manager_log("Info: connect as serial guest port is:".$port);
 	$usbstr .= "<serial type='dev'>
 	<source path='${isSerialPath}'/>
 	<target type='usb-serial' port='1'>
 	<model name='usb-serial'/>
 	</target>
 	<alias name='ua-serial${usbbus}${usbdev}'/>
-	<address type='usb' bus='0' port='04'/>
+	<address type='usb' bus='0' port='${port}'/>
 	</serial>" ;
 	}
 	else {
@@ -1172,7 +1199,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial)
 		else { $actioncmd .= " '$vmname' '".$filename."' " ; }
 	
 	$cmdreturn=shell_exec("/usr/sbin/virsh $actioncmd  2>&1");
-	usb_manager_log("usb_manager virsh called ".$vmname." ".$usbbus." ".$usbdev." ".$cmdreturn);
+	usb_manager_log("Info: virsh called ".$vmname." ".$usbbus." ".$usbdev." ".$cmdreturn);
 	unlink($filename) ;
 return $cmdreturn ;
 #return shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");

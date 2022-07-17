@@ -857,6 +857,12 @@ switch ($_POST['action']) {
 		$vmname = urldecode(($_POST['vmname']));
 		echo json_encode(array( 'result' => updatevm($serial, $vmname) ));
 		break;
+
+	case 'updateserialport':
+		$serial = urldecode(($_POST['serial']));
+		$serialport = urldecode(($_POST['serialport']));
+		echo json_encode(array( 'result' => updateserialport($serial, $serialport) ));
+		break;
 	
 	case 'add_remote_host':
 		$rc = TRUE;
