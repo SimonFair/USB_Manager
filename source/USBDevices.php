@@ -383,7 +383,7 @@ switch ($_POST['action']) {
 					$vendor=$detail["ID_VENDOR"] ;
 				}
 				if ($srlnbr_short != "" ) $serial_hover=$srlnbr_short  ; else $serial_hover=$srlnbr ; 
-				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td><span title=\"".$serial_hover."\">".$vendor.":".$model."</span></td>" ; 
+				if ($optionempty == "false" && $detail["ishub"] == "emptyport")  echo "<td></td>" ; else  echo "<td><span title=\"".$serial_hover."\">".$vendor.":".substr($model, 0 ,50)."</span></td>" ; 
 			   
 				if ($hideserial == "true") {
 					if ($srlnbr_short != "" ) echo "<td>  ".$srlnbr_short."</td>"  ; else echo "<td>  ".$srlnbr."</td>"  ;
@@ -926,8 +926,9 @@ switch ($_POST['action']) {
 
 		case 'db1':
 			echo "<tr><td>" ;
-			$list= get_inuse_devices() ;
-			var_dump($usb_state, $list) ;
+			$list= get_inuse_byvm("Ubuntu") ;
+			$list2= get_all_available() ;
+			var_dump($list, $list2) ;
 			echo "</td></tr>" ;
 			echo "<tr><td>" ;
 			$list= get_all_usb_info() ;
@@ -948,7 +949,18 @@ switch ($_POST['action']) {
 			$return = vm_map_action($vm, $action) ;
 			echo $return;
 			break ;	
-	
+
+		case 'getinusevm':
+			$vm = urldecode($_POST['vm']);
+			$return = get_inuse_byvm($vm) ;
+			echo json_encode($return);
+			break ;		
+		case 'getavailable':
+			
+			$return = get_all_available() ;
+			echo json_encode($return);
+			break ;		
+			
 		case 'usbdash':
 			$allocated = "" ;
 			$dash_array=array() ;

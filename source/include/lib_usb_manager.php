@@ -833,7 +833,7 @@ function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map)
 {
 			
 			$connectserial=is_connectserial($srlnbr) ;
-			var_dump($connectserial, $srlnbr) ;
+			#var_dump($connectserial, $srlnbr) ;
 			$return=virsh_device_by_bus($action,$vmname, $bus, $dev, $connectserial,$map) ;
 
 			#$usbstatekey=$srlnbr ; #v2
@@ -1016,7 +1016,7 @@ function USBMgrCreateStatusEntry($serial, $bus , $dev)
 	$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
 	$config[$usbstatekey]["bNumInterfaces"] =  $device["bNumInterfaces"];
 
-	var_dump($config[$usbstatekey]["isSerialPath"]) ;
+	#var_dump($config[$usbstatekey]["isSerialPath"]) ;
 	save_ini_file($config_file, $config);
 	}
 
@@ -1141,7 +1141,7 @@ function USBMgrUpgradeConnectedStatusv2()
 			$config[$usbstatekey]["virsh"]         = $config_old[$oldkey]["virsh"] ;
 			$config[$usbstatekey]["connectmethod"] = $config_old[$oldkey]["connectmethod"] ;
 			$config[$usbstatekey]["connectmap"]    = $config_old[$oldkey]["connectmap"] ;
-			var_dump($oldkey, $usbstatekey) ;
+			#var_dump($oldkey, $usbstatekey) ;
 			
 		}
 	}
@@ -1224,6 +1224,50 @@ return $cmdreturn ;
 #<alias name='ua-serial001026'/>
 #<address type='usb' bus='0' port='04'/>
 #</serial>
+}
+
+function get_all_available() {
+	$inuse = get_inuse_devices() ;
+	$out = array();
+    $out= get_all_usb_info() ;
+    		foreach ($out as $busid => $detail) {
+				$inusedevice = $inuse["usb"][$busid] ;
+				
+					if ($inusedevice["VM"] != "" || $inusedevice["zpool"] || $inusedevice["mounted"] || $inusedevice["unraid"])  {
+						unset($out[$busid]) ;
+						continue ;
+					}
+				
+            if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
+			if ($detail["ishub"] == "interface") continue ;
+			if ($detail["ishub"] == "hub") unset($out[$busid]) ;
+		 	if ($detail["ishub"] == "roothub") unset($out[$busid]) ;
+            }
+    
+	ksort($out,SORT_NATURAL  ) ;
+	return $out;
+}
+
+function get_inuse_byvm($vm) {
+	$inuse = get_inuse_devices() ;
+	$out = array();
+    $out= get_all_usb_info() ;
+	foreach ($out as $busid => $detail) {
+		$inusedevice = $inuse["usb"][$busid] ;
+		
+			if ($inusedevice["VM"] != $vm )  {
+				unset($out[$busid]) ;
+				continue ;
+			}
+		
+	if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
+	if ($detail["ishub"] == "interface") continue ;
+	if ($detail["ishub"] == "hub") unset($out[$busid]) ;
+	if ($detail["ishub"] == "roothub") unset($out[$busid]) ;
+	}
+
+	ksort($out,SORT_NATURAL  ) ;
+	return $out;
 }
 
 

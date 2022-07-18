@@ -84,6 +84,33 @@ function usbm_list_usbs()
 	ksort($out,SORT_NATURAL  ) ;
 	return $out;
 }
+
+function usbm_list_attached_usbs() 
+{
+	global $arrValidUSBDevices;
+	$out = array();
+	if (!empty($arrValidUSBDevices)) 
+	{
+		foreach($arrValidUSBDevices as $i => $arrDev) 
+		{
+			$out[] = array('name'=>$arrDev['name'],'id'=>$arrDev['id']);
+		} 
+	}
+	else 
+	{
+		$out[] = array('name'=>"None available");
+	}
+    $out= get_all_usb_info() ;
+    		foreach ($out as $busid => $detail) {
+            if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
+			if ($detail["ishub"] == "interface") continue ;
+			if ($detail["ishub"] == "hub") unset($out[$busid]) ;
+		 	if ( $detail["ishub"] == "roothub") unset($out[$busid]) ;
+            }
+    
+	ksort($out,SORT_NATURAL  ) ;
+	return $out;
+}
 ?>
 
 <script>
@@ -95,17 +122,19 @@ function usbm_operateUSB(action)
 {
 	var vms = $("select[name=usbm_vms] option:selected").val();
 	var usbs = $("select[name=usbm_devs] option:selected").val();
-	if (vms && usbs) {
+	if (vms ) {
 		switch (action) {
-			case 'detach':
+			case 'vm_disconnect':
 				status = "<?=_('Detaching Please wait')?>"+"...";
+					var usbs = $("select[name=usbm_devs2] option:selected").val();
 				break;
 
-			case 'attach':
+			case 'vm_connect':
 				status = "<?=_('Attaching Please wait')?>"+"...";
 				break;
-		}			
-		$("usbm_textarea[name=usbm_Status]").val(status);
+		}	
+		if (usbs) {		
+		$("textarea[name=usbm_Status]").val(status);
 		$("#detach").attr("disabled", true);
 		$("#attach").attr("disabled", true);
 		var opts = new Object();
@@ -119,48 +148,138 @@ function usbm_operateUSB(action)
 			}
 			$("#detach").attr("disabled", false);
 			$("#attach").attr("disabled", false);
+			BuildAttachlist() ;
+			BuildAvailablelist() ;
 		});
 	} else {
-		if (! vms) {
-			$("textarea[name=usbm_Status]").val("<?=_('No VM Selected')?>!");
-		} else {
-			$("textarea[name=usbm_Status]").val("<?=_('No USB devices')?>!");
+		$("textarea[name=usbm_Status]").val("<?=_('No USB devices selected')?>!"); 
 		}
+	
+	} else {
+				
+			$("textarea[name=usbm_Status]").val("<?=_('No VM Selected')?>!");	
+		
 	}
 }
+	$('#usbm_devs').select(function()
+	{
+		document.getElementById("hidden-item").value = (this).selected ;
+		alert(document.getElementById("hidden-item").value);
+	});
+
+	function update( elem ) {
+		document.getElementById("hidden-item").value = (this).selected ;
+		alert(document.getElementById("hidden-item").value);
+		 }
+
+		 function myFunction(val) {
+  alert("The input value has changed. The new value is: " + val);
+}
+
+			
+		
+
+function BuildAttachlist() {
+  var value = document.getElementById("vms").value;  
+ document.getElementById("usb2").options.length = 0;
+ var opts = new Object();
+ 		opts["action"] = 'getinusevm' ;
+		opts["vm"] = value ;
+		if (value != "") {
+ 		$.post(UDURL,opts).done(function(data){
+			if (data) {
+                const result = JSON.parse(data) ;
+				var x = document.getElementById("usb2");
+
+				for( index in result ) {  
+					var value = result[index] ; 
+					var option = document.createElement("option");
+					option.value = value.BUSNUM+";"+value.DEVNUM+";"+value.ID_SERIAL+";Manual;VMHotplug;" ;
+					if (value.volume == null) value.volume = "" ;
+					option.text = index+" "+value.ID_SERIAL+" "+value.volume ;
+					x.add(option);
+				
+					}}}) ;
+				
+				}
+		
+}
+
+function BuildAvailablelist() {
+ 
+ document.getElementById("usb1").options.length = 0;
+ var opts = new Object();
+ 		opts["action"] = 'getavailable' ;
+		
+ 		$.post(UDURL,opts).done(function(data){
+			if (data) {
+                const result = JSON.parse(data) ;
+				var x = document.getElementById("usb1");
+
+				for( index in result ) {  
+					var value = result[index] ; 
+					var option = document.createElement("option");
+					option.value = value.BUSNUM+";"+value.DEVNUM+";"+value.ID_SERIAL+";Manual;VMHotplug;" ;
+					if (value.volume == null) value.volume = "" ;
+					option.text = index+" "+value.ID_SERIAL+" "+value.volume ;
+					x.add(option);
+				
+					}}}) ;
+				
+			
+		
+}
+
 </script>
 
 
 <div style="width: 100%; float:left" id="USB">
 <form markdown="1" id="USBF" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="hidden-item" value="HA"  **form="USBF"** />
 <dl>
+<table>
+<tr><td>
 <?=_('Running VMs')?>:
-	<select name="usbm_vms" size="1">
+	<select name="usbm_vms"  onchange="BuildAttachlist()" id="vms" size="1">
 	<?foreach ($vmlist as $vms):?>
 	<?=mk_option("",$vms['name'],$vms['name'])?>
 	<?endforeach;?>
 	</select>
 
-<?=_('USB Devices')?>:
-	<select name="usbm_devs" size="1" 
+
+</td><td><input type="button" value="<?=_('Attach')?>" title="<?=_('Attach the USB device to the selected VM')?>" onclick="usbm_operateUSB('vm_connect');" id="usbm_attach" style="margin-top:0"></td><td>
+<?=_('Available USB Devices')?>:</td><td>
+	<select name="usbm_devs"  size="1" id="usb1" style="width:auto;">
+	<?#foreach (get_all_available() as $busid => $usb):?>
+    <?#$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
+	<?#=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
+	<?#endforeach;?>
+	</select>
+
+</td></tr>
+<tr><td></td><td><input type="button" value="<?=_('Detach')?>" title="<?=_('Detach the USB device from the selected VM')?>" onclick="usbm_operateUSB('vm_disconnect');" id="usbm_detach" style="margin-top:0"></td><td>
+	<?=_('Attached devices USB Devices for selected VM')?>: </td><td>
+	<select name="usbm_devs2" size="1" id="usb2" placeholder="No Devices"
 	   style="width:auto;"
   >
-	<?foreach (usbm_list_usbs() as $busid => $usb):?>
-    <?$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
-	<?=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
-	<?endforeach;?>
+	<?#foreach (usbm_list_usbs() as $busid => $usb):?>
+    <?#$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
+	<?#=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
+	<?#endforeach;?>
 	</select>
+</td></tr></table>	
+
 </dl>
 
-> Select the VM for the USB device to be attached/detached and the USB device for the selected VM.
-:end
 
-<input type="button" value="<?=_('Attach')?>" title="<?=_('Attach the USB device to the selected VM')?>" onclick="usbm_operateUSB('vm_connect');" id="usbm_attach" style="margin-top:0">
-<input type="button" value="<?=_('Detach')?>" title="<?=_('Detach the USB device from the selected VM')?>" onclick="usbm_operateUSB('vm_disconnect');" id="usbm_detach" style="margin-top:0">
 
-:usbm_hot_plug:
+<script>
+BuildAttachlist()
+BuildAvailablelist()
+</script>
 <dt><strong><?=_('Result')?>:</strong></dt>
 <textarea readonly name="usbm_Status" rows="5" cols="80" title='_(Result of attach/detach operation)_' style="font-family:bitstream;width:100%"></textarea>
+
 
 
 <input type="button" value="<?=_('Refresh')?>" title="<?=_('Refresh this page')?>" onclick="refresh()">
