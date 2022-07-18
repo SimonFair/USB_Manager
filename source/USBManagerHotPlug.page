@@ -258,7 +258,7 @@ function BuildAvailablelist() {
 
 </td></tr>
 <tr><td></td><td><input type="button" value="<?=_('Detach')?>" title="<?=_('Detach the USB device from the selected VM')?>" onclick="usbm_operateUSB('vm_disconnect');" id="usbm_detach" style="margin-top:0"></td><td>
-	<?=_('Attached devices USB Devices for selected VM')?>: </td><td>
+	<?=_('Attached USB Devices for selected VM')?>: </td><td>
 	<select name="usbm_devs2" size="1" id="usb2" placeholder="No Devices"
 	   style="width:auto;"
   >
