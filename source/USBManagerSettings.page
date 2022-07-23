@@ -205,18 +205,89 @@ _(Run USBIPD Daemon)_:
 :end
 
 
+_(Run USBIP Remote Host Finder)_:
+: <select name="USBIPHF" size="1"  <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
+  <?=mk_option($cfg["Config"]["USBIPHF"], "manual", "_(Manual)_");?>
+  <?=mk_option($cfg["Config"]["USBIPHF"], "auto", "_(Auto)_");?>
+
+  </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
+
+:usbmgr_HostDisc_run_help:
+
+> Set the Host Finder to run, Manaul users need to add via the GUI, Auto will auto add/remove hosts based on settings below.
+
+
+_(USBIP Remote Host Finder Poll Frequency)_:
+: <span id="HFH2"<?if ($move!=0):?> style="display:none"<?endif;?>><select name="USBIPHFI">
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/1", _("Every hour"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/2", _("Every 2 hours"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/3", _("Every 3 hours"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/4", _("Every 4 hours"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/6", _("Every 6 hours"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/8", _("Every 8 hours"))?>
+  <?=mk_option($cfg["Config"]["USBIPHFI"], "*/10", _("Every 10 hours"))?>
+
+
+  </select></span>
+
+:usbmgr_HostFind_freq_help:
+
+> Interval USBIP host discovery will run with options from every hour to ever 10 hours. Process will run at the start of the hour.
+
+
+_(USBIP Remote Host Finder Action)_:
+: <select name="USBIPHFA" size="1"  <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host  ):?>disabled<?endif;?>>
+  <?=mk_option($cfg["Config"]["USBIPHFA"], "both", "_(Both add & remove)_");?>
+  <?=mk_option($cfg["Config"]["USBIPHFA"], "add", "_(add)_");?>
+  <?=mk_option($cfg["Config"]["USBIPHFA"], "remove", "_(remove)_");?>
+  </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
+
+:usbmgr_HostDisc_incexc_help:
+
+> Action to apply to new host found or a host no longer found.
+> Both will add or remove the host.
+> Add will just add a new host found
+> Remove will just remove any host no longer discovered.
+
+
+_(USBIP Remote Host Finder exclude local host)_:
+: <select name="USBIPHFE" size="1"  <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
+  <?=mk_option($cfg["Config"]["USBIPHFE"], "yes", "_(Exclude)_");?>
+  <?=mk_option($cfg["Config"]["USBIPHFE"], "no", "_(Include)_");?>
+
+  </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
+
+:usbmgr_HostDisc_incexc_help:
+
+> Option to include or exclude local host being process during the checker.
 
 _(Run USBIP Remote Checker)_:
-: <select name="USBIPRC" size="1" disabled <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
+: <select name="USBIPRC" size="1"  <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
   <?=mk_option($cfg["Config"]["USBIPRC"], "disabled", "_(Disabled)_");?>
   <?=mk_option($cfg["Config"]["USBIPRC"], "enabled", "_(Enabled)_");?>
   </select><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
 
+:usbmgr_HostCheck_run_help:
 
+> Enable or disable Checker to run.
 
+_(USBIP Remote Host Checker Poll Frequency)_:
+: <span id="RCH2"<?if ($move!=0):?> style="display:none"<?endif;?>><select name="USBIPRCI">
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/1", _("Every minute"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/2", _("Every 2 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/3", _("Every 3 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/4", _("Every 4 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/5", _("Every 5 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/10", _("Every 10 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/20", _("Every 20 minutes"))?>
+  <?=mk_option($cfg["Config"]["USBIPRCI"], "*/30", _("Every 30 minutes"))?>
 
-_(USBIP Remote Checker Poll Time)_:
-: <input type="text" disabled name="USBIPRCT" maxlength="10" value="<?=$cfg["Config"]["USBIPRCT"]?>" class="narrow"><?=_("")?>
+  </select></span>
+
+:usbmgr_HostCheck_freq_help:
+
+> Interval USBIP host checker will run with options from every min to ever 30 mins with a hour.
+
 
 
 &nbsp;

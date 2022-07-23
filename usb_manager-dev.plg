@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.07.16">
+<!ENTITY version   "2022.07.23">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager-dev.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"e3bdadfd687b8700de40000fe211786b">
+<!ENTITY md5		"92ea9e0fc77c2e8e62f90371aba630da">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,11 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Add USBIP host finder and checker options and processing. Checker will attach a USBIP device found not connected to host already.
+    Finder will look for devices in the local subnet using port 3240 and depending on options add or remove the host from the remote USBIP hosts, removal is for a host no longer found.
+
+2022.07.18a
 
 	
    - Add Serial processing
@@ -285,6 +290,8 @@ rm -f /tmp/plugins/&name;.plg
 rm -r /tmp/&name;
 rm  -f /etc/udev/rules.d/99_persistent_usb_manager.rules
 rm  -f /etc/rsyslog.d/99_usb_manager_syslog.conf
+rm  -f /boot/config/plugins/&name;/*.cron 
+update_cron
 
 #modprobe -r usbip_host
 #modprobe -r vhci_hcd
