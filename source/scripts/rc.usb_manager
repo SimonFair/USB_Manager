@@ -528,13 +528,15 @@ switch ($COMMAND) {
 		# Process connecting devices.
 		foreach($usbipnotconnected as $key => $usbiprmt) {
 			foreach($usbiprmt as $key2 => $usbipport) {
+				if ($key2 == "NONE") continue ;
 				$cmd = "usbip attach -r ".$key." -b ".$key2;
 				usb_manager_log("Info: rc.usb_manager USBIP Host Check {$key} {$key2} command to run {$cmd}") ;
+				$cmd .= " 2>&1" ;
 				$cmdoutput = array() ;
 				exec($cmd,$cmdoutput,$return) ;
 				if ($return) {
 					$error = implode("\n",$cmdoutput) ;
-					usb_manager_log("Info: rc.usb_manager USBIP Host Check attached failed {$cmdoutput}") ;
+					usb_manager_log("Info: rc.usb_manager USBIP Host Check attached failed {$error}") ;
 				}
 			}
 		}
@@ -542,9 +544,7 @@ switch ($COMMAND) {
 
 
 	case 'usbiphostdiscovery':
-		$time = date('m/d/Y h:i:s a', time()); ;
-		usb_manager_log("Info: rc.usb_manager testing cron USBIP Host Discovery{$time}") ;
-		
+
 		$run = get_config("Config","USBIPHF") ;
 		if ($run == "manual") return ;
 		
@@ -560,7 +560,7 @@ switch ($COMMAND) {
 					$netmask = array_values(array_flip(preg_grep("/NETMASK/",	array_flip($iface))));
 					for ($z=0; $z < count($ipaddr); $z++)
 					{ 
-						#echo "network.push({gateway:'{$gateway[$z]}', ip:'{$ipaddr[$z]}', netmask:'{$netmask[$z]}'});\n";
+
 						$local_host_ips[$ipaddr[$z]]["gateway"] =  $gateway[$z] ;
 						$local_host_ips[$ipaddr[$z]]["netmask"] =  $netmask[$z] ;
 						exec("/usr/bin/timeout -s 13 5 plugins/{$plugin}/scripts/port_ping.sh {$ipaddr[$z]} {$netmask[$z]} 3240 2>/dev/null | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4", $usbiprmthostscan);
@@ -574,7 +574,7 @@ switch ($COMMAND) {
 		$action = get_config("Config","USBIPHFA") ;
 		$local_host  = get_config("Config","USBIPFE") ;
 
-		var_dump($usbiprmthosts, $rmthost) ;
+
 		if ($action == "both" || $action == "add") 
 		{
 			foreach($usbiprmthosts as $host){

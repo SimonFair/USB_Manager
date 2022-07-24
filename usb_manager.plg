@@ -3,13 +3,13 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2022.07.23">
+<!ENTITY version   "2022.07.24">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
 <!ENTITY supportURL	"https://forums.unraid.net/topic/100511-plugin-usbip-commands/">
 <!ENTITY packages	"/boot/config/plugins/&name;/packages">
-<!ENTITY md5		"92ea9e0fc77c2e8e62f90371aba630da">
+<!ENTITY md5		"ab6157d8b85955bfc0422bef22b5d025">
 ]>
 
 <PLUGIN name="&name;"
@@ -24,6 +24,11 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+  - Fix process if no available devices for USBIP attach.
+  - Code tidy.
+
+2022.07.23
 
   - Add USBIP host finder and checker options and processing. Checker will attach a USBIP device found not connected to host already.
     Finder will look for devices in the local subnet using port 3240 and depending on options add or remove the host from the remote USBIP hosts, removal is for a host no longer found.
