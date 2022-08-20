@@ -1,7 +1,8 @@
-Menu="USB:4"
+Menu="USB Utilities"
 Title="USB Devices"
 Tag="unlink"
-Icon="cogs"
+Icon="fa-usb"
+
 ---
 <?php
 /* 

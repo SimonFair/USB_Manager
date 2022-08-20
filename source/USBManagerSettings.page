@@ -118,10 +118,16 @@ _(Enable USB on Dashboard)_:
   <?=mk_option($cfg["Config"]["DASH"], "enabled", "_(Enabled)_");?>
   </select>
 
-  _(Enable USB Manager Hotplug  on VM page)_:
+  _(Enable USB Manager Hotplug on VM page)_:
 : <select name="HOTPLUG" size="1" >
   <?=mk_option($cfg["Config"]["HOTPLUG"], "disabled", "_(Disabled)_");?>
   <?=mk_option($cfg["Config"]["HOTPLUG"], "enabled", "_(Enabled)_");?>
+  </select>
+
+  _(Show USB Manager on Menu)_:
+: <select name="MENU" size="1" >
+  <?=mk_option($cfg["Config"]["MENU"], "enabled", "_(Enabled)_");?>
+  <?=mk_option($cfg["Config"]["MENU"], "disabled", "_(Disabled)_");?>
   </select>
 
   _(Enable HUB Processing)_:
