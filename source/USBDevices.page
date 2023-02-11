@@ -1,4 +1,4 @@
-Menu="USB Utilities"
+Menu="USB:0 Utilities"
 Title="USB Devices"
 Tag="unlink"
 Icon="fa-usb"
@@ -17,8 +17,9 @@ Icon="fa-usb"
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  */
-
+#ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 $plugin = "usb_manager";
+$noscript = true ;
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $translations = file_exists("$docroot/webGui/include/Translations.php");
 require_once "$docroot/plugins/$plugin/include/Legacy.php";
@@ -32,10 +33,8 @@ parse_plugin('usb_manager');
 
 require_once "plugins/$plugin/include/lib_usb_manager.php";
 $version = parse_ini_file("/etc/unraid-version");
-
+$newmodel = version_compare($version['version'],'6.12.0-beta5', '>') ? "true" : "false" ;
 check_usbip_modules() ;
-
-
 ?>
 
 <script type="text/javascript" src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
@@ -115,11 +114,6 @@ check_usbip_modules() ;
 
 <script type="text/javascript">
 
-	<?=$Preclear ? $Preclear->Script() : "";?>
-
-	function rm_preclear(dev) {
-		$.post(UDURL,{action:"rm_preclear",device:dev}).always(function(){usb_disks(tab_usbdisks)});
-	}
 
 
 	if (typeof " ".formatUnicorn !== "function")
@@ -426,7 +420,12 @@ check_usbip_modules() ;
 
 	function get_tab_title_by_name(name) {
 		var tab		= $("input[name$=tabs] + label").filter(function(){return $(this).text() === name;}).prev();
-		var title	= $("div#title > span.left"		).filter(function(){return $(this).text() === name;}).parent();
+		var newmodel = <?php echo $newmodel; ?> ;
+		if (newmodel) {
+			var title = $("div.title > span.left").filter(function(){return $(this).text() === name;}).parent();
+			} else {
+			var title	= $("div#title > span.left"		).filter(function(){return $(this).text() === name;}).parent();
+			}
 		if (tab.length) {
 			return tab
 		} else if (title.length) {
@@ -627,7 +626,6 @@ check_usbip_modules() ;
 }
 </script>
 
-<?=$Preclear ? $Preclear->html() : "";?>
 
 :usbip_devices_switches_plug:
 > Turn on the **Local** switch to change the web page to show local usb devices. Turn off the **Local** switch to change the web page to hide usb devices.
@@ -892,8 +890,6 @@ check_usbip_modules() ;
 		$("#usbip_devices_list").html( $('div.spinner').html(unraid_logo) );
         
 		usb_disks(tab_usbdisks);
-		detect_usb_disk_change(tab_usbdisks);
-		ping_poll(tab_usbdisks);
 		refresh_page(tab_usbdisks);
 	});
 </script>

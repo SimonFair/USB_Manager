@@ -1,6 +1,7 @@
-Menu="USB"
-Title="Debug"
+Menu="USB:99"
+Title=""
 icon="fa-file"
+
 ---
 <?PHP
 /* Copyright 2020-2020, Simon Fairweather
@@ -99,7 +100,7 @@ $('#db1').load('/plugins/usb_manager/USBDevices.php',{action:'db1'});
 </script>
 
 
-_(Debug USB)_
+<!--_(Debug USB)_-->
 
 <pre><form id="USBDebug" onsubmit="return false"><table id='db1' class='pre'></table></form></pre><br>
 

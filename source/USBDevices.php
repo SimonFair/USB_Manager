@@ -14,7 +14,10 @@
 $plugin = "usb_manager";
 $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
 $translations = file_exists("$docroot/webGui/include/Translations.php");
-
+$titleclassid = (version_compare(parse_ini_file('/etc/unraid-version')['version'],'6.12.0-beta5', '>')) ;
+if ($titleclassid) $titleclassid =  "<div class='title'>" ; else $titleclassid = "<div id='title'>" ;
+#ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+$noscript="" ;
 if ($translations) {
 	/* add translations */
 	$_SERVER['REQUEST_URI'] = 'USBDevices' ;
@@ -67,7 +70,7 @@ function netmasks($netmask, $rev = false)
 */
 
 function make_mount_button($device, $class) {
-	global $paths, $Preclear, $loaded_usbip_host,$usb_state;
+	global $paths, $loaded_usbip_host,$usb_state;
 
 	$button = "<span><button device='{$device["BUSID"]}' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
 
@@ -107,7 +110,7 @@ function make_mount_button($device, $class) {
 	return $button;
 }
 function make_attach_button($device,$busid) {
-	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist ;
+	global $paths,   $loaded_vhci_hcd, $usbip_cmds_exist ;
 
 	$button = "<span><button hostport='".$device.";".ltrim($busid)."' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
 
@@ -125,7 +128,7 @@ function make_attach_button($device,$busid) {
 }
 
 function make_detach_button($port) {
-	global $paths, $Preclear;
+	global $paths;
 
 	$button = "<span><button port='{$port}' class='mount' context='%s' role='%s' %s><i class='%s'></i>%s</button></span>";
 
@@ -142,7 +145,7 @@ function make_detach_button($port) {
 }
 
 function make_vm_button($vm,$busid,$devid,$srlnbr,$vmstate,$isflash,$usbip_status,$map,$class) {
-	global $paths, $Preclear , $loaded_vhci_hcd, $usbip_cmds_exist, $usb_state;
+	global $paths , $loaded_vhci_hcd, $usbip_cmds_exist, $usb_state;
 
 	#$usbstatekey = $srlnbr ; #v2
 	$usbstatekey = $busid."/".$devid ; #v2
@@ -273,7 +276,7 @@ switch ($_POST['action']) {
 
 	}}
 		
-		echo "<div id='usb_tab' class='show-disks'>";
+		echo "<div class='show-disks'>";
 		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
 		if ($hideserial =="true") echo "<td>"._('Serial Numbers')."</td>" ;
 		echo "<td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
@@ -615,9 +618,9 @@ switch ($_POST['action']) {
 		
 		if ($usbip_enabled == "enabled") {
 		/* Remote USBIP Servers */
-		echo "<div id='rmtip_tab' class='show-rmtip'>";
+		echo "<div class='rmtip_tab' class='show-rmtip'>";
 		
-		echo "<div class='show-rmtip' id='rmtip_tab'><div id='title'><span class='left'><img src='/plugins/$plugin/icons/nfs.png' class='icon'>"._('Remote USBIP Hosts')." &nbsp;</span></div>";
+		echo "<div class='show-rmtip' id='rmtip_tab'>$titleclassid<span class='left'><img src='/plugins/$plugin/icons/nfs.png' class='icon'>"._('Remote USBIP Hosts')." &nbsp;</span></div>";
 		#echo "<table class='disk_status wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('Settings')."</td><td></td><td></td><td>"._('Size')."</td><td>"._('Used')."</td><td>"._('Free')."</td><td>"._('Log')."</td></tr></thead>";
 		echo "<table class='disk_status wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('')."</td><td></td><td></td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td></tr></thead>";
 		echo "<tbody>";
@@ -685,11 +688,11 @@ switch ($_POST['action']) {
 		echo "</div>";
 
 
-		echo "<div id='port_tab' class='show-ports'>";
+		echo "<div class='port_tab' class='show-ports'>";
 		$ct = "";
 		$port=parse_usbip_port() ;
 	
-		echo "<div class='show-ports' id='ports_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Attached Ports')."</span></div>";
+		echo "<div class='show-ports' id='ports_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Attached Ports')."</span></div>";
 		echo "<table class='disk_status wide usb_attached'><thead><tr><td>"._('Device')."</td><td>"._('HUB Port=>Remote host')."</td><td>"._('Action')."</td><td></td><td></td><td></td><td></td><td></td><td>"._('')."</td><td>"._('')."</td></tr></thead>" ;
 
 		foreach ($port as $portkey => $portline) {
@@ -739,7 +742,7 @@ switch ($_POST['action']) {
 		 usb_manager_log("Total render time: ".($time + microtime(true))."s", "DEBUG");
 		 
 		
-		 echo "</div><div id='hist_tab' class='show-history'>";
+		 echo "</div><div class='hist_tab' class='show-history'>";
 		
 		 $config_file = $GLOBALS["paths"]["vm_mappings"];
 		 $config = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
@@ -763,10 +766,10 @@ switch ($_POST['action']) {
 			 }
 		 }
 		 if (strlen($ct)) {
-			 echo "<div class='show-disks'><div class='show-historical' id='hist_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
+			 echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
 			 echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
 		 } else {
-			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'><div id='title'><span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
+			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
 			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>" ;
 			echo "<tr><td colspan='13' style='text-align:center;'>"._('No Historic Mappings configured').".</td></tr>";
 		 }
@@ -925,15 +928,15 @@ switch ($_POST['action']) {
 		break ;	
 
 		case 'db1':
-			echo "<tr><td>" ;
-			$list= get_inuse_byvm("Ubuntu") ;
+			#echo "<tr><td>" ;
+			#$list= get_inuse_byvm("Ubuntu") ;
 			$list2= get_all_available() ;
-			var_dump($list, $list2) ;
-			echo "</td></tr>" ;
-			echo "<tr><td>" ;
+			#var_dump($list, $list2) ;
+			#echo "</td></tr>" ;
+			#echo "<tr><td>" ;
 			$list= get_all_usb_info() ;
-			var_dump($list) ;
-			echo "</td></tr>" ;
+			#var_dump($list) ;
+			#echo "</td></tr>" ;
 			break;
 
 		case 'vm_connect':

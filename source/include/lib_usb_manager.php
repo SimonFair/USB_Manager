@@ -12,6 +12,7 @@
  * all copies or substantial portions of the Software.
  */
 $plugin = "usb_manager";
+#ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 /* $VERBOSE=TRUE; */
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"config_file"		=> "/tmp/{$plugin}/config/{$plugin}.cfg",
@@ -75,7 +76,7 @@ function save_ini_file($file, $array) {
 function usb_manager_log($m, $type = "NOTICE") {
 	global $plugin;
 
-	if ($type == "DEBUG" && ! $GLOBALS["VERBOSE"]) return NULL;
+	if ($type == "DEBUG" ) return NULL;
 	$m		= print_r($m,true);
 	$m		= str_replace("\n", " ", $m);
 	$m		= str_replace('"', "'", $m);
@@ -133,7 +134,7 @@ function is_usbip_server_online($ip, $mounted, $background=TRUE) {
 }
 
 
-function timed_exec($timeout=10, $cmd) {
+function timed_exec($timeout, $cmd) {
 	$time		= -microtime(true); 
 	$out		= shell_exec("/usr/bin/timeout ".$timeout." ".$cmd);
 	$time		+= microtime(true);
@@ -1175,18 +1176,18 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial,
 	if ($port == "") $port="04" ;
 	usb_manager_log("Info: connect as serial guest port is:".$port);
 	$usbstr .= "<serial type='dev'>
-	<source path='${isSerialPath}'/>
+	<source path='{$isSerialPath}'/>
 	<target type='usb-serial' port='1'>
 	<model name='usb-serial'/>
 	</target>
-	<alias name='ua-serial${usbbus}${usbdev}'/>
-	<address type='usb' bus='0' port='${port}'/>
+	<alias name='ua-serial{$usbbus}{$usbdev}'/>
+	<address type='usb' bus='0' port='{$port}'/>
 	</serial>" ;
 	}
 	else {
 	$usbstr .= "<hostdev mode='subsystem' type='usb'>
 	<source>
-	<address bus='${usbbustrim}' device='${usbdevtrim}' />
+	<address bus='{$usbbustrim}' device='{$usbdevtrim}' />
 	</source>
 	</hostdev>";
 	}
@@ -1195,7 +1196,7 @@ function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial,
 
 	$actioncmd= $action.'-device' ;
 	if ($connectserial == "yes" && $action=="detach") { 
-		$actioncmd .="-alias '$vmname' ua-serial${usbbus}${usbdev}" ; }
+		$actioncmd .="-alias '$vmname' ua-serial{$usbbus}{$usbdev}" ; }
 		else { $actioncmd .= " '$vmname' '".$filename."' " ; }
 	
 	$cmdreturn=shell_exec("/usr/sbin/virsh $actioncmd  2>&1");
@@ -1281,6 +1282,7 @@ function get_inuse_devices() {
 		}
 	}
 	$usbinuse = array() ;
+	$pciinuse = array() ;
 
 	exec('lsscsi -bti | grep usb'  ,$lsscsi) ;
 

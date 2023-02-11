@@ -1,0 +1,58 @@
+Menu="Dashboard:0"
+Cond="parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['DASH'] == 'enabled' && version_compare(parse_ini_file('/etc/unraid-version')['version'],'6.12.0-beta5', '>')"
+---
+<?PHP
+/*
+  Create a .page file based on this example file and store the file in your plugin directory
+  Make sure this file has a unique name not used by the GUI or other plugins
+
+  This is an example configuration which is used to add custom tiles to the dashboard
+  Placement of one or more custom tiles is done under column1, column2 or column3
+  A column can have as many new custom tiles as needed, each custom tile is a <tbody> element
+  Each tile must have these two properties set:
+
+  "_(description)_"    - this is the (translated) description shown in the Content Manager window
+  "_(Tile tile)_"      - this is the (translated) title of the tile shown in bold on the screen
+
+  The content of the tile can be any text as required by your plugin, this content is placed inside the <td> element
+  A number of predefined spans are available to make fields of certain widths and maybe used to follow the GUI alignment
+  These are:
+  <span class="w18">
+  <span class="w26">
+  <span class="w36">
+  <span class="w44">
+  <span class="w72">
+*/
+
+$pluginname = "usb_manager"; // substitute this entry with the name of your plugin
+
+$mytiles[$pluginname]['column2'] =
+<<<EOT
+<tbody id="tblUSBDash" title="_(USB Manager)_">
+<tr><td>_(USB Devices)_<a href="/Dashboard/Settings/USBManagerSettings" title="_(Go to USB settings)_"><i class="fa fa-fw fa-cog control"></i></a></td></tr>
+<tr class="header"><td><span class="w18">_(Port)_</span><span class="w44">_(Name)_</span><span class="w18">_(State)_</span><span class="w18">_(VM/Remote Host)_</span></td></tr>
+</tbody>
+EOT;
+?>
+
+<script>
+function USBArray() {
+  
+  $.post('/plugins/usb_manager/USBDevices.php', {action:'usbdash'}, function(data) {
+	$('#tblUSBDash').find('tr.updated').remove();
+    $.each(data.usb_devices, function(i, device) {
+      $('#tblUSBDash').append('<tr class="updated"><td>'+
+      '<span class="w18"><i class="fa fa-usb icon"></i>'+i+'</span>'+                                                                // port
+      '<span class="w44"><i class="fa fa-circle orb '+device.orb_colour+'-orb middle"></i>'+device.ID_MODEL.substr(0,25)+'</span>'+  // name
+      '<span class="w18">'+device.status+'</span>'+                                                                                  // state
+      '<span class="w18">'+device.allocated+'</span>'+                                                                               // vm remote Host
+      '</td></tr>');
+    });
+    setTimeout(USBArray, 20000);
+  },'json');
+};
+
+$(function(){
+  USBArray();
+});
+</script>
