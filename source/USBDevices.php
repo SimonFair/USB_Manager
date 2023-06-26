@@ -780,7 +780,7 @@ switch ($_POST['action']) {
 		if (! is_file($GLOBALS['paths']['reload'])) {
 		#	@touch($GLOBALS['paths']['reload']);
 		}
-		publish("reload", json_encode(array("rescan" => "yes"),JSON_UNESCAPED_SLASHES)) ;
+		#publish("reload", json_encode(array("rescan" => "yes"),JSON_UNESCAPED_SLASHES)) ;
 		break;
 
 	case 'bind':
