@@ -36,6 +36,10 @@ EOT;
 ?>
 
 <script>
+if (typeof jQuery.prototype.hideMe == 'undefined') {
+  jQuery.prototype.hideMe = function() {return;}
+}
+
 function USBArray() {
   
   $.post('/plugins/usb_manager/USBDevices.php', {action:'usbdash'}, function(data) {
@@ -46,7 +50,7 @@ function USBArray() {
       '<span class="w44"><i class="fa fa-circle orb '+device.orb_colour+'-orb middle"></i>'+device.ID_MODEL.substr(0,25)+'</span>'+  // name
       '<span class="w18">'+device.status+'</span>'+                                                                                  // state
       '<span class="w18">'+device.allocated+'</span>'+                                                                               // vm remote Host
-      '</td></tr>');
+      '</td></tr>').hideMe();
     });
     setTimeout(USBArray, 20000);
   },'json');

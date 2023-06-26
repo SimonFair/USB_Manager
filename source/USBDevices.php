@@ -773,9 +773,7 @@ switch ($_POST['action']) {
 			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>" ;
 			echo "<tr><td colspan='13' style='text-align:center;'>"._('No Historic Mappings configured').".</td></tr>";
 		 }
-		 unassigned_log("Total get_content render time: ".($time + microtime(true))."s", "DEBUG");
-
-		 
+				 
 		break;
 
 	case 'refresh_page':

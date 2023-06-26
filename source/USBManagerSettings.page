@@ -156,7 +156,7 @@ _(Enable USBIP)_:
 _(Install/remove addon plugin for USBIP)_:
 &nbsp;
 
-: <input type="button" <?if ( $usbip_cmds_exist ):?>disabled<?endif;?> value="_(Install)_"  onclick="installPlugin('https://raw.githubusercontent.com/SimonFair/USB_Manager_USBIP_addon/main/usb_manager_usbip_addon.plg')"> <input type="button" <?if (!$usbip_cmds_exist ):?>disabled<?endif;?> value="_(Remove)_" onclick="removePlugin('usb_manager_usbip_addon.plg')">
+: <input type="button" <?if ($usbip_cmds_exist ):?>disabled<?endif;?> value="_(Install)_"  onclick="installPlugin('https://raw.githubusercontent.com/SimonFair/USB_Manager_USBIP_addon/main/usb_manager_usbip_addon.plg')"> <input type="button" <?if (!$usbip_cmds_exist ):?>disabled<?endif;?> value="_(Remove)_" onclick="removePlugin('usb_manager_usbip_addon.plg')">
 
 
 
