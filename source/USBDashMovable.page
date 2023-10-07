@@ -46,7 +46,7 @@ function USBArray() {
 	$('#tblUSBDash').find('tr.updated').remove();
     $.each(data.usb_devices, function(i, device) {
       $('#tblUSBDash').append('<tr class="updated"><td>'+
-      '<span class="w18"><i class="fa fa-usb icon"></i>'+i+'</span>'+                                                                // port
+      '<span class="w18" title="Speed='+device.speed+'"><i class="fa fa-usb icon"></i>'+i+'</span>'+                                                                // port
       '<span class="w44"><i class="fa fa-circle orb '+device.orb_colour+'-orb middle"></i>'+device.ID_MODEL.substr(0,25)+'</span>'+  // name
       '<span class="w18">'+device.status+'</span>'+                                                                                  // state
       '<span class="w18">'+device.allocated+'</span>'+                                                                               // vm remote Host

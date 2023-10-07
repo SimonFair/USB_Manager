@@ -49,7 +49,7 @@ function USBArray(Refresh){
         
             .append('<tr class="usb_view_heading" style="display: none;"><td></td><td>USB</td><td>Name</td><td>State</td><td>VM/Remote Host</td></tr></tbody>' +
             "<tr class='usb_view' style='display: none;' id='"+i+"'><td></td>"+
-            '<td  title="'+i+'"><i class="fa fa-usb icon"></i> '+i+'</td>'+ //USB Port name
+            '<td  title="Speed='+device.speed+'"><i class="fa fa-usb icon"></i> '+i+'</td>'+ //USB Port name
             '<td><i class="fa fa-circle orb '+orbcolour+'-orb middle"></i>'+ device.ID_MODEL.substr(0,25) +'</td><td>'+ status +'</td>'+ //Status
             ' <td>'+ allocated +'</td>'+ //Status
             '</tr>');

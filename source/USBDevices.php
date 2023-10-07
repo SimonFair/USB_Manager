@@ -277,7 +277,7 @@ switch ($_POST['action']) {
 	}}
 		
 		echo "<div class='show-disks'>";
-		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
+		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")." / "._("Speed")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
 		if ($hideserial =="true") echo "<td>"._('Serial Numbers')."</td>" ;
 		echo "<td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 
@@ -370,7 +370,7 @@ switch ($_POST['action']) {
 				$detail["BUSID"] = $disk ;
 			#	$mbutton = make_mount_button($detail);		
 				/* Device serial number */
-			    echo "<td>{$bus_id}</td><td>{$indent}{$disk}</td>";
+			    echo "<td>{$bus_id} {$detail['speed']}</td><td>{$indent}{$disk}</td>";
 
 				/* Device Driver */
 				echo "<td>".ucfirst($detail["ishub"])."</td>";
@@ -1000,6 +1000,7 @@ switch ($_POST['action']) {
 					    $allocated = $usb_state[$usbstatekey]["VM"] ;
 					    $orb_colour ='green' ;
 				        } else {
+							$state = "Available" ;
 							$orb_colour ='blue' ;
 						if	(isset($inuse_devices["usb"][$USBPORT])) {
 							if ($inuse_devices["usb"][$USBPORT]["zpool"]) {$state="Inuse ZFS" ;$orb_colour ='red' ; }
@@ -1035,6 +1036,7 @@ switch ($_POST['action']) {
 					"allocated" => $allocated,
 					"status" => $state,
 					"orb_colour" => $orb_colour ,	
+					"speed" => $device["speed"],
 				) ;
 			}
 			$return  = ['usb_devices' => $dash_array];

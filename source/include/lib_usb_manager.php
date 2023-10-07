@@ -652,6 +652,9 @@ function get_usbip_devs() {
 			$udevisplit=explode("=",$udevi) ;
 			$tj[$busid][$udevisplit[0]] = $udevisplit[1] ;
 		}
+		$speed = $string = trim(preg_replace('/\s+/', ' ', shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' ))) ;
+		if ($speed >  999) { $speed = $speed / 1000; $speedtext = $speed."G" ;} else $speedtext = $speed."M" ; 
+		$tj[$busid]["speed"] = $speedtext ;
 
 		$tj[$busid]["isSerial"] = false ;
 		$tj[$busid]["isSerialPath"] = NULL ;
@@ -683,7 +686,7 @@ function get_usbip_devs() {
 			$hubspeed = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' ) ;
 			$hubbmaxpower = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bMaxPower' ) ;
 
-			$tj[$busid]["ID_VENDOR_FROM_DATABASE"] = "Ports=".$hubmaxchild." Speed=".$hubspeed." Power=".$hubbmaxpower ;
+			$tj[$busid]["ID_VENDOR_FROM_DATABASE"] = "Ports=".$hubmaxchild." Power=".$hubbmaxpower ;
 			$tj[$busid]["ID_MODEL"] = "" ;
 			$tj[$busid]["maxchildren"] = $hubmaxchild ;
 			if ($detail["ishub"] == "roothub" )	$tj[$busid]["level"] = 0 ;
