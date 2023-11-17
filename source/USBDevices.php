@@ -757,20 +757,21 @@ switch ($_POST['action']) {
 				if (substr($serial,0,5) == "Port:") $icon="fa-usb" ; else $icon="fa-desktop" ;
 				if (!isset($value["autoconnect"]))  $value["autoconnect"] ="no" ;
 				if (!isset($value["autoconnectstart"])) $value["autoconnectstart"] ="no" ;
+				if (!isset($value["autoconnectvmstart"])) $value["autoconnectvmstart"] ="no" ;
 				if (!isset($value["connectserial"])) $value["connectserial"] ="no" ;
  				 #$mountpoint	= basename(get_config($serial, "mountpoint.1"));
 				 $ct .= "<tr><td><i class='fa fa-usb'></i>"._("")."</td><td>$serial"." </td>";
-				 $ct .= "<td>".$value["VM"]."</td><td>".ucfirst($value["autoconnect"])."</td><td>".ucfirst($value["autoconnectstart"])."</td><td>".ucfirst($value["connectserial"])."</td><td></td><td></td>";
+				 $ct .= "<td>".$value["VM"]."</td><td>".ucfirst($value["autoconnect"])."</td><td>".ucfirst($value["autoconnectvmstart"])."</td><td>".ucfirst($value["autoconnectstart"])."</td><td>".ucfirst($value["connectserial"])."</td><td></td><td></td>";
 				 $ct .= "<td><a title='"._("Edit Historical USB Device Settings")."' href='/USB/USBEditSettings?s=".urlencode($serial)."&v=".urlencode($value["VM"])."&t=TRUE'><i class='fa ".$icon."'></i></a></td>";
 				 $ct .= "<td title='"._("Remove USB Device configuration")."'><a style='color:#CC0000;font-weight:bold;cursor:pointer;' onclick='remove_vmmapping_config(\"{$serial}\")'><i class='fa fa-remove hdd'></a></td></tr>";
 			 }
 		 }
 		 if (strlen($ct)) {
 			 echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
-			 echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
+			 echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start VM</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
 		 } else {
 			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
-			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>" ;
+			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start VM</td><td>Auto Connect Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>" ;
 			echo "<tr><td colspan='13' style='text-align:center;'>"._('No Historic Mappings configured').".</td></tr>";
 		 }
 				 
@@ -839,6 +840,12 @@ switch ($_POST['action']) {
 		$serial = urldecode(($_POST['serial']));
 		$status = urldecode(($_POST['status']));
 		echo json_encode(array( 'result' => toggle_autoconnectstart($serial, $status) ));
+		break;
+
+	case 'autoconnectvmstart':
+		$serial = urldecode(($_POST['serial']));
+		$status = urldecode(($_POST['status']));
+		echo json_encode(array( 'result' => toggle_autoconnectvmstart($serial, $status) ));
 		break;
 
 	case 'autoconnect':

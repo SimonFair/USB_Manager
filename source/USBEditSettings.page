@@ -49,6 +49,7 @@ if (isset($_GET['s'])) {
 	$width = "50%";
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
+	$autoconnectvmstart = (is_autoconnectvmstart($serial)) ? "checked" : ""; 
 	$connectserial = (is_connectserial($serial)) ? "checked" : ""; 
 	$connectserialport = get_vm_config($serial, "connectserialport") ;
 	if ($connectserialport == false)  $connectserialport = "04" ;
@@ -146,6 +147,7 @@ EOT;
 &nbsp;
 
 <td title='_(Turn on to Auto Connect to VM if USB Device is Added)_.'><input type='checkbox' class='autoconnect-switch'></td>
+<td title='_(Start VM if USB Device is Added)_.'><input type='checkbox' class='autoconnect-start-switch'></td>
 <td title='_(Turn on to Auto Connect to VM if VM is started)_.'><input type='checkbox' class='autoconnectstart-switch'></td>
 <td title='_(Turn on to Connect to VM as serial port)_.'><input type='checkbox' class='usbserial-switch'></td>
 </tr>
@@ -245,6 +247,15 @@ Connect as Serial Guest Port Number:
 	$('.autoconnect-switch').change(function()
 	{
 		$.post(USBMURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		{
+			$(this).prop("checked",data.result);
+		},"json");
+	});
+
+	$('.autoconnect-start-switch').switchButton({ labels_placement: "left", on_label: "<?=_('At plugin start VM if not running');?>", off_label: "<?=_('At plugin start VM if not running');?>", checked:"<?=$autoconnectvmstart;?>" });
+	$('.autoconnect-start-switch').change(function()
+	{
+		$.post(USBMURL,{action:"autoconnectvmstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");

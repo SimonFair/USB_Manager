@@ -149,6 +149,12 @@ function usb_device_add_actionv2($serial,$bypass=false)
 		$usbstatekey=$_ENV['BUSNUM']."/".$_ENV['DEVNUM'] ; 
 
 		$state = get_vm_state($vm) ;
+		if ($state == "shutoff" && $vm_maps[$serial]["autoconnectvmstart"] == "yes") {
+			# Start VM
+			usb_manager_log("Info: rc.usb_manager starting vm as device connected {$vm}.");
+			$start = start_vm($vm) ;
+			$state = "running" ;
+		}
 
 		$vm .= ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Device;" ;	
 
