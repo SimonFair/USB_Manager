@@ -247,6 +247,11 @@ function is_autoconnectstart($sn) {
 	return ( $auto == "yes")  ? TRUE : FALSE;
 }
 
+function is_autoconnectvmstart($sn) {
+	$auto = get_vm_config($sn, "autoconnectvmstart");
+	return ( $auto == "yes")  ? TRUE : FALSE;
+}
+
 function is_autoconnect($sn) {
 	$auto = get_vm_config($sn, "autoconnect");
 	return ( $auto == "yes")  ? TRUE : FALSE;
@@ -291,6 +296,14 @@ function toggle_autoconnectstart($sn, $status) {
 	$config[$sn]["autoconnectstart"] = ($status == "true") ? "yes" : "no";
 	save_ini_file($config_file, $config);
 	return ($config[$sn]["autoconnectstart"] == "yes") ? 'true' : 'false';
+}
+
+function toggle_autoconnectvmstart($sn, $status) {
+	$config_file = $GLOBALS["paths"]["vm_mappings"];
+	$config = @parse_ini_file($config_file, true);
+	$config[$sn]["autoconnectvmstart"] = ($status == "true") ? "yes" : "no";
+	save_ini_file($config_file, $config);
+	return ($config[$sn]["autoconnectvmstart"] == "yes") ? 'true' : 'false';
 }
 
 function toggle_autoconnect($sn, $status) {
@@ -756,6 +769,14 @@ function get_vm_state($vm_name)
     return $state ;
 }
 
+function start_vm($vm_name)
+{
+	global $lv ;
+	if (!isset($lv))  return "Error State" ;
+	$res = $lv->get_domain_by_name($vm_name);
+	$start = $lv->domain_start($res);
+	return $start ;
+}
 
 function parse_usbip_port()
 {
