@@ -151,7 +151,7 @@ function usb_device_add_actionv2($serial,$bypass=false)
 		$state = get_vm_state($vm) ;
 		if ($state == "shutoff" && $vm_maps[$serial]["autoconnectvmstart"] == "yes") {
 			# Start VM
-			usb_manager_log("Info: rc.usb_manager starting vm as device connected {$vm}.");
+			usb_manager_log("Info: rc.usb_manager starting vm as device connected {$vm}  device map.");
 			$start = start_vm($vm) ;
 			$state = "running" ;
 		}
@@ -201,6 +201,12 @@ function usb_device_add_actionv2($serial,$bypass=false)
 	
 			if ($vm_maps[$port_map]["autoconnect"] == "yes" && $class == "interface" ) {
 				$state = get_vm_state($vm) ;
+				if ($state == "shutoff" && $vm_maps[$port_map]["autoconnectvmstart"] == "yes") {
+					# Start VM
+					usb_manager_log("Info: rc.usb_manager starting vm as device connected {$vm} port map.");
+					$start = start_vm($vm) ;
+					$state = "running" ;
+				}
 				$vm .=  ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Port"; ;
 				if ($state != "shutoff" && $state != "nostate") {
 					usb_manager_log("Info: rc.usb_manager Autoconnect vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}");
@@ -231,6 +237,12 @@ function usb_device_add_actionv2($serial,$bypass=false)
 		
 			if ($vm_maps[$hub_port_map]["autoconnect"] == "yes" ) {
 				$state = get_vm_state($vm) ;
+				if ($state == "shutoff" && $vm_maps[$hub_port_map]["autoconnectvmstart"] == "yes") {
+					# Start VM
+					usb_manager_log("Info: rc.usb_manager starting vm as device connected {$vm} hub port map.");
+					$start = start_vm($vm) ;
+					$state = "running" ;
+				}
 				$vm .=  ";".$_ENV['BUSNUM'].";".$_ENV['DEVNUM'].";".$_ENV['ID_SERIAL'].";Auto;Hub"; ;
 				if ($state != "shutoff") {
 					usb_manager_log("Info: rc.usb_manager Autoconnect Parent vm state:{$state} {$_ENV['ID_SERIAL']} {$state} {$_ENV['BUSNUM']} {$_ENV['DEVNUM']} port {$physical_busid}");
