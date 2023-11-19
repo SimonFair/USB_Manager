@@ -28,6 +28,8 @@ require_once "plugins/$plugin/include/lib_usb_manager.php";
 
 $config_file = "/tmp/$plugin/config/$plugin.cfg";
 $cfg = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
+$defaults = (array)@parse_ini_file("$docroot/plugins/$plugin/default.cfg");
+$cfg = array_replace_recursive($defaults, $cfg);
 $version = parse_ini_file("/etc/unraid-version");
 $usbip_enabled=$cfg["Config"]["USBIP"] ;
 check_usbip_modules() ;
@@ -224,7 +226,7 @@ _(Run USBIP Remote Host Finder)_:
 
 
 _(USBIP Remote Host Finder Poll Frequency)_:
-: <span id="HFH2"<?if ($move!=0):?> style="display:none"<?endif;?>><select name="USBIPHFI">
+: <span id="HFH2"><select name="USBIPHFI" <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
   <?=mk_option($cfg["Config"]["USBIPHFI"], "*/1", _("Every hour"))?>
   <?=mk_option($cfg["Config"]["USBIPHFI"], "*/2", _("Every 2 hours"))?>
   <?=mk_option($cfg["Config"]["USBIPHFI"], "*/3", _("Every 3 hours"))?>
@@ -234,7 +236,7 @@ _(USBIP Remote Host Finder Poll Frequency)_:
   <?=mk_option($cfg["Config"]["USBIPHFI"], "*/10", _("Every 10 hours"))?>
 
 
-  </select></span>
+  </select></span><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
 
 :usbmgr_HostFind_freq_help:
 
@@ -278,7 +280,7 @@ _(Run USBIP Remote Checker)_:
 > Enable or disable Checker to run.
 
 _(USBIP Remote Host Checker Poll Frequency)_:
-: <span id="RCH2"<?if ($move!=0):?> style="display:none"<?endif;?>><select name="USBIPRCI">
+: <span id="RCH2"><select name="USBIPRCI" <?if ((! $usbipd && ! $usbipd2) ||  ! $loaded_usbip_host):?>disabled<?endif;?>>
   <?=mk_option($cfg["Config"]["USBIPRCI"], "*/1", _("Every minute"))?>
   <?=mk_option($cfg["Config"]["USBIPRCI"], "*/2", _("Every 2 minutes"))?>
   <?=mk_option($cfg["Config"]["USBIPRCI"], "*/3", _("Every 3 minutes"))?>
@@ -288,7 +290,7 @@ _(USBIP Remote Host Checker Poll Frequency)_:
   <?=mk_option($cfg["Config"]["USBIPRCI"], "*/20", _("Every 20 minutes"))?>
   <?=mk_option($cfg["Config"]["USBIPRCI"], "*/30", _("Every 30 minutes"))?>
 
-  </select></span>
+  </select></span><?if ((! $usbipd && ! $usbipd2) || ! $loaded_usbip_host):?>&nbsp;_(The usbipd command missing or usbip_host module not loaded.)_.<?endif;?>
 
 :usbmgr_HostCheck_freq_help:
 
