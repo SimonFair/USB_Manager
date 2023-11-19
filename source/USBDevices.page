@@ -634,8 +634,6 @@ check_usbip_modules() ;
 >
 > Turn on the **History** switch to show all attached usb devices. Turn off **Partitons** switch to switch back to not show attached usb devices.
 >
-> Click on the <i style='color:black;font-weight:bold;' class="fa fa-refresh"></i> icon to rescan usb devices.
->
 > Click on the <i style='color:black;font-weight:bold;' class="fa fa-gear"></i> icon to go to the USBIP Settings.
 >
 > 
@@ -801,8 +799,6 @@ check_usbip_modules() ;
 		/*showStatus('<?=$sName?>');*/
 		/* Add icons to Tab/Title bar */
 		addButtonTab('<a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a>',
-								 "<?=_('USB Devices');?>");
-		addButtonTab('<a style="cursor:pointer;" onclick="$.post(\''+UDURL+'\',{\'action\':\'rescan_disks\'});" title="<?=_("Refresh Disks and Configuration");?>"><i class="fa fa-refresh"></i></a>',
 								 "<?=_('USB Devices');?>");
 
 	<?if ($usbip_enabled == "enabled"):?>
