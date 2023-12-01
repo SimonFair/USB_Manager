@@ -13,7 +13,6 @@
  */
 $plugin = "usb_manager";
 #ini_set('error_reporting', E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
-/* $VERBOSE=TRUE; */
 $paths = [  "device_log"		=> "/tmp/{$plugin}/",
 			"config_file"		=> "/tmp/{$plugin}/config/{$plugin}.cfg",
 			"hdd_temp"			=> "/var/state/{$plugin}/hdd_temp.json",
@@ -36,8 +35,8 @@ $disks = @parse_ini_file("$docroot/state/disks.ini", true);
 #############        MISC FUNCTIONS        ##############
 #########################################################
 
-function find_string_in_array ($arr, $string) {
-
+function find_string_in_array ($arr, $string) 
+{
     return array_filter($arr, function($value) use ($string) {
         return strpos($value, $string) !== false;
     });
@@ -62,11 +61,9 @@ function save_ini_file($file, $array) {
 			$res[] = "$key = ".(is_numeric($val) ? $val : '"'.$val.'"');
 		}
 	}
-
-	/* Write changes to tmp file. */
+	# Write changes to tmp file. 
 	file_put_contents($file, implode(PHP_EOL, $res));
-
-	/* Write changes to flash. */
+	# Write changes to flash. 
 	$file_path = pathinfo($file);
 	if ($file_path['extension'] == "cfg") {
 		file_put_contents("/boot/config/plugins/".$plugin."/".basename($file), implode(PHP_EOL, $res));
@@ -99,7 +96,7 @@ function listDir($root) {
 
 function safe_name($string, $convert_spaces=TRUE) {
 	$string = stripcslashes($string);
-	/* Convert single and double quote to underscore */
+	# Convert single and double quote to underscore 
 	$string = str_replace( array("'",'"', "?"), "_", $string);
 	if ($convert_spaces) {
 		$string = str_replace(" " , "_", $string);
@@ -129,10 +126,8 @@ function is_usbip_server_online($ip, $mounted, $background=TRUE) {
 		$bk = $background ? "&" : "";
 		exec("/usr/local/emhttp/plugins/{$plugin}/scripts/get_ud_stats ping {$tc} {$ip} {$mounted} $bk");
 	}
-
 	return $is_alive;
 }
-
 
 function timed_exec($timeout, $cmd) {
 	$time		= -microtime(true); 
@@ -161,8 +156,7 @@ function remove_usbstate($source) {
 	$config = @parse_ini_file($config_file, true);
 	if ( isset($config[$source]) ) {
 		#usb_manager_log("Removing configuration '$source'.");
-	}
-			
+	}	
 	unset($config[$source]);
 	save_ini_file($config_file, $config);
 	return (! isset($config[$source])) ? TRUE : FALSE;
@@ -222,17 +216,13 @@ function set_vm_mapping($sn, $var, $val) {
 function load_vm_mappings() {
 	$config_file = $GLOBALS["paths"]["vm_mappings"];
 	$config = @parse_ini_file($config_file, true);
-
 	$maps = $config ;
-
 	foreach ($maps as $key => $map) {
 		if (substr($key,0,5) == "Port:") unset($maps[$key]) ;
 	}
 	foreach ($config as $key => $map) {
 		if (substr($key,0,5) == "Port:") $maps[$key] = $config[$key] ;
 	}
-
-
 	return (isset($maps)) ? $maps : array();
 }
 
@@ -267,20 +257,19 @@ function updatevm($sn, $vmname) {
 	$config = @parse_ini_file($config_file, true);
 	$config[$sn]["VM"] = $vmname ;
 	save_ini_file($config_file, $config);
-	return ($config[$sn]["VM"] ) ;
+	return ($config[$sn]["VM"] );
 }
 
 function updateserialport($sn, $serialport) {
 	$config_file = $GLOBALS["paths"]["vm_mappings"];
 	$config = @parse_ini_file($config_file, true);
-	$config[$sn]["connectserialport"] = $serialport ;
+	$config[$sn]["connectserialport"] = $serialport;
 	save_ini_file($config_file, $config);
-	return ($config[$sn]["connectserialport"] ) ;
+	return ($config[$sn]["connectserialport"] );
 }
 
-
 function remove_vm_mapping($source) {
-	$config_file = $GLOBALS["paths"]["vm_mappings"];;
+	$config_file = $GLOBALS["paths"]["vm_mappings"];
 	$config = @parse_ini_file($config_file, true);
 	if ( isset($config[$source]) ) {
 		usb_manager_log("Info: Removing configuration '$source'.");
@@ -357,14 +346,9 @@ function toggle_pass_through($sn, $status) {
 	return ($config[$sn]["pass_through"] == "yes") ? 'true' : 'false';
 }
 
-
-
-
 #########################################################
 ############        REMOTE HOST             #############
 #########################################################
-
-
 
 function get_remote_usbip() {
 	global $paths;
@@ -372,10 +356,8 @@ function get_remote_usbip() {
 	$o = array();
 	$config_file = $paths['remote_usbip'];
 	$remote_usbip = @parse_ini_file($config_file, true);
-	
 	if (is_array($remote_usbip)) {
-		$o = $remote_usbip  ;
-		
+		$o = $remote_usbip;
 	} else {
 		usb_manager_log("Error: usb_manager unable to get the remote usbip hosts.");
 	}
@@ -396,19 +378,18 @@ function remove_config_remote_host($source) {
 	$config = @parse_ini_file($config_file, true);
 	if ( isset($config[$source]) ) {
 		usb_manager_log("Info: Removing configuration '$source'.");
-	}
-			
+	}		
 	unset($config[$source]);
 	save_ini_file($config_file, $config);
 	return (! isset($config[$source])) ? TRUE : FALSE;
 }
 
 
-/* Execute the device script. */
+# Execute the device script. 
 function execute_script($info, $action, $testing=FALSE) { 
 	global $paths;
 
-	/* Set environment variables. */
+	# Set environment variables. 
 	putenv("ACTION={$action}");
 	foreach ($info as $key => $value) {
 		putenv(strtoupper($key)."={$value}");
@@ -423,8 +404,7 @@ function execute_script($info, $action, $testing=FALSE) {
 			usb_manager_log("Error: common script failed: '{$return}'");
 		}
 	}
-
-	/* If there is a command, execute the script. */
+	# If there is a command, execute the script.
 	$cmd = $info['command'];
 	$bg = ($info['command_bg'] != "false" && $action == "ADD") ? "&" : "";
 	if ($cmd) {
@@ -433,7 +413,8 @@ function execute_script($info, $action, $testing=FALSE) {
 		@chmod($command_script, 0755);
 		usb_manager_log("Info: Running device script: '".basename($cmd)."' with action '{$action}'.");
 
-		$script_running = is_script_running($cmd);
+		#$script_running = is_script_running($cmd);
+		$script_running = "";
 		if ((! $script_running) || (($script_running) && ($action != "ADD"))) {
 			if (! $testing) {
 				if ($action == "REMOVE" || $action == "ERROR_UNMOUNT") {
@@ -461,8 +442,7 @@ function execute_script($info, $action, $testing=FALSE) {
 ############         USBIP FUNCTIONS        #############
 #########################################################
 
-
-/* Check modules loaded and commands exist. */
+# Check modules loaded and commands exist. 
 
 function check_usbip_modules() {
 	global $loaded_usbip_host, $loaded_vhci_hcd, $usbip_cmds_exist, $exists_vhci_hcd, $exists_usbip_host, $usbip_enabled, $plugin ;
@@ -485,73 +465,33 @@ function check_usbip_modules() {
 	$config_file = "/tmp/$plugin/config/$plugin.cfg";  
 	$cfg = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
 	$usbip_enabled=$cfg["Config"]["USBIP"] ;
-
 }
-
-
 
 function get_Valid_USB_Devices() {
 	global $cacheUSBDevices, $usbip_enabled ,$usbip_cmds_exist;
 
-	#if (!is_null($cacheValidUSBDevices)) {
-	#	return $cacheValidUSBDevices;
-	#}
-
 	$arrValidUSBDevices = [];
-
 	$usbip_local = array() ;
 	if ($usbip_enabled == "enabled" && $usbip_cmds_exist) {
-			exec('usbip list -pl | sort'  ,$usbiplocal) ;
+			exec('usbip list -pl | sort'  ,$usbiplocal);
 	        
 			foreach ($usbiplocal as $usbip) {
 	 		$usbipdetail=explode('#', $usbip) ;
-	 		$usbip_local[]=substr($usbipdetail[0] , 6) ;
+	 		$usbip_local[]=substr($usbipdetail[0] , 6);
 			} 
 	}
-	
-
-#busid=3-1#usbid=0781:5571#
-#busid=3-2#usbid=1c4f:0016#
-#busid=3-5.1#usbid=cd12:ef18#
-#busid=3-5.4#usbid=0204:6025#
-#busid=3-6#usbid=054c:05bf#
-#busid=3-7.1#usbid=0557:2419#
-
-#1D6Bp0002
-#8087p8008
-#1D6Bp0002
-#8087p8000
-#1D6Bp0002
-#05E3p0606
-#0557p7000
-#1D6Bp0003
-#1D6Bp0002
-#1D6Bp0003
-
-	// Get a list of all usb hubs so we can blacklist them
+	# Get a list of all usb hubs so we can blacklist them
 	exec("cat /sys/bus/usb/drivers/hub/*/modalias | grep -Po 'usb:v\K\w{9}' | tr 'p' ':'", $arrAllUSBHubs);
-
 	exec("lsusb 2>/dev/null", $arrAllUSBDevices);
-
 	foreach ($arrAllUSBDevices as $strUSBDevice) {
-		#if (preg_match('/^.+: ID (?P<id>\S+)(?P<name>.*)$/', $strUSBDevice, $arrMatch)) {
-			if (preg_match('/^Bus (?P<bus>\S+) Device (?P<dev>\S+): ID (?P<id>\S+)(?P<name>.*)$/', $strUSBDevice, $arrMatch)) {
-			#if (stripos($GLOBALS['var']['flashGUID'], str_replace(':', '-', $arrMatch['id'])) === 0) {
-			#	// Device id matches the unraid boot device, skip device
-			#	continue;
-				
-			#}
+		if (preg_match('/^Bus (?P<bus>\S+) Device (?P<dev>\S+): ID (?P<id>\S+)(?P<name>.*)$/', $strUSBDevice, $arrMatch)) {
 			$ishub="interface" ;
 			if (in_array(strtoupper($arrMatch['id']), $arrAllUSBHubs)) {
 				// Device class is a Hub, skip device
 				#continue;
 				$ishub='hub' ;
 			}
-
-
-
 			$arrMatch['name'] = trim($arrMatch['name']);
-
 			if (empty($arrMatch['name'])) {
 				// Device name is blank, attempt to lookup usb details
 				exec("lsusb -d ".$arrMatch['id']." -v 2>/dev/null | grep -Po '^\s+(iManufacturer|iProduct)\s+[1-9]+ \K[^\\n]+'", $arrAltName);
@@ -562,18 +502,15 @@ function get_Valid_USB_Devices() {
 					$arrMatch['name'] = '[unnamed device]';
 				}
 			}
-
-			// Clean up the name
-#			$arrMatch['name'] = sanitizeVendor($arrMatch['name']);
+			# Clean up the name
             $udev=array();
-			#udevadm info -a   --name=/dev/bus/usb/003/002 | grep KERNEL==
-			$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$arrMatch['bus']."/".$arrMatch['dev']." | grep KERNEL==" ;
+			$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$arrMatch['bus']."/".$arrMatch['dev']." | grep KERNEL==";
 			exec( $udevcmd , $udev);
 		
 			$physical_busid = trim(substr($udev[0], 13) , '"') ;
 			if (substr($physical_busid,0,3) =='usb') {
 				#		$physical_busid = substr($physical_busid,3).'-0' ;
-						$ishub='roothub' ;
+						$ishub='roothub';
 		
 					}
 
@@ -594,152 +531,97 @@ function get_Valid_USB_Devices() {
 			];
 		}
 	}
-
-	#uasort($arrValidUSBDevices, function ($a, $b) {
-	#	return strcasecmp($a['id'], $b['id']);
-	#});
-	ksort($arrValidUSBDevices) ;
-	#$cacheUSBDevices = $arrValidUSBDevices;
-
+	ksort($arrValidUSBDevices);
 	return $arrValidUSBDevices;
 }
-
-
 
 function get_usbip_devs() {
 	global $disks, $state;
 
-	$ud_disks = $paths = $unraid_disks = $b =  array();
-	/* Get all devices by id. */
-	
-	$flash=&$disks['flash'] ;
-	$flash_udev=array() ;
-	exec('udevadm info --query=property  -n /dev/'.$flash["device"], $fudev) ;
-	foreach ($fudev as $udevi)
-	{
-		$udevisplit=explode("=",$udevi) ;
-		$flash_udev[$udevisplit[0]] = $udevisplit[1] ;
+	$ud_disks = $paths = $unraid_disks = $b =  array();	
+	$flash=&$disks['flash'];
+	$flash_udev=array();
+	exec('udevadm info --query=property  -n /dev/'.$flash["device"], $fudev);
+	foreach ($fudev as $udevi) {
+		$udevisplit=explode("=",$udevi);
+		$flash_udev[$udevisplit[0]] = $udevisplit[1];
 	}
-	
-		# Get Block devices
-		$lstblkout=array() ;
-		exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn) ;
-		$lsblk=json_decode(implode("", $lsblkout), true);;
-		
-		$volumes=array() ; 
-		foreach ($lsblk["blockdevices"] as $key => $blk) {
-			
-		  if ($blk["tran"] != "usb") continue ;
-		  if (isset($blk["children"])) {
-			  $volumes[$blk["serial"]] = $blk["children"][0]["label"] ;
-	
-		  }
+	# Get Block devices
+	$lsblkout=array() ;
+	exec("lsblk -Jo NAME,KNAME,SERIAL,LABEL,TRAN", $lsblkout,$lsblkrtn);
+	$lsblk=json_decode(implode("", $lsblkout), true);
+	$volumes=array(); 
+	foreach ($lsblk["blockdevices"] as $key => $blk) {
+		if ($blk["tran"] != "usb") continue;
+		if (isset($blk["children"])) {
+			$volumes[$blk["serial"]] = $blk["children"][0]["label"];
 		}
-	/* Get Serial Devices */ 
-	exec("ls /dev/serial/by-id/", $arrserialdevices) ;
-	#var_dump($arrserialdevices) ;	
-
-	#exec('usbip list -pl | sort'  ,$usbiplocal) ;
-	$usbiplocal = get_Valid_USB_Devices() ;
-	#var_dump($usbiplocal) ;
-	/* Build USB Device Array */
+	}
+	# Get Serial Devices
+	exec("ls /dev/serial/by-id/", $arrserialdevices);
+	$usbiplocal = get_Valid_USB_Devices();
+	# Build USB Device Array
 	foreach ($usbiplocal as $realbusid => $detail) {
-	#	$usbipdetail=explode('#', $usbip) ;
-	#	$busid=substr($usbipdetail[0] , 6) ;
-	$busid = $realbusid ;	
-
-	if ($detail["ishub"] == "roothub") $busid = substr($realbusid,3).'-0' ;
-
-	if (file_exists("/sys/bus/usb/devices/".$busid."/usbip_status")) { 
-		$usbip_status=file_get_contents("/sys/bus/usb/devices/".$realbusid."/usbip_status") ;
-
-		$tj[$busid]["usbip_status"] = $usbip_status ;
-        }
-		/* Build array from udevadm */
-		/* udevadm info --query=property -x --path=/sys/bus/usb/devices/ + busid */
+		$busid = $realbusid;	
+		if ($detail["ishub"] == "roothub") $busid = substr($realbusid,3).'-0';
+		if (file_exists("/sys/bus/usb/devices/".$busid."/usbip_status")) { 
+			$usbip_status=file_get_contents("/sys/bus/usb/devices/".$realbusid."/usbip_status");
+			$tj[$busid]["usbip_status"] = $usbip_status;
+		}
+		# Build array from udevadm 
+		# udevadm info --query=property -x --path=/sys/bus/usb/devices/ + busid 
         $udev=array();
-		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$realbusid, $udev) ;
-		
-		foreach ($udev as $udevi)
-		{
-			$udevisplit=explode("=",$udevi) ;
-			$tj[$busid][$udevisplit[0]] = $udevisplit[1] ;
+		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$realbusid, $udev);
+		foreach ($udev as $udevi) {
+			$udevisplit=explode("=",$udevi);
+			$tj[$busid][$udevisplit[0]] = $udevisplit[1];
 		}
-		$speed = $string = trim(preg_replace('/\s+/', ' ', shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' ))) ;
-		if ($speed >  999) { $speed = $speed / 1000; $speedtext = $speed."G" ;} else $speedtext = $speed."M" ; 
-		$tj[$busid]["speed"] = $speedtext ;
-
-		$tj[$busid]["isSerial"] = false ;
-		$tj[$busid]["isSerialPath"] = NULL ;
-		$serialdev = (find_string_in_array ($arrserialdevices, $tj[$busid]["ID_SERIAL"])) ;
+		$speed = $string = trim(preg_replace('/\s+/', ' ', shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' )));
+		if ($speed >  999) { $speed = $speed / 1000; $speedtext = $speed."G" ;} else $speedtext = $speed."M"; 
+		$tj[$busid]["speed"] = $speedtext;
+		$tj[$busid]["isSerial"] = false;
+		$tj[$busid]["isSerialPath"] = NULL;
+		$serialdev = (find_string_in_array ($arrserialdevices, $tj[$busid]["ID_SERIAL"]));
 		if (!empty($serialdev)) {
-			// Device class is a Hub, skip device
-			#continue;
-			$tj[$busid]["isSerial"]  = true ;
-			$tj[$busid]["isSerialPath"] = implode("",$serialdev) ;
-			#var_dump($serialdev) ;
+			# Device class is a Hub, skip device
+			$tj[$busid]["isSerial"]  = true;
+			$tj[$busid]["isSerialPath"] = implode("",$serialdev);
 		}
-
-		$tj[$busid]["islocal"] = $detail["islocal"] ;
-		$tj[$busid]["ishub"] = $detail["ishub"] ;
-		
-		$tj[$busid]["volume"]=$volumes[$tj[$busid]["ID_SERIAL_SHORT"]] ;
-		
+		$tj[$busid]["islocal"] = $detail["islocal"];
+		$tj[$busid]["ishub"] = $detail["ishub"];
+		$tj[$busid]["volume"]=$volumes[$tj[$busid]["ID_SERIAL_SHORT"]];
 		$flash_check= $tj[$busid];
 		if ($flash_check["ID_SERIAL_SHORT"] == $flash_udev["ID_SERIAL_SHORT"]) {
-			$tj[$busid]["isflash"] = true ;
-		
+			$tj[$busid]["isflash"] = true;
 		}
-		else { 
-			$tj[$busid]["isflash"] = false ;
-		}
-
+		else $tj[$busid]["isflash"] = false;
 		if ($detail["ishub"] == "roothub" || $detail["ishub"] == "hub" ) {
-			$hubmaxchild = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/maxchild' ) ;
-			$hubspeed = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' ) ;
-			$hubbmaxpower = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bMaxPower' ) ;
-
-			$tj[$busid]["ID_VENDOR_FROM_DATABASE"] = "Ports=".$hubmaxchild." Power=".$hubbmaxpower ;
-			$tj[$busid]["ID_MODEL"] = "" ;
-			$tj[$busid]["maxchildren"] = $hubmaxchild ;
-			if ($detail["ishub"] == "roothub" )	$tj[$busid]["level"] = 0 ;
-			
-		/*
-        devclass=`cat bDeviceClass`
-        devsubclass=`cat bDeviceSubClass`
-        devprotocol=`cat bDeviceProtocol`
-        maxps0=`cat bMaxPacketSize0`
-        numconfigs=`cat bNumConfigurations`
-		maxpower=`cat bMaxPower`
-        classname=`class_decode $devclass`
-        printf "D:  Ver=%5s Cls=%s(%s) Sub=%s Prot=%s MxPS=%2i #Cfgs=%3i\n" \
-                $ver $devclass "$classname" $devsubclass $devprotocol \
-                $maxps0 $numconfigs */
+			$hubmaxchild = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/maxchild' );
+			$hubspeed = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/speed' );
+			$hubbmaxpower = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bMaxPower' );
+			$tj[$busid]["ID_VENDOR_FROM_DATABASE"] = "Ports=".$hubmaxchild." Power=".$hubbmaxpower;
+			$tj[$busid]["ID_MODEL"] = "";
+			$tj[$busid]["maxchildren"] = $hubmaxchild;
+			if ($detail["ishub"] == "roothub" )	$tj[$busid]["level"] = 0;
 		}
-		$file = '/sys/bus/usb/devices/'.$realbusid.'/bNumInterfaces' ;
+		$file = '/sys/bus/usb/devices/'.$realbusid.'/bNumInterfaces';
 		if (is_file($file)) {
-			$tj[$busid]["bNumInterfaces"] = trim(file_get_contents($file)) ;
+			$tj[$busid]["bNumInterfaces"] = trim(file_get_contents($file));
 		}
-		#$tj[$busid]["bNumInterfaces"] = shell_exec ('cat /sys/bus/usb/devices/'.$realbusid.'/bNumInterfaces' ) ;
-
 	}
-	ksort($tj) ;
+	ksort($tj);
     foreach ($tj as $busid=>$usb) {
 		if ($usb["isflash"] == true && $usb["ishub"] == "interface") {
-			$flashpaths = NULL ;
-			exec('udevadm info -a --path=/sys/bus/usb/devices/'.$busid." | grep KERNELS", $flashpaths) ;
-			#echo "<tr><td>"; var_dump($flashpaths) ;echo "</td></tr>" ;
-			foreach ($flashpaths as $flashpath)
-			{
-				$fpsplit=explode('=="',$flashpath) ;
-				$flashport = substr($fpsplit[1], 0 ,strlen($fpsplit[1]) -1 ) ;
-				
-				#echo "<tr><td>".$fpslit."</td></tr>" ;
+			$flashpaths = NULL;
+			exec('udevadm info -a --path=/sys/bus/usb/devices/'.$busid." | grep KERNELS", $flashpaths);
+			foreach ($flashpaths as $flashpath) {
+				$fpsplit=explode('=="',$flashpath);
+				$flashport = substr($fpsplit[1], 0 ,strlen($fpsplit[1]) -1 );
 				if (substr($flashport,0,3) =='usb') {
-					$tj[substr($flashport,3).'-0']["isflash"] = true ;
+					$tj[substr($flashport,3).'-0']["isflash"] = true;
 					break ;
 				}
-				$tj[$flashport]["isflash"] = true ; 
+				$tj[$flashport]["isflash"] = true; 
 			}
 		}
 	}
@@ -747,7 +629,6 @@ function get_usbip_devs() {
 }
 
 function get_all_usb_info($bus="all") {
-
 	usb_manager_log("Info: Starting get_all_usb_info.", "DEBUG");
 	$time = -microtime(true);
 	$usb_devs = get_usbip_devs();
@@ -755,480 +636,361 @@ function get_all_usb_info($bus="all") {
 		$usb_devs = array();
 	}
 	usb_manager_log("Total time: ".($time + microtime(true))."s!", "DEBUG");
-
 	return $usb_devs;
 }
 
-function get_vm_state($vm_name)
-{
-	global $lv ;
-	if (!isset($lv))  return "Error State" ;
+function get_vm_state($vm_name) {
+	global $lv;
+	if (!isset($lv))  return "Error State";
 	$res = $lv->get_domain_by_name($vm_name);
 	$dom = $lv->domain_get_info($res);
 	$state = $lv->domain_state_translate($dom['state']);
-    return $state ;
+    return $state;
 }
 
-function start_vm($vm_name)
-{
-	global $lv ;
-	if (!isset($lv))  return "Error State" ;
+function start_vm($vm_name) {
+	global $lv;
+	if (!isset($lv))  return "Error State";
 	$res = $lv->get_domain_by_name($vm_name);
 	$start = $lv->domain_start($res);
-	return $start ;
+	return $start;
 }
 
-function parse_usbip_port()
-{
-	exec('usbip port', $cmd_return) ;
+function resume_vm($vm_name) {
+	global $lv;
+	if (!isset($lv))  return "Error State";
+	$res = $lv->get_domain_by_name($vm_name);
+	$resume = $lv->domain_resume($res);
+	return $resume;
+}
 
-	$port_number = 0 ;
-    $ports=array() ;
+function parse_usbip_port() {
+	exec('usbip port', $cmd_return);
+	$port_number = 0;
+    $ports=array();
 	foreach ($cmd_return as $line) {
-		if ($line == "Imported USB devices") continue ;
-		if ($line == "====================" ) continue ;
-		if ($line == NULL) continue ;
-		
-		if (substr($line,0,4) == "Port") $port_num = substr($line, 5 ,2) ;
-		$ports[$port_num][]=$line ;
-
+		if ($line == "Imported USB devices") continue;
+		if ($line == "====================" ) continue;
+		if ($line == NULL) continue;
+		if (substr($line,0,4) == "Port") $port_num = substr($line, 5 ,2);
+		$ports[$port_num][]=$line;
 	}
-	
-	return $ports ;
+	return $ports;
 }
-function parse_usbip_remote($remote_host)
-{
+
+function parse_usbip_remote($remote_host) {
 	$usbip_cmd_list="usbip list -r ".$remote_host ;
-	$cmd_return ="" ;
+	$cmd_return = array() ;
 	$error=exec($usbip_cmd_list.' 2>&1', $cmd_return, $return) ;
 	$count=0 ;
 	$remotes=array() ;
-
-
-	
 	if ($return  || $error != "") {
 		if ($error == false) {
 			$error_type="USBIP command not found";
 		} else {
 			$error_type=$error;
 		}
-		$remotes[$remote_host]["NONE"]["detail"][] = "Connection Error" ;
+		$remotes[$remote_host]["NONE"]["detail"][] = "Connection Error";
 		$remotes[$remote_host]["NONE"]["vendor"]=$error_type;
-	
 		$remotes[$remote_host]["NONE"]["product"]="";
 		$remotes[$remote_host]["NONE"]["command"]=$error;
 		$remotes[$remote_host]["NONE"]["return"]=$return;	
 		$remotes[$remote_host]["NONE"]["cmdreturn"]=$cmd_return;
 		$remotes[$remote_host]["NONE"]["error"]=$error;
 	}
-
 	foreach ($cmd_return as $line) {
-		if ($line == "Exportable USB devices") continue ;
-		if ($line == "======================" ) continue ;
+		if ($line == "Exportable USB devices") continue;
+		if ($line == "======================" ) continue;
 		if ($line == NULL) {$count=2;continue ;}
-
-		if (substr($line, 0, 12) == "usbip: error")  $remote[$remote_host]["NONE"] = $line ;
-
+		if (substr($line, 0, 12) == "usbip: error")  $remote[$remote_host]["NONE"] = $line;
 		if (substr($line, 1, 1) == '-') { 
-			$usbip_ip= substr($line, 3) ;
-			$count=1 ;
-
+			$usbip_ip= substr($line, 3);
+			$count=1;
 		}
-
 		if ($count==2)
 		       { 
-				   $extract=explode(":", $line) ;
-				   $busid=$extract[0] ;	
-				   
+				   $extract=explode(":", $line);
+				   $busid=$extract[0];			   
 				   $remotes[$usbip_ip][$busid]["vendor"]=$extract[1];
 				   $remotes[$usbip_ip][$busid]["product"]=$extract[2].$extract[3];
 			   }
-		if 	   ($count>2) $remotes[$usbip_ip][$busid]["detail"][] = $line ;
-		$count=$count+1 ;
-	}
-		
-	return $remotes ;
+		if ($count>2) $remotes[$usbip_ip][$busid]["detail"][] = $line;
+		$count=$count+1;
+	}	
+	return $remotes;
 }
 
 #########################################################
 ############         VM FUNCTIONS        #############
 #########################################################
 
-function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map)
-{
-			
+function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map) {
 			$connectserial=is_connectserial($srlnbr) ;
-			#var_dump($connectserial, $srlnbr) ;
-			$return=virsh_device_by_bus($action,$vmname, $bus, $dev, $connectserial,$map) ;
-
-			#$usbstatekey=$srlnbr ; #v2
-			$usbstatekey=$bus."/".$dev ; #v2
-
+			$return=virsh_device_by_bus($action,$vmname, $bus, $dev, $connectserial,$map);
+			$usbstatekey=$bus."/".$dev;
 			if (substr($return,0,6) === "error:") {
-				save_usbstate($usbstatekey, "virsherror" , true) ;
+				save_usbstate($usbstatekey, "virsherror" , true);
 			} else {
-		    	save_usbstate($usbstatekey, "virsherror" , false) ;
+		    	save_usbstate($usbstatekey, "virsherror" , false);
 			}
-			if ($connectserial == "yes") $map="Serial" ;
+			if ($connectserial == "yes") $map="Serial";
 			if ($action == "attach") {
-					save_usbstate($usbstatekey, "connected" , true) ;
+					save_usbstate($usbstatekey, "connected" , true);
 				} else {
-					save_usbstate($usbstatekey, "connected" , false) ;
-					$vmname = ""  ;
-					$method = "" ;
-					$map = "" ;
+					save_usbstate($usbstatekey, "connected" , false);
+					$vmname = "";
+					$method = "";
+					$map = "";
 				}
-			save_usbstate($usbstatekey, "VM" , $vmname) ;	
-			save_usbstate($usbstatekey, "virsh" , $return) ;
-			save_usbstate($usbstatekey, "connectmethod" , $method) ;
-			save_usbstate($usbstatekey, "connectmap" , $map) ;
-
-			
-			return $return ;
+			save_usbstate($usbstatekey, "VM" , $vmname);	
+			save_usbstate($usbstatekey, "virsh" , $return);
+			save_usbstate($usbstatekey, "connectmethod" , $method);
+			save_usbstate($usbstatekey, "connectmap" , $map);
+			return $return;
 }
 
-function vm_map_action($vm, $action)
-{
-			
-		    $explode= explode(";",$vm );
-			$vmname = $explode[0] ;
-			$bus = $explode[1] ;
-			$dev = $explode[2] ;
-			$srlnbr= $explode[3] ;
-			if (isset($explode[4])) $method=$explode[4] ; else $method="" ;
-			if (isset($explode[5])) $map=$explode[5] ; else $map="" ;
-			
-			$usbstr = '';
-			#$usbstatekey = $srlnbr ; #v2
-			$usbstatekey=$bus."/".$dev ; #v2
-
-			if ($map=="hub") {
-				$config_file = $GLOBALS["paths"]["usb_state"];
-				$usb_state = @parse_ini_file($config_file, true);
-				$hubid = $usb_state[$usbstatekey]["USBPort"] ;
-
-				foreach ($usb_state as $usb_srlnbr => $usb_device) {
-					$class=$usb_device["class"] ;
-					if ($class == "hub" || $class == "roothub") continue ;
-					$parents = explode("," , $usb_device["parents"] );
-					$parent = $parents[0] ;
-					
-					if ($parent == $hubid) {
-						if ($action == "attach" && $usb_device["connected"] == 1) {usb_manager_log("Info: attach {$usb_srlnbr} vm: {$vm} Device in Use action ignored. "); continue ; }
-						if ($action == "detach" && $usb_device["connected"] != 1)  continue ;
-						$return=do_vm_map_action($action, "$vmname", $usb_device["bus"], $usb_device["dev"], "$usb_srlnbr", $method, "Hub") ;
-					}
-
-				} 
-
-
-			} else {
-			
-			$return=do_vm_map_action($action, "$vmname", $bus, $dev, "$srlnbr", $method, $map) ;
-
-
+function vm_map_action($vm, $action) {		
+	$explode= explode(";",$vm );
+	$vmname = $explode[0];
+	$bus = $explode[1];
+	$dev = $explode[2];
+	$srlnbr= $explode[3];
+	if (isset($explode[4])) $method=$explode[4] ; else $method="";
+	if (isset($explode[5])) $map=$explode[5] ; else $map="";
+	$usbstr = '';
+	$usbstatekey=$bus."/".$dev; 
+	if ($map=="hub") {
+		$config_file = $GLOBALS["paths"]["usb_state"];
+		$usb_state = @parse_ini_file($config_file, true);
+		$hubid = $usb_state[$usbstatekey]["USBPort"];
+		foreach ($usb_state as $usb_srlnbr => $usb_device) {
+			$class=$usb_device["class"] ;
+			if ($class == "hub" || $class == "roothub") continue;
+			$parents = explode("," , $usb_device["parents"] );
+			$parent = $parents[0];
+			if ($parent == $hubid) {
+				if ($action == "attach" && $usb_device["connected"] == 1) {usb_manager_log("Info: attach {$usb_srlnbr} vm: {$vm} Device in Use action ignored. "); continue;}
+				if ($action == "detach" && $usb_device["connected"] != 1)  continue;
+				$return=do_vm_map_action($action, "$vmname", $usb_device["bus"], $usb_device["dev"], "$usb_srlnbr", $method, "Hub");
 			}
-			echo json_encode(["status" => $return ]);
+		} 
+	} else {
+	$return=do_vm_map_action($action, "$vmname", $bus, $dev, "$srlnbr", $method, $map);
+	}
+	echo json_encode(["status" => $return ]);
 }
 
-function USBMgrResetConnectedStatus()
-{
+function USBMgrResetConnectedStatus() {
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-
 	foreach ($config as  $key => $state)
 	{
-		$config[$key]["connected"] = false ;
+		$config[$key]["connected"] = false;
 	}
-	
 	save_ini_file($config_file, $config);
-	
 }
 
-function USBMgrUpdatettyStatusEntry($serial, $devname)
-{
-	$USBDevices = get_usbip_devs() ;
+function USBMgrUpdatettyStatusEntry($serial, $devname) {
+	$USBDevices = get_usbip_devs();
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-	#$usbstatekey=$serial ; #v2
-	$usbstatekey=$bus."/".$dev ; #v2
 	$udev=array();
-	#udevadm info -a   --name=/dev/bus/usb/003/002 | grep KERNEL==
-	$udevcmd = "udevadm info -a   --name=".$devname." | grep KERNELS==" ;
+	$udevcmd = "udevadm info -a   --name=".$devname." | grep KERNELS==";
 	exec( $udevcmd , $udev);
-	$physical_busid = trim(substr($udev[1], 13) , '"') ;
-	$device = $USBDevices[$physical_busid] ;
-	$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"] ; #v2
+	$physical_busid = trim(substr($udev[1], 13) , '"');
+	$device = $USBDevices[$physical_busid];
+	$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; 
 	if (!$device["isflash"] && isset($config[$usbstatekey])) {
- 	$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
-	$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
-	$config[$usbstatekey]["isSerialDevPath"] =  $devname;
-    
-	#var_dump($config[$usbstatekey]["isSerialPath"]) ;
-	save_ini_file($config_file, $config);
-	return($usbstatekey) ;
+		$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
+		$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
+		$config[$usbstatekey]["isSerialDevPath"] =  $devname;
+		save_ini_file($config_file, $config);
+		return($usbstatekey);
 	}
-
 }
 
-function USBMgrCreateStatusEntry($serial, $bus , $dev)
-{
+function USBMgrCreateStatusEntry($serial, $bus , $dev) {
 	$USBDevices = get_usbip_devs() ;
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-	#$usbstatekey=$serial ; #v2
-	$usbstatekey=$bus."/".$dev ; #v2
-
-	// Get a list of all usb hubs so we can blacklist them
+	$usbstatekey=$bus."/".$dev ; 
+	# Get a list of all usb hubs so we can blacklist them
 	exec("cat /sys/bus/usb/drivers/hub/*/modalias | grep -Po 'usb:v\K\w{9}' | tr 'p' ':'", $arrAllUSBHubs);
-
-
-
 	$udev=array();
-	#udevadm info -a   --name=/dev/bus/usb/003/002 | grep KERNEL==
 	$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$bus."/".$dev." | grep KERNEL==" ;
 	exec( $udevcmd , $udev);
 	$physical_busid = trim(substr($udev[0], 13) , '"') ;
-
 	# Build Parents
-
 	$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$bus."/".$dev." | grep KERNELS==" ;
 	exec( $udevcmd , $parents);
-	
-	foreach($parents as $key => $parent)
-		{
-			$parents[$key] = trim(substr($parent, 13) , '"') ;
-		}
+	foreach($parents as $key => $parent) {
+		$parents[$key] = trim(substr($parent, 13) , '"') ;
+	}
 	$parents = implode("," , $parents );
-
 	$device = $USBDevices[$physical_busid] ;
-
-	
 	$id = strtolower($device["ID_VENDOR_ID"]).":".$device["ID_MODEL_ID"] ;
-	
-	#var_dump($device) ;
-	#if (in_array(strtoupper($id), $arrAllUSBHubs)) {
-		if (!isset($device)) {
-		// Device class is a Hub, skip device
+	if (!isset($device)) {
+		# Device class is a Hub, skip device
 		$config[$usbstatekey]["ishub"] = true ;
 		$udev=array();
-		#$device = array() ;
 		exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$physical_busid, $udev) ;
-		
 		foreach ($udev as $udevi)
 		{
 			$udevisplit=explode("=",$udevi) ;
 			$device[$udevisplit[0]] = $udevisplit[1] ;
 		}
-        
-	} else {$config[$usbstatekey]["ishub"] = false ; }
-
+	} else {$config[$usbstatekey]["ishub"] = false ;}
 	if (!$device["isflash"]) {
-    
-	$config[$usbstatekey]["connected"] = false ;
-	$config[$usbstatekey]["parents"] =  $parents;
-	$config[$usbstatekey]["bus"] = $device["BUSNUM"] ;
-	$config[$usbstatekey]["dev"] = $device["DEVNUM"] ;
-	$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
-	$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
-	$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"] ;
-	$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
-	$config[$usbstatekey]["USBPort"] = $physical_busid ;
-	$config[$usbstatekey]["class"] = $device["ishub"] ;
-	$config[$usbstatekey]["ID_SERIAL"] =  $device["ID_SERIAL"];
-	$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
-	
-	$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
-	$config[$usbstatekey]["bNumInterfaces"] =  $device["bNumInterfaces"];
-
-	#var_dump($config[$usbstatekey]["isSerialPath"]) ;
-	save_ini_file($config_file, $config);
+		$config[$usbstatekey]["connected"] = false ;
+		$config[$usbstatekey]["parents"] =  $parents;
+		$config[$usbstatekey]["bus"] = $device["BUSNUM"];
+		$config[$usbstatekey]["dev"] = $device["DEVNUM"];
+		$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"];
+		$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"];
+		$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"];
+		$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"];
+		$config[$usbstatekey]["USBPort"] = $physical_busid;
+		$config[$usbstatekey]["class"] = $device["ishub"];
+		$config[$usbstatekey]["ID_SERIAL"] =  $device["ID_SERIAL"];
+		$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
+		$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
+		$config[$usbstatekey]["bNumInterfaces"] =  $device["bNumInterfaces"];
+		save_ini_file($config_file, $config);
 	}
-
 }
 
 
-function USBMgrBuildConnectedStatus()
-{
+function USBMgrBuildConnectedStatus() {
 	$USBDevices = get_usbip_devs() ;
-	
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-
-	foreach ($USBDevices as  $key => $device)
-	{
+	foreach ($USBDevices as  $key => $device) {
         if ($device["isflash"]) continue ;
-
-
 		# Build Parents
-
 		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
 		$parents = array() ;
 		exec( $udevcmd , $parents);
-	
-		foreach($parents as $key2 => $parent)
-			{
+		foreach($parents as $key2 => $parent) {
 			$parents[$key2] = trim(substr($parent, 13) , '"') ;
-			}
+		}
 		$parents = implode("," , $parents );
-
-		#$usbstatekey=$serial ; #v2
-		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
-	
-
+		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; 
 		$config[$usbstatekey]["connected"] = false ;
 		$config[$usbstatekey]["bus"] = $device["BUSNUM"] ;
 		$config[$usbstatekey]["dev"] = $device["DEVNUM"] ;
-		$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"] ;
-		$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"] ;
-		$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"] ;
-		$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"] ;
-		$config[$usbstatekey]["USBPort"] = $key ;
-		$config[$usbstatekey]["class"] = $device["ishub"] ;
+		$config[$usbstatekey]["ID_VENDOR_FROM_DATABASE"] = $device["ID_VENDOR_FROM_DATABASE"];
+		$config[$usbstatekey]["ID_VENDOR_ID"] = $device["ID_VENDOR_ID"];
+		$config[$usbstatekey]["ID_MODEL"] = $device["ID_MODEL"];
+		$config[$usbstatekey]["ID_MODEL_ID"] = $device["ID_MODEL_ID"];
+		$config[$usbstatekey]["USBPort"] = $key;
+		$config[$usbstatekey]["class"] = $device["ishub"];
 		$config[$usbstatekey]["parents"] =  $parents;
 		$config[$usbstatekey]["ID_SERIAL"] =  $device["ID_SERIAL"];
 		$config[$usbstatekey]["isSerial"] =  $device["isSerial"];
 		$config[$usbstatekey]["isSerialPath"] =  $device["isSerialPath"];
 	}
-
 	save_ini_file($config_file, $config);
-	
 }
 
-function USBMgrUpgradeConnectedStatus()
-{
+function USBMgrUpgradeConnectedStatus() {
 	$USBDevices = get_usbip_devs() ;
-	
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-
-
-	foreach ($config as  $ckey => $cdevice)
-	{
-		$usbstatekey=$cdevice["bus"]."/".$cdevice["dev"]; #v2
+	foreach ($config as  $ckey => $cdevice) {
+		$usbstatekey=$cdevice["bus"]."/".$cdevice["dev"]; 
 		if ($usbstatekey != $ckey) {
-			$config[$usbstatekey] = $config[$ckey] ;
-			#var_dump($ckey, $usbstatekey) ;
+			$config[$usbstatekey] = $config[$ckey];
 			unset($config[$ckey]) ;
 		}
 	}
-
-	foreach ($USBDevices as  $key => $device)
-	{
+	foreach ($USBDevices as  $key => $device) {
         if ($device["isflash"]) continue ;
-
-		#$usbstatekey=$device["ID_SERIAL"] ; #v2
-		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; #v2
-		#if (!isset($config[$usbstatekey])) continue ;
-
+		$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; 
 		# Build Parents
-
 		if (!isset($config[$usbstatekey]["parents"])) {
-		$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
-		$parents = array() ;
-		exec( $udevcmd , $parents);
-	
-		foreach($parents as $key => $parent)
-			{
-			$parents[$key] = trim(substr($parent, 13) , '"') ;
+			$udevcmd = "udevadm info -a   --name=/dev/bus/usb/".$device["BUSNUM"]."/".$device["DEVNUM"]." | grep KERNELS==" ;
+			$parents = array() ;
+			exec( $udevcmd , $parents);
+			foreach($parents as $key => $parent) {
+				$parents[$key] = trim(substr($parent, 13) , '"') ;
 			}
-		$parents = implode("," , $parents );
-		$config[$usbstatekey]["parents"] =  $parents;
+			$parents = implode("," , $parents );
+			$config[$usbstatekey]["parents"] =  $parents;
 		}	
 		if (!isset($config[$usbstatekey]["class"])) $config[$usbstatekey]["class"] = $device["ishub"] ;
 		if (!isset($config[$usbstatekey]["isSerial"])) $config[$usbstatekey]["isSerial"] = $device["isSerial"] ;
 		if (!isset($config[$usbstatekey]["isSerialPath"])) $config[$usbstatekey]["isSerialPath"] = $device["isSerialPath"] ;
-
 	}
-
 	save_ini_file($config_file, $config);
-	
 }
 
-function USBMgrUpgradeConnectedStatusv2()
-{
+function USBMgrUpgradeConnectedStatusv2() {
 	$USBDevices = get_usbip_devs() ;
-	
 	$config_file = $GLOBALS["paths"]["usb_state"];
 	$config = @parse_ini_file($config_file, true);
-
 	$config_file_old = $GLOBALS["paths"]["usb_state_old"];
 	$config_old = @parse_ini_file($config_file_old, true);
-
-
 	foreach ($config_old as  $oldkey => $olddevice)
 	{
-		$usbstatekey=$olddevice["bus"]."/".$olddevice["dev"]; #v2
+		$usbstatekey=$olddevice["bus"]."/".$olddevice["dev"]; 
 		if ($olddevice["connected"] == true) {
-			$config[$usbstatekey]["connected"]     = $config_old[$oldkey]["connected"] ;
-			$config[$usbstatekey]["virsherror"]    = $config_old[$oldkey]["virsherror"] ;
-			$config[$usbstatekey]["VM"]            = $config_old[$oldkey]["VM"] ;
-			$config[$usbstatekey]["virsh"]         = $config_old[$oldkey]["virsh"] ;
-			$config[$usbstatekey]["connectmethod"] = $config_old[$oldkey]["connectmethod"] ;
-			$config[$usbstatekey]["connectmap"]    = $config_old[$oldkey]["connectmap"] ;
-			#var_dump($oldkey, $usbstatekey) ;
-			
+			$config[$usbstatekey]["connected"]     = $config_old[$oldkey]["connected"];
+			$config[$usbstatekey]["virsherror"]    = $config_old[$oldkey]["virsherror"];
+			$config[$usbstatekey]["VM"]            = $config_old[$oldkey]["VM"];
+			$config[$usbstatekey]["virsh"]         = $config_old[$oldkey]["virsh"];
+			$config[$usbstatekey]["connectmethod"] = $config_old[$oldkey]["connectmethod"];
+			$config[$usbstatekey]["connectmap"]    = $config_old[$oldkey]["connectmap"];
 		}
 	}
-
 	save_ini_file($config_file, $config);
-	
 }
 
 #########################################################
 ############         VIRSH FUNCTIONS        #############
 #########################################################
 
-function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial, $map)
-{
+function virsh_device_by_bus($action, $vmname, $usbbus, $usbdev, $connectserial, $map) {
 	$usbstr = '';
 	if (!empty($usbbus)) 
 	$usbbustrim=ltrim($usbbus, "0");
-	$usbdevtrim=ltrim($usbdev, "0") ;
-	#if ($connectserial == "yes" && get_usbstate($usbbus."/".$usbdev, "isSerialPath") == true) {
+	$usbdevtrim=ltrim($usbdev, "0");
 	if ($connectserial == "yes") {
-	$isSerialPath = "/dev/serial/by-id/".get_usbstate($usbbus."/".$usbdev, "isSerialPath");
-	#$map="device" ;
-	if ($map=="Port") {
-		$USBPort="Port:".get_usbstate($usbbus."/".$usbdev, "USBPort") ;
-		$port=get_vm_config($USBPort,"connectserialport" ) ;
+		$isSerialPath = "/dev/serial/by-id/".get_usbstate($usbbus."/".$usbdev, "isSerialPath");
+		if ($map=="Port") {
+			$USBPort="Port:".get_usbstate($usbbus."/".$usbdev, "USBPort");
+			$port=get_vm_config($USBPort,"connectserialport" );
+		} else {
+			$port=get_vm_config(get_usbstate($usbbus."/".$usbdev, "ID_SERIAL"),"connectserialport" );
+		}
+		if ($port == "") $port="04";
+		usb_manager_log("Info: connect as serial guest port is:".$port);
+		$usbstr .= "<serial type='dev'>
+		<source path='{$isSerialPath}'/>
+		<target type='usb-serial' port='1'>
+		<model name='usb-serial'/>
+		</target>
+		<alias name='ua-serial{$usbbus}{$usbdev}'/>
+		<address type='usb' bus='0' port='{$port}'/>
+		</serial>";
 	} else {
-		$port=get_vm_config(get_usbstate($usbbus."/".$usbdev, "ID_SERIAL"),"connectserialport" ) ;
-	}
-	
-	#$port="04" ;
-	if ($port == "") $port="04" ;
-	usb_manager_log("Info: connect as serial guest port is:".$port);
-	$usbstr .= "<serial type='dev'>
-	<source path='{$isSerialPath}'/>
-	<target type='usb-serial' port='1'>
-	<model name='usb-serial'/>
-	</target>
-	<alias name='ua-serial{$usbbus}{$usbdev}'/>
-	<address type='usb' bus='0' port='{$port}'/>
-	</serial>" ;
-	}
-	else {
-	$usbstr .= "<hostdev mode='subsystem' type='usb'>
-	<source>
-	<address bus='{$usbbustrim}' device='{$usbdevtrim}' />
-	</source>
-	</hostdev>";
+		$usbstr .= "<hostdev mode='subsystem' type='usb'>
+		<source>
+		<address bus='{$usbbustrim}' device='{$usbdevtrim}' />
+		</source>
+		</hostdev>";
 	}
 	$filename = '/tmp/libvirthotplugusbbybus'.$vmname.'-'.$usbbus.'-'.$usbdev.'.xml';
 	file_put_contents($filename,$usbstr);
 
-	$actioncmd= $action.'-device' ;
+	$actioncmd= $action.'-device';
 	if ($connectserial == "yes" && $action=="detach") { 
-		$actioncmd .="-alias '$vmname' ua-serial{$usbbus}{$usbdev}" ; }
-		else { $actioncmd .= " '$vmname' '".$filename."' " ; }
+		$actioncmd .="-alias '$vmname' ua-serial{$usbbus}{$usbdev}";}
+		else { $actioncmd .= " '$vmname' '".$filename."' ";}
 	
-	$cmdreturn=shell_exec("/usr/sbin/virsh $actioncmd  2>&1");
+	$cmdreturn=shell_exec("virsh $actioncmd  2>&1");
 	usb_manager_log("Info: virsh called ".$vmname." ".$usbbus." ".$usbdev." ".$cmdreturn);
-	unlink($filename) ;
-return $cmdreturn ;
-#return shell_exec("/usr/sbin/virsh $action-device '$vmname' '".$filename."' 2>&1");
-
+	unlink($filename);
+	return $cmdreturn;
 
 #echo "Running virsh ${COMMAND} ${DOMAIN} for USB bus=${BUSNUM} device=${DEVNUM}:" >&2
 #virsh "${COMMAND}" "${DOMAIN}" /dev/stdin <<END
@@ -1252,24 +1014,21 @@ return $cmdreturn ;
 }
 
 function get_all_available() {
-	$inuse = get_inuse_devices() ;
+	$inuse = get_inuse_devices();
 	$out = array();
-    $out= get_all_usb_info() ;
-    		foreach ($out as $busid => $detail) {
-				$inusedevice = $inuse["usb"][$busid] ;
-				
-					if ($inusedevice["VM"] != "" || $inusedevice["zpool"] || $inusedevice["mounted"] || $inusedevice["unraid"])  {
-						unset($out[$busid]) ;
-						continue ;
-					}
-				
-            if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
-			if ($detail["ishub"] == "interface") continue ;
-			if ($detail["ishub"] == "hub") unset($out[$busid]) ;
-		 	if ($detail["ishub"] == "roothub") unset($out[$busid]) ;
-            }
-    
-	ksort($out,SORT_NATURAL  ) ;
+    $out= get_all_usb_info();
+	foreach ($out as $busid => $detail) {
+		$inusedevice = $inuse["usb"][$busid];			
+		if ($inusedevice["VM"] != "" || $inusedevice["zpool"] || $inusedevice["mounted"] || $inusedevice["unraid"]) {
+			unset($out[$busid]);
+			continue;
+		}			
+		if ($detail["isflash"] == "hub") { unset($out[$busid]); continue; }
+		if ($detail["ishub"] == "interface") continue;
+		if ($detail["ishub"] == "hub") unset($out[$busid]);
+		if ($detail["ishub"] == "roothub") unset($out[$busid]);
+	}
+	ksort($out,SORT_NATURAL);
 	return $out;
 }
 
@@ -1278,20 +1037,17 @@ function get_inuse_byvm($vm) {
 	$out = array();
     $out= get_all_usb_info() ;
 	foreach ($out as $busid => $detail) {
-		$inusedevice = $inuse["usb"][$busid] ;
-		
-			if ($inusedevice["VM"] != $vm )  {
-				unset($out[$busid]) ;
-				continue ;
-			}
-		
-	if ($detail["isflash"] == "hub") { unset($out[$busid]) ; continue ; }
-	if ($detail["ishub"] == "interface") continue ;
-	if ($detail["ishub"] == "hub") unset($out[$busid]) ;
-	if ($detail["ishub"] == "roothub") unset($out[$busid]) ;
+		$inusedevice = $inuse["usb"][$busid];
+		if ($inusedevice["VM"] != $vm )  {
+			unset($out[$busid]);
+			continue;
+		}	
+		if ($detail["isflash"] == "hub") { unset($out[$busid]); continue;}
+		if ($detail["ishub"] == "interface") continue;
+		if ($detail["ishub"] == "hub") unset($out[$busid]);
+		if ($detail["ishub"] == "roothub") unset($out[$busid]);
 	}
-
-	ksort($out,SORT_NATURAL  ) ;
+	ksort($out,SORT_NATURAL);
 	return $out;
 }
 
@@ -1299,50 +1055,41 @@ function get_inuse_byvm($vm) {
 function get_inuse_devices() {
 	global $disks,$lv, $libvirt_running ;
 	
-	/* Get all unraid disk devices (array disks, cache, and pool devices) */
+	# Get all unraid disk devices (array disks, cache, and pool devices) 
 	foreach ($disks as $d) {
 		if ($d['device']) {
 			$unraid_disks[] = "/dev/".$d['device'];
 		}
 	}
-	$usbinuse = array() ;
-	$pciinuse = array() ;
-
-	exec('lsscsi -bti | grep usb'  ,$lsscsi) ;
-
+	$usbinuse = array();
+	$pciinuse = array();
+	# Check for the device being Mounted.
+	exec('lsscsi -bti | grep usb'  ,$lsscsi);
 	foreach ($lsscsi as $scsi){
 		if (preg_match('/^\S+\s+ usb:(?P<usb>\S+):\S* * (?P<dev>\S+) * (?P<id>\S+)$/', $scsi, $arrMatch)) {
-			if (in_array($arrMatch["dev"], $unraid_disks)) $unraid=true ; else $unraid=false ;
+			if (in_array($arrMatch["dev"], $unraid_disks)) $unraid=true ; else $unraid=false;
 			$usbinuse[$arrMatch["usb"]] = array(
-			"device"=>$arrMatch["dev"],  
-			"unraid"=>$unraid, 
-			"name"=>$arrMatch["id"] ,
-			"zpool"=>false ,
-			"mounted"=>is_mounted_check($arrMatch["dev"])
-			) ;
+				"device"=>$arrMatch["dev"],  
+				"unraid"=>$unraid, 
+				"name"=>$arrMatch["id"] ,
+				"zpool"=>false ,
+				"mounted"=>is_mounted_check($arrMatch["dev"])
+			);
 		} 
 	}
-
-# Check for the device being Mounted.
-
-# Check if part of a ZFS pool
-
+	# Check if part of a ZFS pool
 	if (file_exists("/usr/sbin/zpool")) {
 		exec("zpool status | grep usb | sed 's/-part.*$//' | awk '{print $1}'", $zpool_status) ;
 		foreach($zpool_status as $zpool_dev) {
-			$dev = substr($zpool_dev,4, strlen($zpool_dev)) ;
-			$key=array_search($dev, array_column($usbinuse, 'name'), true) ;
+			$dev = substr($zpool_dev,4, strlen($zpool_dev));
+			$key=array_search($dev, array_column($usbinuse, 'name'), true);
 			if ($key!=false) {
-				$usbinuse[array_keys($usbinuse)[$key]]["zpool"] = true ;
+				$usbinuse[array_keys($usbinuse)[$key]]["zpool"] = true;
 			}
 		}
 	}
-
-
-
-	$libvirt_up        = $libvirt_running=='yes';
-
-	if ($libvirt_up)  $domains = $lv->get_domains(); else $domains = array() ;
+	$libvirt_up = $libvirt_running=='yes';
+	if ($libvirt_up)  $domains = $lv->get_domains(); else $domains = array();
 	if ($libvirt_up){
 		foreach($domains as $domain_name ) {
   			$res = $lv->get_domain_by_name($domain_name);
@@ -1350,72 +1097,61 @@ function get_inuse_devices() {
   			$state = $lv->domain_state_translate($dom['state']);
 			if ($state != "shutoff") {
 	  			$xml=NULL ;
-				exec('virsh dumpxml "'.$domain_name.'"',$xml) ;
+				exec('virsh dumpxml "'.$domain_name.'"',$xml);
 				$xml = new SimpleXMLElement(implode('',$xml));
-				$VMUSB=$xml->xpath('//devices/hostdev[@type="usb"]/source') ;
-				$VMPCI=$xml->xpath('//devices/hostdev[@type="pci"]/source')  ;
-				$VMSER=$xml->xpath('//devices/serial[@type="dev"]/source')  ;
-				#var_dump($VMSER) ;
+				$VMUSB=$xml->xpath('//devices/hostdev[@type="usb"]/source');
+				$VMPCI=$xml->xpath('//devices/hostdev[@type="pci"]/source');
+				$VMSER=$xml->xpath('//devices/serial[@type="dev"]/source');
 				# Check active USB devices passthru to a VM.		
 				foreach($VMUSB as $USB) {
-					$bus=$USB->address->attributes()->bus ;
-					$dev=$USB->address->attributes()->device ;
-					$cmd="udevadm info -a --name=/dev/bus/usb/".str_pad($bus,3,"0",STR_PAD_LEFT)."/".str_pad($dev,3,"0",STR_PAD_LEFT)." | grep KERNEL==" ;
-
-					$cmdres=NULL ;
-					exec($cmd,$cmdres) ;
-
-					if (trim(substr($cmdres[0], 13) , '"')!="") $usbinuse[trim(substr($cmdres[0], 13) , '"')]["VM"] = $domain_name ;
+					$bus=$USB->address->attributes()->bus;
+					$dev=$USB->address->attributes()->device;
+					$cmd="udevadm info -a --name=/dev/bus/usb/".str_pad($bus,3,"0",STR_PAD_LEFT)."/".str_pad($dev,3,"0",STR_PAD_LEFT)." | grep KERNEL==";
+					$cmdres=NULL;
+					exec($cmd,$cmdres);
+					if (trim(substr($cmdres[0], 13) , '"')!="") $usbinuse[trim(substr($cmdres[0], 13) , '"')]["VM"] = $domain_name;
 				}
-
 				foreach($VMSER as $SER) {
-					$device=$SER->attributes()->path ;
-					#$dev=$USB->address->attributes()->device ;
-					$cmd="udevadm info -a --name=".$device." | grep KERNELS==" ;
-					$cmdres=NULL ;
-					exec($cmd,$cmdres) ;
+					$device=$SER->attributes()->path;
+					$cmd="udevadm info -a --name=".$device." | grep KERNELS==";
+					$cmdres=NULL;
+					exec($cmd,$cmdres);
 					if (trim(substr($cmdres[1], 13) , '"')!="") {
-						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["VM"] = $domain_name ;
-						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["isSerial"] = true ;
+						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["VM"] = $domain_name;
+						$usbinuse[trim(substr($cmdres[1], 13) , '"')]["isSerial"] = true;
 					}
 				}
-
 				# Check active USB devices passthru to a VM.
 				foreach($VMPCI as $PCI) {
-					$pcibus=str_pad(str_replace("0x","",$PCI->address->attributes()->bus),2,"0",STR_PAD_LEFT) ;
-					$pcibus.=":".str_pad(str_replace("0x","",$PCI->address->attributes()->slot),2,"0",STR_PAD_LEFT) ;
-					$pcibus.=".".str_replace("0x","",$PCI->address->attributes()->function) ;
-
-					$cmd="lspci -s ".$pcibus ;
-
-					$cmdres=NULL ;
-					exec($cmd,$cmdres) ;
-	 				$pciinuse[$pcibus]["VM"] = $domain_name ;
-	 				$pciinuse[$pcibus]["desc"] = substr($cmdres[0],8) ;
+					$pcibus=str_pad(str_replace("0x","",$PCI->address->attributes()->bus),2,"0",STR_PAD_LEFT);
+					$pcibus.=":".str_pad(str_replace("0x","",$PCI->address->attributes()->slot),2,"0",STR_PAD_LEFT);
+					$pcibus.=".".str_replace("0x","",$PCI->address->attributes()->function);
+					$cmd="lspci -s ".$pcibus;
+					$cmdres=NULL;
+					exec($cmd,$cmdres);
+	 				$pciinuse[$pcibus]["VM"] = $domain_name;
+	 				$pciinuse[$pcibus]["desc"] = substr($cmdres[0],8);
 				}
 			}
 		}
 	}
-
-	$inuse["usb"] = $usbinuse ;
-	$inuse["pci"] = $pciinuse ;
-
+	$inuse["usb"] = $usbinuse;
+	$inuse["pci"] = $pciinuse;
 	# Find Bluetooth Controllers
     if (is_dir("/sys/class/bluetooth")) {
-	$bluetooth=array() ;
-	$hci=listDir2("/sys/class/bluetooth") ;
-
-	foreach ($hci as $hci_name) {
-		$hci_dev = str_replace('/sys/class/bluetooth/','',$hci_name) ;
-		$usbdevs=NULL ;
-		$usbdevs=listDir2("/sys/class/bluetooth/".$hci_dev."/device/driver/") ;
-		foreach ($usbdevs as $usbdev) {
-			$bluetooth=explode(":",str_replace("/sys/class/bluetooth/".$hci_dev."/device/driver/","",$usbdev))[0] ;
-			if ($bluetooth != "module") $inuse["bluetooth"][$bluetooth]="Bluetooth Controller" ;
+		$bluetooth=array();
+		$hci=listDir2("/sys/class/bluetooth");
+		foreach ($hci as $hci_name) {
+			$hci_dev = str_replace('/sys/class/bluetooth/','',$hci_name);
+			$usbdevs=NULL ;
+			$usbdevs=listDir2("/sys/class/bluetooth/".$hci_dev."/device/driver/") ;
+			foreach ($usbdevs as $usbdev) {
+				$bluetooth=explode(":",str_replace("/sys/class/bluetooth/".$hci_dev."/device/driver/","",$usbdev))[0];
+				if ($bluetooth != "module") $inuse["bluetooth"][$bluetooth]="Bluetooth Controller";
+			}
 		}
-	}}
-
-	return $inuse ;
+	}
+	return $inuse;
 }
 
 function listDir2($root) {
@@ -1431,30 +1167,24 @@ function listDir2($root) {
 	return $paths;
 }
 
-
-/* Is a device mounted? */
+# Is a device mounted? 
 function is_mounted($dev, $dir = false) {
-
 	$rc = false;
 	if ($dev) {
 		$data	= timed_exec(1, "/sbin/mount");
 		$append	= ($dir) ? " " : " on";
 		$rc		= (strpos($data, $dev.$append) != 0) ? true : false;
 	}
-
 	return $rc;
 }
 
-/* Is a device mounted? */
+# Is a device mounted? 
 function is_mounted_check($dev, $dir = false) {
-
 	$rc = false;
 	if ($dev) {
 		$data	= timed_exec(1, "/sbin/mount");
-		$rc		= (strpos($data, $dev) != 0) ? true : false;
-		
+		$rc		= (strpos($data, $dev) != 0) ? true : false;	
 	}
-
 	return $rc;
 }
 ?>
