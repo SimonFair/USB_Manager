@@ -244,7 +244,7 @@ echo "1" >dev>console
 chmod 755 -R /usr/local/emhttp/plugins/&name; 2>/dev/null
 echo "2" >dev>console
 # Fix permissions of executable files
-chmod +x /usr/local/emhttp/plugins/&name;/scripts/* /usr/local/emhttp/plugins/&name;/event/*
+#chmod +x /usr/local/emhttp/plugins/&name;/scripts/* /usr/local/emhttp/plugins/&name;/event/*
 echo "3" >dev>console
 # Create a symlink to USB_Manager scripts.
 ln -sf /usr/local/emhttp/plugins/&name;/scripts/rc.usb_manager /usr/local/sbin
@@ -253,13 +253,13 @@ echo "4" >dev>console
 at -M -f /tmp/start_usb_manager now 2>/dev/null
 echo "5" >dev>console
 # Update QEMU Hooks file and udev rules.
-/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
+#/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
 echo "6" >dev>console
 # reload udev rules
-udevadm control --reload-rules
+#udevadm control --reload-rules
 echo "7" >dev>console
 # restart rsyslogd
-/etc/rc.d/rc.rsyslogd restart
+#/etc/rc.d/rc.rsyslogd restart
 echo "8" >dev>console
 echo 
 echo "-----------------------------------------------------------"
