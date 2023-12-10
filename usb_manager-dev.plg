@@ -169,9 +169,9 @@ if [ ! -z "$(pidof emhttpd)" ]
        then
        mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
    fi
-echo "start rc"	
+logger "start rc"	
    /usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
-echo "finish rc"
+logger "finish rc"
    if [ ! -f /boot/config/plugins/&name;/v2 ]
       then
       /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
