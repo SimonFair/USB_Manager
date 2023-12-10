@@ -253,13 +253,13 @@ echo "4" >dev>console
 at -M -f /tmp/start_usb_manager now 2>/dev/null
 echo "5" >dev>console
 # Update QEMU Hooks file and udev rules.
-#/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
+/usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
 echo "6" >dev>console
 # reload udev rules
 udevadm control --reload-rules
 echo "7" >dev>console
 # restart rsyslogd
-/etc/rc.d/rc.rsyslogd restart
+#/etc/rc.d/rc.rsyslogd restart
 echo "8" >dev>console
 echo 
 echo "-----------------------------------------------------------"
