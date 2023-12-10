@@ -169,9 +169,9 @@ if [ ! -z "$(pidof emhttpd)" ]
        then
        mv /usr/local/emhttp/state/usb.ini /usr/local/emhttp/state/usb.old
    fi
-
+  echo "start rc" > /dev/console
    /usr/local/emhttp/plugins/&name;/scripts/rc.&name; check_config 2>/dev/null
-
+ echo "end rc" > /dev/console
    if [ ! -f /boot/config/plugins/&name;/v2 ]
       then
       /usr/local/emhttp/plugins/&name;/scripts/rc.&name; USBMgrUpgradeConnectedStatusv2 2>/dev/null
@@ -180,6 +180,7 @@ if [ ! -z "$(pidof emhttpd)" ]
 fi
 
 # Remove the background start script.
+sleep 5
 rm -f /tmp/start_usb_manager 2>/dev/null
 </INLINE>
 </FILE>
@@ -238,28 +239,28 @@ mkdir -p /tmp/&name;/config 2>/dev/null
 # copy the syslog  rules config file
 #cp /usr/local/emhttp/plugins/&name;/99_usb_manager_syslog.conf /etc/rsyslog.d/
 #chmod 644 -R /etc/udev/rules.d/99_persistent_usb.rules 2>/dev/null
-
+echo "1" >dev>console
 # Adjust plugin permissions.
 chmod 755 -R /usr/local/emhttp/plugins/&name; 2>/dev/null
-
+echo "2" >dev>console
 # Fix permissions of executable files
 chmod +x /usr/local/emhttp/plugins/&name;/scripts/* /usr/local/emhttp/plugins/&name;/event/*
-
+echo "3" >dev>console
 # Create a symlink to USB_Manager scripts.
 ln -sf /usr/local/emhttp/plugins/&name;/scripts/rc.usb_manager /usr/local/sbin
-
+echo "4" >dev>console
 # Copy Config to tmp and load modules.
-#at -M -f /tmp/start_usb_manager now 2>/dev/null
-
+at -M -f /tmp/start_usb_manager now 2>/dev/null
+echo "5" >dev>console
 # Update QEMU Hooks file and udev rules.
 /usr/local/emhttp/plugins/&name;/scripts/install.sh 2>/dev/null
-
+echo "6" >dev>console
 # reload udev rules
 udevadm control --reload-rules
-
+echo "7" >dev>console
 # restart rsyslogd
 /etc/rc.d/rc.rsyslogd restart
-
+echo "8" >dev>console
 echo 
 echo "-----------------------------------------------------------"
 echo " &name; has been installed."
