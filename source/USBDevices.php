@@ -207,7 +207,7 @@ switch ($_POST['action']) {
 		}
 		
 		echo "<div class='show-disks'>";
-		echo "<table class='disk_status wide local_usb'><thead><tr><td>"._("Setting")." / "._("Speed")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
+		echo "<table class='local_usb'><thead><tr><td>"._("Setting")." / "._("Speed")."<td>"._('Port')."</td><td>"._('Class')."</td><td>"._('Vendor:Product').".</td>" ;
 		if ($hideserial =="true") echo "<td>"._('Serial Numbers')."</td>" ;
 		echo "<td>"._('Volume(Storage)	')."</td><td>"._('Mapping')."</td><td>"._('VM')."</td><td>"._('VM Action')."</td><td>"._('Status')."</td>" ;
 		if ($usbip_enabled == "enabled") echo "<td>"._('USBIP Action')."</td><td>"._('USBIP Status')."</td><td>"._('Host Name/IP')."</td>" ;
@@ -470,7 +470,7 @@ switch ($_POST['action']) {
 			# Remote USBIP Servers 
 			echo "<div class='rmtip_tab' class='show-rmtip'>";
 			echo "<div class='show-rmtip' id='rmtip_tab'>$titleclassid<span class='left'><img src='/plugins/$plugin/icons/nfs.png' class='icon'>"._('Remote USBIP Hosts')." &nbsp;</span></div>";
-			echo "<table class='disk_status wide remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('')."</td><td></td><td></td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td></tr></thead>";
+			echo "<table class='remote_ip'><thead><tr><td>"._('Remote host')."</td><td>"._('Busid')."</td><td>"._('Action')."</td><td>"._('Vendor:Product(Additional Details)')."</td><td></td><td>"._('Remove')."</td><td>"._('')."</td><td></td><td></td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td><td>"._('')."</td></tr></thead>";
 			echo "<tbody>";
 			$ds1 = time();
 			$remote_usbip = get_remote_usbip();
@@ -516,7 +516,7 @@ switch ($_POST['action']) {
 			$ct = "";
 			$port=parse_usbip_port() ;
 			echo "<div class='show-ports' id='ports_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Attached Ports')."</span></div>";
-			echo "<table class='disk_status wide usb_attached'><thead><tr><td>"._('Device')."</td><td>"._('HUB Port=>Remote host')."</td><td>"._('Action')."</td><td></td><td></td><td></td><td></td><td></td><td>"._('')."</td><td>"._('')."</td></tr></thead>" ;
+			echo "<table class='usb_attached'><thead><tr><td>"._('Device')."</td><td>"._('HUB Port=>Remote host')."</td><td>"._('Action')."</td><td></td><td></td><td></td><td></td><td></td><td>"._('')."</td><td>"._('')."</td></tr></thead>" ;
 			foreach ($port as $portkey => $portline) {
 				$dbutton = make_detach_button($portkey);
 				$ct = "";
@@ -565,10 +565,10 @@ switch ($_POST['action']) {
 		}
 		if (strlen($ct)) {
 			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
-			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start/Resume VM at plugin</td><td>Auto Connect on VM Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
+			echo "<table class='usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start/Resume VM at plugin</td><td>Auto Connect on VM Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead><tbody>{$ct}</tbody></table></div>";
 		} else {
 			echo "<div class='show-disks'><div class='show-historical' id='hist_tab'>$titleclassid<span class='left'><img src='/plugins/{$plugin}/icons/historical.png' class='icon'>"._('Port and Historical Device Mappings')."</span></div>";
-			echo "<table class='disk_status wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start/Resume at plugin VM</td><td>Auto Connect on VM Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>";
+			echo "<table class='wide usb_absent'><thead><tr><td>"._('Device')."</td><td>"._('Serial Number')."</td><td>"._('VM')."</td><td>Auto Connect</td><td>Auto Connect Start/Resume at plugin VM</td><td>Auto Connect on VM Start</td><td>Connect as Serial</td><td></td><td></td><td>"._('Settings')."</td><td>"._('Remove')."</td></tr></thead>";
 			echo "<tr><td colspan='13' style='text-align:center;'>"._('No Historic Mappings configured').".</td></tr>";
 		}	 
 		break;
