@@ -28,8 +28,8 @@ require_once "plugins/$plugin/include/lib_usb_manager.php";
 
 $config_file = "/tmp/$plugin/config/$plugin.cfg";
 $cfg = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
-$defaults = (array)@parse_ini_file("$docroot/plugins/$plugin/default.cfg");
-$cfg = array_replace_recursive($defaults, $cfg);
+$usbdefaults["Config"] = (array)@parse_ini_file("$docroot/plugins/$plugin/default.cfg");
+$cfg = array_replace_recursive($usbdefaults, $cfg);
 $version = parse_ini_file("/etc/unraid-version");
 $usbip_enabled=$cfg["Config"]["USBIP"] ;
 check_usbip_modules() ;
