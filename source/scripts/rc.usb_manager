@@ -391,6 +391,46 @@ function usb_manager_syslog_processing($sl_busid) {
 	save_ini_file($config_file, $config);
 }
 
+function process_cmdline($mode,$value,$vm,$action) {
+		global $usb_state;
+		load_usbstate(); 
+		$tj = array();
+		$found = false;
+	
+		if ($mode == "cmdlinedevice") {
+			# find device for Serial
+			foreach($usb_state as $key => $entry) {
+				if ($entry["ID_SERIAL"] == $value) {
+					$tj['BUSNUM'] = $entry['bus'];
+					$tj['DEVNUM'] = $entry['dev'];
+					$tj['ID_SERIAL'] = $entry['ID_SERIAL'];
+					$found = true;
+				}
+			}
+			if (!$found) return("error: Device not found\n");
+		} else {
+			# Build array from udevadm 
+			# udevadm info --query=property -x --path=/sys/bus/usb/devices/ + busid 
+			$udev=array();
+			exec('udevadm info --query=property  --path=/sys/bus/usb/devices/'.$value, $udev);
+			foreach ($udev as $udevi) {
+				$udevisplit=explode("=",$udevi);
+				$tj[$udevisplit[0]] = $udevisplit[1];
+			}
+		}
+			
+		$usbkey="{$tj['BUSNUM']}/{$tj["DEVNUM"]}";
+		if ($usb_state[$usbkey]["connected"]== "1" && $action == "attach") {
+			return("error: Device in use attach action ignored\n");
+		}
+		if ($usb_state[$usbkey]["connected"]== "" && $action == "detach") {
+			return("error: Device not in use detach action ignored\n");
+		}
+
+		$return = vm_map_action("$vm;{$tj['BUSNUM']};{$tj["DEVNUM"]};{$tj['ID_SERIAL']};Manual;CMDLine",$action,true);
+		return $return;
+}
+
 switch ($COMMAND) {
 	case 'modules_load':
 		usbip_modules_load();
@@ -498,6 +538,13 @@ switch ($COMMAND) {
 	case 'check_config':
 		usbip_check_config();
 		break;	
+	case 'cmdlineport':
+	case 'cmdlinedevice':
+		usb_manager_log("Info: rc.usb_manager  {$argv[1]} {$argv[2]} {$argv[3]} {$argv[4]} {$argv[5]}");
+		$rtn = process_cmdline($argv[1], $argv[2],$argv[3],$argv[4]);
+		echo $rtn;
+		if (strpos($rtn,"error:",0) !== false) {exit(2);}
+		break;		
 	case 'usb_syslog':
 		echo "Syslog";
 		usb_manager_syslog_processing($argv[2]);

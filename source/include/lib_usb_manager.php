@@ -749,7 +749,7 @@ function do_vm_map_action($action, $vmname, $bus, $dev, $srlnbr, $method, $map) 
 			return $return;
 }
 
-function vm_map_action($vm, $action) {		
+function vm_map_action($vm, $action,$rtnvar=false) {		
 	$explode= explode(";",$vm );
 	$vmname = $explode[0];
 	$bus = $explode[1];
@@ -777,7 +777,7 @@ function vm_map_action($vm, $action) {
 	} else {
 	$return=do_vm_map_action($action, "$vmname", $bus, $dev, "$srlnbr", $method, $map);
 	}
-	echo json_encode(["status" => $return ]);
+	if ($rtnvar) return($return); else echo json_encode(["status" => $return ]);
 }
 
 function USBMgrResetConnectedStatus() {
