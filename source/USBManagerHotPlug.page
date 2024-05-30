@@ -1,6 +1,6 @@
 Menu="VMs:99"
 Title="USB Manager Hotplug"
-Cond="parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['HOTPLUG'] == 'enabled'"
+Cond="parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['HOTPLUG'] == 'enabled' && is_file('/var/run/libvirt/libvirtd.pid')"
 ---
 <?PHP
 /* Copyright 2021-2021, Simon Fairweather
