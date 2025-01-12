@@ -46,6 +46,7 @@ if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
 	$vm = $_GET['v'];
 	$isflash = $_GET['f'];
+	$serialspecial = htmlspecialchars($serial);
 	$width = "50%";
 	$autoconnect = (is_autoconnect($serial)) ? "checked" : "";
 	$autoconnectstart = (is_autoconnectstart($serial)) ? "checked" : ""; 
@@ -139,7 +140,7 @@ EOT;
 
 <form markdown="1" name="edit_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="#include" value="/webGui/include/update.file.php"> 
-<strong>_(USB Serial)_: </strong><?=htmlspecialchars($serial);?> 
+<strong>_(USB Serial)_: </strong><?=$serialspecial;?> 
 
 <?if (! $isflash):?>
 <table style='width: <?=$width;?>;' class='usb_disks'><thead><tr><td></td><td></td><td></td><td></td></tr></thead>
@@ -246,7 +247,7 @@ Connect as Serial Guest Port Number:
 	$('.autoconnect-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect at USB Device Plugin');?>", off_label: "<?=_('Auto Connect at USB Device Plugin');?>", checked:"<?=$autoconnect;?>" });
 	$('.autoconnect-switch').change(function()
 	{
-		$.post(USBMURL,{action:"autoconnect",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"autoconnect",serial:"<?=$serialspecial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -255,7 +256,7 @@ Connect as Serial Guest Port Number:
 	$('.autoconnect-start-switch').switchButton({ labels_placement: "left", on_label: "<?=_('At plugin start/resume VM if not running');?>", off_label: "<?=_('At plugin start/resume VM if not running');?>", checked:"<?=$autoconnectvmstart;?>" });
 	$('.autoconnect-start-switch').change(function()
 	{
-		$.post(USBMURL,{action:"autoconnectvmstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"autoconnectvmstart",serial:"<?=$serialspecial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -264,7 +265,7 @@ Connect as Serial Guest Port Number:
 	$('.autoconnectstart-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Auto Connect to VM at VM Start');?>", off_label: "<?=_('Auto Connect to VM at VM Start');?>", checked:"<?=$autoconnectstart;?>" });
 	$('.autoconnectstart-switch').change(function()
 	{
-		$.post(USBMURL,{action:"autoconnectstart",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"autoconnectstart",serial:"<?=$serialspecial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -273,7 +274,7 @@ Connect as Serial Guest Port Number:
 	$('.usbserial-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Connect as serial only');?>", off_label: "<?=_('Connect as serial only');?>", checked:"<?=$connectserial;?>" });
 	$('.usbserial-switch').change(function()
 	{
-		$.post(USBMURL,{action:"connectserial",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"connectserial",serial:"<?=$serialspecial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -281,7 +282,7 @@ Connect as Serial Guest Port Number:
 
 	$('#vmselection').change(function()
 	{
-		$.post(USBMURL,{action:"updatevm",serial:"<?=$serial;?>",vmname:$(this).prop("value")},function(data)
+		$.post(USBMURL,{action:"updatevm",serial:"<?=$serialspecial;?>",vmname:$(this).prop("value")},function(data)
 		{
 				
 		},"json");
@@ -290,7 +291,7 @@ Connect as Serial Guest Port Number:
 	$('.background-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Run in Background');?>", off_label: "<?=_('Run in Backround');?>", checked:"<?=$background;?>" });
 	$('.background-switch').change(function()
 	{
-		$.post(USBMURL,{action:"<?=$background_action;?>",serial:"<?=$serial;?>",status:$(this).is(":checked")},function(data)
+		$.post(USBMURL,{action:"<?=$background_action;?>",serial:"<?=$serialspecial;?>",status:$(this).is(":checked")},function(data)
 		{
 			$(this).prop("checked",data.result);
 		},"json");
@@ -298,9 +299,9 @@ Connect as Serial Guest Port Number:
 
 	<?if (isset($_GET['s'])):?>
 		$( "form" ).submit(function( event ) {
-		//	$.post(USBMURL,{action:"set_command",serial:"<?=$serial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
+		//	$.post(USBMURL,{action:"set_command",serial:"<?=$serialspecial;?>",command:$("input[name='#file']").val(),user_command:$("input[name='#user_file']").val()},function(data){event.preventDefault()},"json");
 		$port = $("input[name='connectserialport']").val()
-			$.post(USBMURL,{action:"updateserialport",serial:"<?=$serial;?>",serialport:$port},function(data){event.preventDefault()},"json");
+			$.post(USBMURL,{action:"updateserialport",serial:"<?=$serialspecial;?>",serialport:$port},function(data){event.preventDefault()},"json");
 		});
 	<?endif;?>
 
