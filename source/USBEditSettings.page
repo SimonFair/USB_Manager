@@ -40,7 +40,7 @@ if ($libvirt_up)  $_SESSION['availablevms'] = $lv->get_domains(); else $_SESSION
 
 $disabled = "";
 $background = "checked";
-$default_file = safe_filename("/boot/config/plugins/{$plugin}/".urldecode($_GET['s'])).".sh";
+#$default_file = safe_filename("/boot/config/plugins/{$plugin}/".urldecode($_GET['s'])).".sh";
 
 if (isset($_GET['s'])) {
 	$serial = $_GET['s'];
@@ -139,7 +139,7 @@ EOT;
 
 <form markdown="1" name="edit_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="#include" value="/webGui/include/update.file.php"> 
-<strong>_(USB Serial)_: </strong><?=$serial;?> 
+<strong>_(USB Serial)_: </strong><?=htmlspecialchars($serial);?> 
 
 <?if (! $isflash):?>
 <table style='width: <?=$width;?>;' class='usb_disks'><thead><tr><td></td><td></td><td></td><td></td></tr></thead>
