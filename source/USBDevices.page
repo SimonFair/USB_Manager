@@ -43,6 +43,7 @@ check_usbip_modules() ;
 
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.filetree.css')?>">
 <script src="<?autov('/webGui/javascript/jquery.filetree.js')?>"></script>
+<script src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
 
 <script type="text/javascript" src="<?autov('/plugins/'.$plugin.'/assets/arrive.min.js')?>"></script>
 
@@ -258,7 +259,7 @@ check_usbip_modules() ;
 	function usb_disks(tabnum)
 	{
 		/* save table widths */
-	/*	if (! diskinfo)
+		if (! diskinfo)
 		{
 			tableWidths = $("#usbip_devices_list > table > thead > tr").children("td").map(function(i,v){return $(this).getHiddenDimensions().outerWidth;});
 
@@ -269,7 +270,7 @@ check_usbip_modules() ;
 					$(this).css("width", tableWidths[i]);
 				}
 			});
-		} */
+		} 
 
 		var empty = document.getElementById("empty-swt")
 		var topo = document.getElementById("topo-swt")
@@ -639,9 +640,6 @@ check_usbip_modules() ;
 > 
 :end
 
-
-
-
 <div id="usbip_devices_list">
 </div>
 
@@ -789,15 +787,20 @@ check_usbip_modules() ;
 	{
 		$(this).css("display", $(".port-switch").is(":checked") ? "block" : "none");
 	});
-		$( "#usbip_devices_list" ).arrive(".show-historical", {onceOnly:false}, function()
+
+	$( "#usbip_devices_list" ).arrive(".show-historical", {onceOnly:false}, function()
 	{
 		$(this).css("display", $(".historical-switch").is(":checked") ? "block" : "none");
 	});
 
 	$(function()
 	{
+		newmodel = <?=$newmodel?>;
 		/*showStatus('<?=$sName?>');*/
-		/* Add icons to Tab/Title bar */
+
+		if (!newmodel) {
+
+		/* Add icons to Tab/Title bar pre 6.12*/
 		addButtonTab('<a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a>',
 								 "<?=_('USB Devices');?>");
 
@@ -818,14 +821,36 @@ check_usbip_modules() ;
 								 "<?=_('USB Devices');?>");
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Serial");?>"><input type="checkbox" class="serial-switch" id="serial-swt"></a>',
 								 "<?=_('USB Devices');?>");
+
+		} else {
+		/* Add icons/buttons to Tab/Title bar 6.12+*/
 	
+		const htmlToAppend = `<span class='right'><a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a></span>
+		<span class='right'><input type="checkbox" class="historical-switch"></span>
+		<span class='right'><input type="checkbox" class="empty-switch" id="empty-swt"></span>
+		<span class='right'><input type="checkbox" class="topo-switch" id="topo-swt"></span>
+		<span class='right'><input type="checkbox" class="serial-switch" id="serial-swt"></span>
+		<span class='right'></a><input type="checkbox" name='disks-switch' class="disks-switch" id="disks-switch"></span>	
+		<span class='right'><input type="checkbox" class="port-switch"></span>
+		<span class='right'><input type="checkbox" class="rmtip-switch"></span>`;
+
+		const titleElement = document.querySelector('.title');
+		if (titleElement) {
+		titleElement.insertAdjacentHTML('beforeend', htmlToAppend);
+		}
+		}
 
 		/* Add switchButton to Tab/Title bar */
-		$('.disks-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Local');?>", off_label: "<?=_('Local');?>", checked: $.cookie('USB-disks-view') != 'false'});
-		$('.disks-switch').change(function()
-		{
+
+		$('.disks-switch').switchButton({
+			labels_placement: "left",
+			on_label: "<?=_('Local');?>",
+			off_label: "<?=_('Local');?>",
+			checked: $.cookie('USB-disks-view') != 'false'
+		});
+		$('.disks-switch').change(function() {
 			$('.show-disks').slideToggle('slow');
-			$.cookie('USB-disks-view', $('.disks-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
+			$.cookie('USB-disks-view', $('.disks-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path: '/' });
 		});
 
 		$('.serial-switch').switchButton({ labels_placement: "left", on_label: "<?=_('Serial');?>", off_label: "<?=_('Serial');?>", checked: $.cookie('USB-serial-view') != 'false'});
@@ -872,12 +897,6 @@ check_usbip_modules() ;
 			$('.show-ports').slideToggle('slow');
 			$.cookie('USBIP-port-view', $('.port-switch').is(':checked') ? 'true' : 'false', { expires: 3650, path:'/' });
 		});
-
-		/* Load contents if tab is checked 
-		if ($('#tab'+tab_usbdisks).is(':checked')) { */
-			$('#tab'+tab_usbdisks).trigger("click");
-			$.removeCookie('one',{path:'/'});
-		/*}*/
 
 		/* Load page content */
 		if ( !$('#spin_div').length ) {
