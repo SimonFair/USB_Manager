@@ -548,7 +548,7 @@ switch ($_POST['action']) {
 			echo "</tbody></table></div>";
 		}
 		usb_manager_log("Total render time: ".($time + microtime(true))."s", "DEBUG");
-		echo "</div><div class='hist_tab' class='show-history'>";
+		echo "</div><div class='hist_tab' class='show-historical'>";
 		$config_file = $GLOBALS["paths"]["vm_mappings"];
 		$config = is_file($config_file) ? @parse_ini_file($config_file, true) : array();
 		$disks_serials = array();
