@@ -34,6 +34,7 @@ parse_plugin('usb_manager');
 require_once "plugins/$plugin/include/lib_usb_manager.php";
 $version = parse_ini_file("/etc/unraid-version");
 $newmodel = version_compare($version['version'],'6.12.0-beta5', '>') ? "true" : "false" ;
+$newgui = version_compare($version['version'],'7.1.99', '>') ? "true" : "false" ;
 check_usbip_modules() ;
 ?>
 
@@ -639,8 +640,21 @@ check_usbip_modules() ;
 >
 > 
 :end
-
-<div id="usbip_devices_list">
+<div>
+	<? if ($newgui == "true"):?>
+	<span class="buttons-spaced">
+		<span class="right"><input type="checkbox" class="serial-switch" id="serial-swt"></span>
+		<span class="right"><input type="checkbox" class="topo-switch" id="topo-swt"></span>
+		<span class="right"><input type="checkbox" class="empty-switch" id="empty-swt"></span>
+		<span class="right"><input type="checkbox" name="disks-switch" class="disks-switch" id="disks-switch"></span>	
+		<span class="right"><input type="checkbox" class="historical-switch"></span>
+		<span class="right"><input type="checkbox" class="rmtip-switch"></span>
+		<span class="right"><input type="checkbox" class="port-switch"></span>
+		<span class="right"><a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a></span>
+	</span>
+	<?endif;?>
+	</div>
+<div class="TableContainer" id="usbip_devices_list">
 </div>
 
 :usbip_devices_general_help_plug:
@@ -795,10 +809,10 @@ check_usbip_modules() ;
 
 	$(function()
 	{
-		newmodel = <?=$newmodel?>;
+		newgui = <?=$newgui?>;
 		/*showStatus('<?=$sName?>');*/
 
-		if (!newmodel) {
+		if (!newgui) {
 
 		/* Add icons to Tab/Title bar pre 6.12*/
 		addButtonTab('<a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a>',
@@ -822,23 +836,7 @@ check_usbip_modules() ;
 		addButtonTab('<a style="cursor:pointer;" title="<?=_("Switch Off to Hide Serial");?>"><input type="checkbox" class="serial-switch" id="serial-swt"></a>',
 								 "<?=_('USB Devices');?>");
 
-		} else {
-		/* Add icons/buttons to Tab/Title bar 6.12+*/
-	
-		const htmlToAppend = `<span class='right'><a title="<?=_("USB Settings");?>" href="/Settings/USBManagerSettings"><i class="fa fa-gear"></i></a></span>
-		<span class='right'><input type="checkbox" class="historical-switch"></span>
-		<span class='right'><input type="checkbox" class="empty-switch" id="empty-swt"></span>
-		<span class='right'><input type="checkbox" class="topo-switch" id="topo-swt"></span>
-		<span class='right'><input type="checkbox" class="serial-switch" id="serial-swt"></span>
-		<span class='right'></a><input type="checkbox" name='disks-switch' class="disks-switch" id="disks-switch"></span>	
-		<span class='right'><input type="checkbox" class="port-switch"></span>
-		<span class='right'><input type="checkbox" class="rmtip-switch"></span>`;
-
-		const titleElement = document.querySelector('.title');
-		if (titleElement) {
-		titleElement.insertAdjacentHTML('beforeend', htmlToAppend);
-		}
-		}
+		} 
 
 		/* Add switchButton to Tab/Title bar */
 

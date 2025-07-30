@@ -236,41 +236,36 @@ function BuildAvailablelist() {
 <div style="width: 100%; float:left" id="USB">
 <form markdown="1" id="USBF" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="hidden-item" value="HA"  **form="USBF"** />
-<dl>
+
 <table>
 <tr><td>
-<?=_('Running VMs')?>:
-	<select name="usbm_vms"  onchange="BuildAttachlist()" id="vms" size="1">
+<span><?=_('Running VMs')?>:</span>
+	<span><select class='narrow' name="usbm_vms" onchange="BuildAttachlist()" id="vms" size="1"   style="width:auto;"  >
 	<?foreach ($vmlist as $vms):?>
 	<?=mk_option("",$vms['name'],$vms['name'])?>
 	<?endforeach;?>
-	</select>
+	</select></span>
 
 
-</td><td><input type="button" value="<?=_('Attach')?>" title="<?=_('Attach the USB device to the selected VM')?>" onclick="usbm_operateUSB('vm_connect');" id="usbm_attach" style="margin-top:0"></td><td>
-<?=_('Available USB Devices')?>:</td><td>
-	<select name="usbm_devs"  size="1" id="usb1" style="width:auto;">
+</td><td><span class="narrow"><input type="button" value="<?=_('Attach')?>" title="<?=_('Attach the USB device to the selected VM')?>" onclick="usbm_operateUSB('vm_connect');" id="usbm_attach" style="margin-top:0"></span></td><td>
+<span><?=_('Available USB Devices')?>:</td><td></span>
+	<span><select name="usbm_devs"  size="1" id="usb1" style="width:auto;">
 	<?#foreach (get_all_available() as $busid => $usb):?>
     <?#$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
 	<?#=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
 	<?#endforeach;?>
-	</select>
+	</select></span>
 
 </td></tr>
-<tr><td></td><td><input type="button" value="<?=_('Detach')?>" title="<?=_('Detach the USB device from the selected VM')?>" onclick="usbm_operateUSB('vm_disconnect');" id="usbm_detach" style="margin-top:0"></td><td>
-	<?=_('Attached USB Devices for selected VM')?>: </td><td>
-	<select name="usbm_devs2" size="1" id="usb2" placeholder="No Devices"
-	   style="width:auto;"
-  >
+<tr><td></td><td><span><input type="button" value="<?=_('Detach')?>" title="<?=_('Detach the USB device from the selected VM')?>" onclick="usbm_operateUSB('vm_disconnect');" id="usbm_detach" style="margin-top:0"></span></td><td>
+	<span><?=_('Attached USB Devices for selected VM')?>: </span></td><td>
+	<span><select name="usbm_devs2" size="1" id="usb2" placeholder="No Devices" style="width:auto;">
 	<?#foreach (usbm_list_usbs() as $busid => $usb):?>
     <?#$usbid = $usb['BUSNUM'].";".$usb['DEVNUM'].";".$usb['ID_SERIAL'].";Manual;VMHotplug;" ;?>	
 	<?#=mk_option("",$usbid,$busid." ".$usb['ID_SERIAL']." ".$usb['volume'] )?>
 	<?#endforeach;?>
-	</select>
+	</select></span>
 </td></tr></table>	
-
-</dl>
-
 
 
 <script>

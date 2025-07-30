@@ -147,7 +147,9 @@ _(Enable USBIP)_:
 
 
 &nbsp;
-: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+: <span class="buttons-spaced">
+<input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+</span>
 </form>
 
 <?if ($usbip_enabled == "enabled"):?>
@@ -156,9 +158,9 @@ _(Enable USBIP)_:
 <form markdown="1" name="usbip_host" method="POST">
 
 _(Install/remove addon plugin for USBIP)_:
-&nbsp;
-
-: <input type="button" <?if ($usbip_cmds_exist ):?>disabled<?endif;?> value="_(Install)_"  onclick="installPlugin('https://raw.githubusercontent.com/SimonFair/USB_Manager_USBIP_addon/main/usb_manager_usbip_addon.plg')"> <input type="button" <?if (!$usbip_cmds_exist ):?>disabled<?endif;?> value="_(Remove)_" onclick="removePlugin('usb_manager_usbip_addon.plg')">
+: <span class="buttons-spaced">
+<input type="button" <?if ($usbip_cmds_exist ):?>disabled<?endif;?> value="_(Install)_"  onclick="installPlugin('https://raw.githubusercontent.com/SimonFair/USB_Manager_USBIP_addon/main/usb_manager_usbip_addon.plg')"> <input type="button" <?if (!$usbip_cmds_exist ):?>disabled<?endif;?> value="_(Remove)_" onclick="removePlugin('usb_manager_usbip_addon.plg')">
+</span>
 
 
 
@@ -191,7 +193,7 @@ _(Load vhci_hcd)_?
 :end
 
 &nbsp;
-: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+: <span class="buttons-spaced"><input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()"></span>
 </form>
 
 
@@ -299,7 +301,7 @@ _(USBIP Remote Host Checker Poll Frequency)_:
 
 
 &nbsp;
-: <input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()">
+: <span class="buttons-spaced"><input type="submit" name="#apply" value='_(Apply)_'><input type="button" value='_(Done)_' onclick="done()"></span>
 </form>
 <?endif;?>
 
