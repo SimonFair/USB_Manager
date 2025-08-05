@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
 <!ENTITY name      "usb_manager">
 <!ENTITY author    "SimonFair">
-<!ENTITY version   "2025.07.30a">
+<!ENTITY version   "2025.08.05">
 <!ENTITY launch    "USBManagerSettings">
 <!ENTITY gitURL    "https://raw.githubusercontent.com/SimonFair/USB_Manager/master">
 <!ENTITY pluginURL "&gitURL;/usb_manager.plg">
@@ -24,6 +24,10 @@
 <CHANGES>
 ##USB_Manager
 ###&version;
+
+- Fix 7.2 Dashboards
+
+2025.07.30s
 
 - Fix further updates for 7.1+
 
