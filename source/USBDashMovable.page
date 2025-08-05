@@ -29,7 +29,23 @@ $pluginname = "usb_manager"; // substitute this entry with the name of your plug
 $mytiles[$pluginname]['column2'] =
 <<<EOT
 <tbody id="tblUSBDash" title="_(USB Manager)_">
-<tr><td>_(USB Devices)_<a href="/Dashboard/Settings/USBManagerSettings" title="_(Go to USB settings)_"><i class="fa fa-fw fa-cog control"></i></a></td></tr>
+<tr>
+  <td>
+    <span class='tile-header'>
+      <span class='tile-header-left'>
+        <i class='fa fa-usb f32'></i>
+        <div class='section'>_(USB Devices)_<br></div>
+      </span>
+      <span class='tile-header-right'>
+        <span class='tile-header-right-controls'>
+          <a href="/Dashboard/Settings/USBManagerSettings" title="_(Go to USB settings)_">
+            <i class="fa fa-fw fa-cog control"></i>
+          </a>
+        </span>
+      </span>
+    </span>
+  </td>
+</tr>
 <tr class="header"><td><span class="w18">_(Port)_</span><span class="w44">_(Name)_</span><span class="w18">_(State)_</span><span class="w18">_(VM/Remote Host)_</span></td></tr>
 </tbody>
 EOT;
