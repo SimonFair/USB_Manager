@@ -1,5 +1,5 @@
 Menu="Dashboard:0"
-Cond="parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['DASH'] == 'enabled' && version_compare(parse_ini_file('/etc/unraid-version')['version'],'6.12.0-beta5', '>')"
+Cond="(@parse_ini_file('/tmp/usb_manager/config/usb_manager.cfg')['DASH'] ?? '') == 'enabled' && version_compare(parse_ini_file('/etc/unraid-version')['version'],'6.12.0-beta5', '>')"
 ---
 <?PHP
 /*
