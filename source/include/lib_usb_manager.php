@@ -797,7 +797,14 @@ function USBMgrUpdatettyStatusEntry($serial, $devname) {
 	$udev=array();
 	$udevcmd = "udevadm info -a   --name=".$devname." | grep KERNELS==";
 	exec( $udevcmd , $udev);
-	$physical_busid = trim(substr($udev[1], 13) , '"');
+	# Use the first parent that is a USB device (e.g. "3-1.4"), not an interface ("3-1.4:1.0").
+	# usb-serial drivers (ch341, ftdi_sio, cp210x) add an extra "ttyUSBx" level compared to cdc_acm,
+	# so a fixed index into the KERNELS list does not work for both.
+	$physical_busid = "";
+	foreach ($udev as $udevline) {
+		$kernels = trim(substr($udevline, 13) , '"');
+		if (preg_match('/^[0-9]+-[0-9.]+$/', $kernels)) { $physical_busid = $kernels; break; }
+	}
 	$device = $USBDevices[$physical_busid];
 	$usbstatekey=$device["BUSNUM"]."/".$device["DEVNUM"]; 
 	if (!$device["isflash"] && isset($config[$usbstatekey])) {
